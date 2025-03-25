@@ -17,7 +17,7 @@ function SliderInner({
 			<SliderPrimitive.Track className="relative h-[2px] w-full grow overflow-hidden bg-transparent before:content-[''] before:absolute before:inset-0 before:bg-[repeating-linear-gradient(90deg,#F7F9FD_0px,#F7F9FD_2px,transparent_2px,transparent_4px)]">
 				<SliderPrimitive.Range className="absolute h-full bg-white-900 rounded-[9999px]" />
 			</SliderPrimitive.Track>
-			<SliderPrimitive.Thumb className="block h-[12px] w-[12px] rounded-full bg-white-900 transition-transform hover:scale-110" />
+			<SliderPrimitive.Thumb className="block h-[12px] w-[12px] rounded-full bg-white-900 transition-transform hover:scale-110 focus:outline-none focus:ring-0 active:outline-none active:ring-0" />
 		</SliderPrimitive.Root>
 	);
 }
@@ -35,7 +35,7 @@ interface SliderProps
 export function Slider(props: SliderProps) {
 	const [value, setValue] = useState(props.value);
 	return (
-		<div className="flex flex-col">
+		<div className="flex flex-col px-[8px]">
 			<div className="text-[14px] py-[1.5px]">{props.label}</div>
 			<div className="flex items-center">
 				<SliderInner
@@ -46,7 +46,7 @@ export function Slider(props: SliderProps) {
 					onValueChange={(v) => setValue(v[0])}
 					onValueCommit={(v) => props.onChange?.(v[0])}
 				/>
-				<div className="text-[12px] font-[700] text-white-900 w-[3em] text-right">
+				<div className="text-[12px] font-[700] text-white-900 w-[3em] text-right ml-[8px]">
 					{value.toFixed(2)}
 				</div>
 			</div>
