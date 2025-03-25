@@ -25,7 +25,7 @@ export function GoogleModelPanel({
 	const limits = useUsageLimits();
 
 	return (
-		<div className="flex flex-col gap-[34px]">
+		<div className="flex flex-col gap-[34px] px-[8px]">
 			<Select
 				value={googleLanguageModel.id}
 				onValueChange={(value) => {
@@ -55,7 +55,7 @@ export function GoogleModelPanel({
 				</SelectContent>
 			</Select>
 			<div>
-				<div className="grid grid-cols-2 gap-[24px]">
+				<div className="grid grid-cols-2 gap-[16px]">
 					<Slider
 						label="Temperature"
 						value={googleLanguageModel.configurations.temperature}

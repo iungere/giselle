@@ -22,7 +22,7 @@ export function PerplexityModelPanel({
 	const limits = useUsageLimits();
 
 	return (
-		<div className="flex flex-col gap-[34px]">
+		<div className="flex flex-col gap-[34px] px-[8px]">
 			<Select
 				value={perplexityLanguageModel.id}
 				onValueChange={(value) => {
@@ -54,7 +54,7 @@ export function PerplexityModelPanel({
 				</SelectContent>
 			</Select>
 			<div>
-				<div className="grid grid-cols-2 gap-[24px]">
+				<div className="grid grid-cols-2 gap-[16px]">
 					<Slider
 						label="Temperature"
 						value={perplexityLanguageModel.configurations.temperature}

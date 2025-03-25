@@ -10,8 +10,9 @@ import { StackBlicksIcon, WilliIcon } from "../../../icons";
 import ClipboardButton from "../../../ui/clipboard-button";
 import { EmptyState } from "../../../ui/empty-state";
 import { GenerationView } from "../../../ui/generation-view";
+import { useConnectedSources } from "./sources";
 
-function Empty() {
+function Empty({ onGenerate }: { onGenerate?: () => void }) {
 	return (
 		<div className="bg-white-900/10 h-full rounded-[8px] flex justify-center items-center text-black-400">
 			<EmptyState
@@ -19,7 +20,30 @@ function Empty() {
 				title="Nothing is generated."
 				description="Generate with the current Prompt or adjust the Prompt and the results will be displayed."
 				className="text-black-400"
-			/>
+			>
+				{onGenerate && (
+					<button
+						onClick={onGenerate}
+						className="flex items-center justify-center px-[24px] py-[12px] mt-[16px] bg-[#141519] text-white rounded-[9999px] border border-white-900/15 transition-all hover:bg-[#1e1f26] hover:border-white-900/25 hover:translate-y-[-1px] cursor-pointer font-hubot font-[500] text-[14px]"
+					>
+						<span className="mr-[8px] generate-star">✦</span>
+						Generate with the current prompt
+					</button>
+				)}
+				<style jsx>{`
+					.generate-star {
+						display: inline-block;
+					}
+					button:hover .generate-star {
+						animation: rotateStar 0.7s ease-in-out;
+					}
+					@keyframes rotateStar {
+						0% { transform: rotate(0deg) scale(1); }
+						50% { transform: rotate(180deg) scale(1.5); }
+						100% { transform: rotate(360deg) scale(1); }
+					}
+				`}</style>
+			</EmptyState>
 		</div>
 	);
 }
@@ -56,10 +80,11 @@ function getGenerationTextContent(generation: Generation): string {
 
 export function GenerationPanel({ node }: { node: TextGenerationNode }) {
 	const { data } = useWorkflowDesigner();
-	const { generations } = useNodeGenerations({
+	const { generations, startGeneration } = useNodeGenerations({
 		nodeId: node.id,
 		origin: { type: "workspace", id: data.id },
 	});
+	const { all: connectedSources } = useConnectedSources(node);
 	const [currentGeneration, setCurrentGeneration] = useState<
 		Generation | undefined
 	>();
@@ -72,8 +97,28 @@ export function GenerationPanel({ node }: { node: TextGenerationNode }) {
 			setCurrentGeneration(latestGeneration);
 		}
 	}, [generations]);
+
+	const handleGenerate = useCallback(() => {
+		try {
+			startGeneration({
+				origin: {
+					type: "workspace",
+					id: data.id,
+				},
+				actionNode: node,
+				sourceNodes: connectedSources.map(
+					(connectedSource) => connectedSource.node
+				),
+			}).catch(error => {
+				console.error("Error during generation:", error);
+			});
+		} catch (error) {
+			console.error("Failed to start generation:", error);
+		}
+	}, [startGeneration, node, data.id, connectedSources]);
+
 	if (currentGeneration === undefined) {
-		return <Empty />;
+		return <Empty onGenerate={handleGenerate} />;
 	}
 	return (
 		<div className="bg-white-900/10 h-full rounded-[8px] py-[8px]">

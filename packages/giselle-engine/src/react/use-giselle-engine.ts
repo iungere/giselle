@@ -105,17 +105,33 @@ export function useGiselleEngine(options?: FetchOptions): GiselleEngineClient {
 			});
 
 			if (!response.ok) {
-				const error = await response.text();
-				throw new Error(error || `Error in ${path} operation`);
+				try {
+					const error = await response.text();
+					throw new Error(error || `Error in ${path} operation`);
+				} catch (e) {
+					console.error(`Failed to process error response for ${path}:`, e);
+					throw new Error(`Error in ${path} operation`);
+				}
 			}
 
 			// Handle both JSON responses and stream responses
-			const contentType = response.headers.get("Content-Type");
-			if (contentType?.includes("application/json")) {
-				return await response.json();
+			try {
+				const contentType = response.headers.get("Content-Type");
+				if (contentType?.includes("application/json")) {
+					try {
+						const jsonData = await response.json();
+						return jsonData;
+					} catch (jsonError) {
+						console.error(`Failed to parse JSON response from ${path}:`, jsonError);
+						return {};
+					}
+				}
+				
+				return response;
+			} catch (error) {
+				console.error(`Unexpected error in API call to ${path}:`, error);
+				return {};
 			}
-
-			return response;
 		},
 		[basePath],
 	);

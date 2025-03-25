@@ -1395,7 +1395,7 @@ function TabContentGenerateTextResult({
 		return (
 			<div className="grid gap-[12px] text-[12px] text-black-30 px-[24px] pt-[120px] relative z-10 text-center justify-center">
 				<div>
-					<p className="font-[800] text-black-30 text-[18px]">
+					<p className="font-[700] text-black-30 text-[18px]">
 						Nothing is generated.
 					</p>
 					<p className="text-black-70 text-[12px] text-center leading-5 w-[220px]">

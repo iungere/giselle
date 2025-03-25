@@ -22,7 +22,7 @@ export function OpenAIModelPanel({
 	const limits = useUsageLimits();
 
 	return (
-		<div className="flex flex-col gap-[34px]">
+		<div className="flex flex-col gap-[34px] px-[8px]">
 			<Select
 				value={openaiLanguageModel.id}
 				onValueChange={(value) => {
@@ -52,7 +52,7 @@ export function OpenAIModelPanel({
 				</SelectContent>
 			</Select>
 			<div>
-				<div className="grid grid-cols-2 gap-[24px]">
+				<div className="grid grid-cols-2 gap-[16px]">
 					<Slider
 						label="Temperature"
 						value={openaiLanguageModel.configurations.temperature}

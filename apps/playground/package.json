@@ -6,7 +6,7 @@
 	},
 	"private": true,
 	"scripts": {
-		"dev": "next dev --turbopack --port 6180",
+		"dev": "next dev --port 3000",
 		"clean": "rm -rf .next .turbo node_modules",
 		"build": "next build",
 		"start": "next start",
