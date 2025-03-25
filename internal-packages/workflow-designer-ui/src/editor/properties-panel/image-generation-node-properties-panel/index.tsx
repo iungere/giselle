@@ -109,10 +109,7 @@ export function ImageGenerationNodePropertiesPanel({
 				}
 			/>
 
-			<PanelGroup
-				direction="vertical"
-				className="flex-1 flex flex-col"
-			>
+			<PanelGroup direction="vertical" className="flex-1 flex flex-col">
 				<Panel>
 					<PropertiesPanelContent>
 						<Tabs.Root

@@ -22,6 +22,7 @@ function Empty({ onGenerate }: { onGenerate?: () => void }) {
 			>
 				{onGenerate && (
 					<button
+						type="button"
 						onClick={onGenerate}
 						className="flex items-center justify-center px-[24px] py-[12px] mt-[16px] bg-[#141519] text-white rounded-[9999px] border border-white-900/15 transition-all hover:bg-[#1e1f26] hover:border-white-900/25 hover:translate-y-[-1px] cursor-pointer font-hubot font-[500] text-[14px]"
 					>
@@ -76,9 +77,9 @@ export function GenerationPanel({ node }: { node: ImageGenerationNode }) {
 				},
 				actionNode: node,
 				sourceNodes: connectedSources.map(
-					(connectedSource) => connectedSource.node
+					(connectedSource) => connectedSource.node,
 				),
-			}).catch(error => {
+			}).catch((error) => {
 				console.error("Error during image generation:", error);
 			});
 		} catch (error) {

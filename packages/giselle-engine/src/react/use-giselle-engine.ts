@@ -122,11 +122,14 @@ export function useGiselleEngine(options?: FetchOptions): GiselleEngineClient {
 						const jsonData = await response.json();
 						return jsonData;
 					} catch (jsonError) {
-						console.error(`Failed to parse JSON response from ${path}:`, jsonError);
+						console.error(
+							`Failed to parse JSON response from ${path}:`,
+							jsonError,
+						);
 						return {};
 					}
 				}
-				
+
 				return response;
 			} catch (error) {
 				console.error(`Unexpected error in API call to ${path}:`, error);
