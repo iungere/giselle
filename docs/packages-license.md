@@ -2,7 +2,7 @@
 
 
 ## Summary
-* 1020 MIT
+* 1022 MIT
 * 105 Apache 2.0
 * 57 ISC
 * 34 New BSD
@@ -7129,6 +7129,17 @@ CC-BY-4.0 permitted
 
 
 
+<a name="fastparse"></a>
+### fastparse v1.1.2
+#### 
+
+##### Paths
+* /home/runner/work/giselle/giselle
+
+<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
+
+
+
 <a name="fastq"></a>
 ### fastq v1.18.0
 #### 
@@ -7714,6 +7725,17 @@ SIL OPEN FONT LICENSE permitted
 
 <a name="handlebars"></a>
 ### handlebars v4.7.8
+#### 
+
+##### Paths
+* /home/runner/work/giselle/giselle
+
+<a href="http://opensource.org/licenses/mit-license">MIT</a> permitted
+
+
+
+<a name="handlebars-loader"></a>
+### handlebars-loader v1.7.3
 #### 
 
 ##### Paths
@@ -8725,7 +8747,7 @@ BlueOak-1.0.0 permitted
 
 
 <a name="json5"></a>
-### json5 v2.2.3
+### json5 v1.0.2
 #### 
 
 ##### Paths
@@ -8923,7 +8945,7 @@ BlueOak-1.0.0 permitted
 
 
 <a name="loader-utils"></a>
-### loader-utils v2.0.4
+### loader-utils v1.4.2
 #### 
 
 ##### Paths
