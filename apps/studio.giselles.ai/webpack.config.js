@@ -1,18 +1,18 @@
-const path = require('path');
+const path = require("node:path");
 
 module.exports = {
   module: {
     rules: [
       {
         test: /\.handlebars$/,
-        loader: 'handlebars-loader',
+        loader: "handlebars-loader",
         options: {
-          helperDirs: [path.join(__dirname, 'src/helpers')],
+          helperDirs: [path.join(__dirname, "src/helpers")],
         },
       },
     ],
   },
   resolve: {
-    extensions: ['.js', '.ts', '.handlebars'],
+    extensions: [".js", ".ts", ".handlebars"],
   },
 }; 

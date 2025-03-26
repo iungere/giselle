@@ -514,7 +514,7 @@ importers:
         specifier: 144.0.0
         version: 144.0.0
       handlebars:
-        specifier: 4.7.8
+        specifier: ^4.7.8
         version: 4.7.8
       import-in-the-middle:
         specifier: 1.11.0
@@ -635,7 +635,7 @@ importers:
         specifier: 0.23.0
         version: 0.23.0
       handlebars-loader:
-        specifier: 1.7.3
+        specifier: ^1.7.3
         version: 1.7.3(handlebars@4.7.8)
       pino-pretty:
         specifier: 13.0.0
@@ -15631,7 +15631,7 @@ snapshots:
 
   jest-worker@27.5.1:
     dependencies:
-      '@types/node': 22.13.13
+      '@types/node': 22.10.5
       merge-stream: 2.0.0
       supports-color: 8.1.1
 
