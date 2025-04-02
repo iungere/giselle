@@ -77,15 +77,6 @@ export async function generateImage(args: {
 		startedAt: Date.now(),
 	} satisfies RunningGeneration;
 
-	const trace = langfuse.trace({
-		name: runningGeneration.id,
-		metadata: args.telemetry?.metadata,
-	});
-	const generation = trace.generation({
-		model: actionNode.content.llm.id,
-		modelParameters: actionNode.content.llm.configurations,
-	});
-
 	await Promise.all([
 		setGeneration({
 			storage: args.context.storage,
@@ -244,6 +235,16 @@ export async function generateImage(args: {
 			prompt += content.text;
 		}
 	}
+	const trace = langfuse.trace({
+		name: runningGeneration.id,
+		metadata: args.telemetry?.metadata,
+		input: { messages },
+	});
+	const generation = trace.generation({
+		model: actionNode.content.llm.id,
+		modelParameters: actionNode.content.llm.configurations,
+	});
+
 	const result = (await fal.subscribe(actionNode.content.llm.id, {
 		input: {
 			prompt,
@@ -258,9 +259,6 @@ export async function generateImage(args: {
 			num_images: actionNode.content.llm.configurations.n,
 		},
 	})) as unknown as FalImageResult;
-	trace.update({
-		input: { messages },
-	});
 
 	const generationOutputs: GenerationOutput[] = [];
 
