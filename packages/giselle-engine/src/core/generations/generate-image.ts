@@ -366,9 +366,8 @@ export async function generateImage(args: {
 						unit: "IMAGES",
 					},
 				});
+				generation.end();
 			}),
 		);
-
-		generation.end();
 	}
 }
