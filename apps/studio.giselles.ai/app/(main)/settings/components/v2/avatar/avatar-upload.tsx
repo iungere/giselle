@@ -11,8 +11,16 @@ import { useEffect, useRef, useState } from "react";
 
 const IMAGE_CONSTRAINTS = {
 	maxSize: 4 * 1024 * 1024,
-	formats: ["image/jpeg", "image/png", "image/webp"],
+	formats: [
+		"image/jpeg",
+		"image/png",
+		"image/gif",
+		"image/svg+xml",
+		"image/webp",
+	],
 };
+
+const ACCEPTED_FILE_TYPES = IMAGE_CONSTRAINTS.formats.join(",");
 
 interface AvatarUploadProps {
 	isOpen: boolean;
@@ -45,7 +53,7 @@ export function AvatarUpload({ isOpen, onClose, onUpload }: AvatarUploadProps) {
 		if (!file) return;
 
 		if (!IMAGE_CONSTRAINTS.formats.includes(file.type)) {
-			setError("Please select a JPG, PNG, or WebP image");
+			setError("Please select a JPG, PNG, GIF, SVG, or WebP image");
 			return;
 		}
 
@@ -64,10 +72,6 @@ export function AvatarUpload({ isOpen, onClose, onUpload }: AvatarUploadProps) {
 
 	const handleButtonClick = () => {
 		inputRef.current?.click();
-	};
-
-	const handleClose = () => {
-		onClose();
 	};
 
 	return (
@@ -90,7 +94,7 @@ export function AvatarUpload({ isOpen, onClose, onUpload }: AvatarUploadProps) {
 					<Input
 						ref={inputRef}
 						type="file"
-						accept="image/jpeg,image/png,image/webp"
+						accept={ACCEPTED_FILE_TYPES}
 						className="hidden"
 						onChange={handleFileSelect}
 					/>
