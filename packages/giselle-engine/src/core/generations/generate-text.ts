@@ -26,6 +26,7 @@ import {
 	appendResponseMessages,
 	streamText,
 } from "ai";
+import { Langfuse } from "langfuse";
 import { UsageLimitError } from "../error";
 import { filePath } from "../files/utils";
 import type { GiselleEngineContext } from "../types";
@@ -273,10 +274,26 @@ export async function generateText(args: {
 	//      }
 	// }
 
+	// Langfuseトレーサの作成
+	const langfuse = new Langfuse();
+	const trace = langfuse.trace({
+		name: "text-generation",
+		metadata: args.telemetry?.metadata,
+		input: { messages },
+	});
+
+	// 生成処理のトレース
+	const generation = trace.generation({
+		name: "text-generation.streamText",
+		model: actionNode.content.llm.id,
+		modelParameters: actionNode.content.llm.configurations,
+		input: { messages },
+	});
+
 	const streamTextResult = streamText({
 		model: generationModel(actionNode.content.llm),
 		messages,
-		maxSteps: 5, // enable multi-step calls
+		maxSteps: 5,
 		tools,
 		experimental_continueSteps: true,
 		onError: async ({ error }) => {
@@ -311,20 +328,9 @@ export async function generateText(args: {
 					}),
 				]);
 			}
+			generation.end();
 		},
 		async onFinish(event) {
-			// Transform usage if telemetry is enabled
-			console.log("args:", args);
-			const transformedEvent = {
-						...event,
-						usage: transformModelUsage(actionNode.content.llm.id, event.usage),
-					};
-
-			console.log(`[generate-text] Generation finished with event:`, {
-				finishReason: transformedEvent.finishReason,
-				usage: transformedEvent.usage,
-			});
-
 			const generationOutputs: GenerationOutput[] = [];
 			const generatedTextOutput =
 				runningGeneration.context.actionNode.outputs.find(
@@ -333,29 +339,26 @@ export async function generateText(args: {
 			if (generatedTextOutput !== undefined) {
 				generationOutputs.push({
 					type: "generated-text",
-					content: transformedEvent.text,
+					content: event.text,
 					outputId: generatedTextOutput.id,
 				});
 			}
 			const reasoningOutput = runningGeneration.context.actionNode.outputs.find(
 				(output) => output.accessor === "reasoning",
 			);
-			if (
-				reasoningOutput !== undefined &&
-				transformedEvent.reasoning !== undefined
-			) {
+			if (reasoningOutput !== undefined && event.reasoning !== undefined) {
 				generationOutputs.push({
 					type: "reasoning",
-					content: transformedEvent.reasoning,
+					content: event.reasoning,
 					outputId: reasoningOutput.id,
 				});
 			}
 			const sourceOutput = runningGeneration.context.actionNode.outputs.find(
 				(output) => output.accessor === "source",
 			);
-			if (sourceOutput !== undefined && transformedEvent.sources.length > 0) {
+			if (sourceOutput !== undefined && event.sources.length > 0) {
 				const sources = await Promise.all(
-					transformedEvent.sources.map(async (source) => {
+					event.sources.map(async (source) => {
 						if (isVertexAiHost(source.url)) {
 							const redirected = await getRedirectedUrlAndTitle(source.url);
 							return {
@@ -394,7 +397,7 @@ export async function generateText(args: {
 							content: "",
 						},
 					],
-					responseMessages: transformedEvent.response.messages,
+					responseMessages: event.response.messages,
 				}),
 			} satisfies CompletedGeneration;
 			await Promise.all([
@@ -423,13 +426,25 @@ export async function generateText(args: {
 				generation: completedGeneration,
 				onConsumeAgentTime: args.context.onConsumeAgentTime,
 			});
+
+			// Langfuseのトレーサでusageを更新
+			if (args.telemetry?.metadata) {
+				const transformedUsage = transformModelUsage(
+					actionNode.content.llm.id,
+					event.usage,
+				);
+				generation.update({
+					usage: transformedUsage,
+				});
+			}
+			generation.end();
 		},
 		experimental_telemetry: {
 			isEnabled: args.context.telemetry?.isEnabled,
 			metadata: args.telemetry?.metadata,
 		},
-
 	});
+
 	return streamTextResult;
 }
 
