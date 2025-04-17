@@ -21,6 +21,7 @@ import {
 import { githubTools, octokit } from "@giselle-sdk/github-tool";
 import {
 	AISDKError,
+	type TelemetrySettings as AITelemetrySettings,
 	type ToolSet,
 	appendResponseMessages,
 	streamText,
@@ -28,6 +29,7 @@ import {
 import { UsageLimitError } from "../error";
 import { filePath } from "../files/utils";
 import type { GiselleEngineContext } from "../types";
+import { transformModelUsage } from "./transform-usage";
 import type { TelemetrySettings } from "./types";
 import {
 	buildMessageObject,
@@ -227,48 +229,48 @@ export async function generateText(args: {
 	}
 
 	// if (
-	// 	actionNode.content.tools?.github &&
-	// 	args.context.integrationConfigs?.github
+	//      actionNode.content.tools?.github &&
+	//      args.context.integrationConfigs?.github
 	// ) {
-	// 	const auth = args.context.integrationConfigs.github.auth;
-	// 	switch (auth.strategy) {
-	// 		case "app-installation": {
-	// 			const installationId = await auth.resolver.installationIdForRepo(
-	// 				actionNode.content.tools.github.repositoryNodeId,
-	// 			);
-	// 			const allGitHubTools = githubTools(
-	// 				octokit({
-	// 					...auth,
-	// 					installationId,
-	// 				}),
-	// 			);
-	// 			for (const tool of actionNode.content.tools.github.tools) {
-	// 				if (tool in allGitHubTools) {
-	// 					tools = {
-	// 						...tools,
-	// 						[tool]: allGitHubTools[tool as keyof typeof allGitHubTools],
-	// 					};
-	// 				}
-	// 			}
-	// 			break;
-	// 		}
-	// 		case "personal-access-token": {
-	// 			const allGitHubTools = githubTools(octokit(auth));
-	// 			for (const tool of actionNode.content.tools.github.tools) {
-	// 				if (tool in allGitHubTools) {
-	// 					tools = {
-	// 						...tools,
-	// 						[tool]: allGitHubTools[tool as keyof typeof allGitHubTools],
-	// 					};
-	// 				}
-	// 			}
-	// 			break;
-	// 		}
-	// 		default: {
-	// 			const _exhaustiveCheck: never = auth;
-	// 			throw new Error(`Unhandled GitHub auth strategy: ${_exhaustiveCheck}`);
-	// 		}
-	// 	}
+	//      const auth = args.context.integrationConfigs.github.auth;
+	//      switch (auth.strategy) {
+	//              case "app-installation": {
+	//                      const installationId = await auth.resolver.installationIdForRepo(
+	//                              actionNode.content.tools.github.repositoryNodeId,
+	//                      );
+	//                      const allGitHubTools = githubTools(
+	//                              octokit({
+	//                                      ...auth,
+	//                                      installationId,
+	//                              }),
+	//                      );
+	//                      for (const tool of actionNode.content.tools.github.tools) {
+	//                              if (tool in allGitHubTools) {
+	//                                      tools = {
+	//                                              ...tools,
+	//                                              [tool]: allGitHubTools[tool as keyof typeof allGitHubTools],
+	//                                      };
+	//                              }
+	//                      }
+	//                      break;
+	//              }
+	//              case "personal-access-token": {
+	//                      const allGitHubTools = githubTools(octokit(auth));
+	//                      for (const tool of actionNode.content.tools.github.tools) {
+	//                              if (tool in allGitHubTools) {
+	//                                      tools = {
+	//                                              ...tools,
+	//                                              [tool]: allGitHubTools[tool as keyof typeof allGitHubTools],
+	//                                      };
+	//                              }
+	//                      }
+	//                      break;
+	//              }
+	//              default: {
+	//                      const _exhaustiveCheck: never = auth;
+	//                      throw new Error(`Unhandled GitHub auth strategy: ${_exhaustiveCheck}`);
+	//              }
+	//      }
 	// }
 
 	const streamTextResult = streamText({
@@ -311,6 +313,18 @@ export async function generateText(args: {
 			}
 		},
 		async onFinish(event) {
+			// Transform usage if telemetry is enabled
+			console.log("args:", args);
+			const transformedEvent = {
+						...event,
+						usage: transformModelUsage(actionNode.content.llm.id, event.usage),
+					};
+
+			console.log(`[generate-text] Generation finished with event:`, {
+				finishReason: transformedEvent.finishReason,
+				usage: transformedEvent.usage,
+			});
+
 			const generationOutputs: GenerationOutput[] = [];
 			const generatedTextOutput =
 				runningGeneration.context.actionNode.outputs.find(
@@ -319,28 +333,29 @@ export async function generateText(args: {
 			if (generatedTextOutput !== undefined) {
 				generationOutputs.push({
 					type: "generated-text",
-					content: event.text,
+					content: transformedEvent.text,
 					outputId: generatedTextOutput.id,
 				});
 			}
 			const reasoningOutput = runningGeneration.context.actionNode.outputs.find(
 				(output) => output.accessor === "reasoning",
 			);
-			if (reasoningOutput !== undefined && event.reasoning !== undefined) {
+			if (
+				reasoningOutput !== undefined &&
+				transformedEvent.reasoning !== undefined
+			) {
 				generationOutputs.push({
 					type: "reasoning",
-					content: event.reasoning,
+					content: transformedEvent.reasoning,
 					outputId: reasoningOutput.id,
 				});
 			}
 			const sourceOutput = runningGeneration.context.actionNode.outputs.find(
 				(output) => output.accessor === "source",
 			);
-			if (sourceOutput !== undefined && event.sources.length > 0) {
+			if (sourceOutput !== undefined && transformedEvent.sources.length > 0) {
 				const sources = await Promise.all(
-					event.sources.map(async (source) => {
-						// When using Gemini search grounding, source provides a proxy URL
-						// We need to access and resolve this proxy URL to get the actual redirect URL
+					transformedEvent.sources.map(async (source) => {
 						if (isVertexAiHost(source.url)) {
 							const redirected = await getRedirectedUrlAndTitle(source.url);
 							return {
@@ -379,7 +394,7 @@ export async function generateText(args: {
 							content: "",
 						},
 					],
-					responseMessages: event.response.messages,
+					responseMessages: transformedEvent.response.messages,
 				}),
 			} satisfies CompletedGeneration;
 			await Promise.all([
@@ -413,6 +428,7 @@ export async function generateText(args: {
 			isEnabled: args.context.telemetry?.isEnabled,
 			metadata: args.telemetry?.metadata,
 		},
+
 	});
 	return streamTextResult;
 }
@@ -445,9 +461,9 @@ function isVertexAiHost(urlString: string): boolean {
 	// Disabling Vertex AI URL redirection due to frequent errors. Will monitor the impact.
 	return false;
 	// try {
-	// 	const parsedUrl = new URL(urlString);
-	// 	return ["vertexaisearch.cloud.google.com"].includes(parsedUrl.host);
+	//      const parsedUrl = new URL(urlString);
+	//      return ["vertexaisearch.cloud.google.com"].includes(parsedUrl.host);
 	// } catch (e) {
-	// 	return false;
+	//      return false;
 	// }
 }

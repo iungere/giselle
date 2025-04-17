@@ -77,11 +77,13 @@ export function GiselleEngine(config: GiselleEngineConfig) {
 			generation: QueuedGeneration,
 			telemetry?: TelemetrySettings,
 		) => {
-			return await generateText({
+			const hoge = await generateText({
 				context,
 				generation,
 				telemetry,
 			});
+			console.log("generateText", hoge);
+			return hoge;
 		},
 		getGeneration: async (generationId: GenerationId) => {
 			return await getGeneration({ context, generationId });
