@@ -54,9 +54,11 @@ export function transformModelUsage(
 
 		return {
 			unit: "TOKENS",
-			totalTokens: usage.totalTokens,
-			[isShortInput ? "input_short" : "input_long"]: usage.promptTokens,
-			[isShortInput ? "output_short" : "output_long"]: usage.completionTokens,
+			total: usage.totalTokens,
+			input: 12345,
+			output: 54321,
+			// [isShortInput ? "input_short" : "input_long"]: usage.promptTokens,
+			// 			[isShortInput ? "output_short" : "output_long"]: usage.completionTokens,
 		};
 	}
 
