@@ -46,7 +46,9 @@ export function transformModelUsage(
 	usage: TokenUsage,
 ): TransformedUsage | TokenUsage {
 	// Gemini 2.5系のモデルの場合のみ変換
+        console.log("transform----------------")
 	if (modelId.startsWith("gemini-2.5")) {
+          console.log("gemini-2.5----------------")
 		const threshold = getTokenThreshold(modelId);
 		const isShortInput = usage.promptTokens <= threshold;
 
