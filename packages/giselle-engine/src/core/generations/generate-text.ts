@@ -30,6 +30,7 @@ import { filePath } from "../files/utils";
 import type { GiselleEngineContext } from "../types";
 import type { TelemetrySettings } from "./types";
 import {
+	addUsage,
 	buildMessageObject,
 	checkUsageLimits,
 	extractWorkspaceIdFromOrigin,
@@ -41,6 +42,12 @@ import {
 	setGenerationIndex,
 	setNodeGenerationIndex,
 } from "./utils";
+
+interface CompletedGenerationWithUsage extends CompletedGeneration {
+	usage?: {
+		apiCalls?: number;
+	};
+}
 
 export async function generateText(args: {
 	context: GiselleEngineContext;
@@ -311,6 +318,17 @@ export async function generateText(args: {
 			}
 		},
 		async onFinish(event) {
+			console.log("original usage:", event.usage);
+			const extendedEvent = {
+				...event,
+				usage: {
+					...event.usage,
+					...addUsage(actionNode.content.llm.provider),
+				},
+			};
+			console.log("updated usage:", extendedEvent.usage);
+			console.log("extendedEvent:", extendedEvent);
+
 			const generationOutputs: GenerationOutput[] = [];
 			const generatedTextOutput =
 				runningGeneration.context.actionNode.outputs.find(
@@ -319,26 +337,29 @@ export async function generateText(args: {
 			if (generatedTextOutput !== undefined) {
 				generationOutputs.push({
 					type: "generated-text",
-					content: event.text,
+					content: extendedEvent.text,
 					outputId: generatedTextOutput.id,
 				});
 			}
 			const reasoningOutput = runningGeneration.context.actionNode.outputs.find(
 				(output) => output.accessor === "reasoning",
 			);
-			if (reasoningOutput !== undefined && event.reasoning !== undefined) {
+			if (
+				reasoningOutput !== undefined &&
+				extendedEvent.reasoning !== undefined
+			) {
 				generationOutputs.push({
 					type: "reasoning",
-					content: event.reasoning,
+					content: extendedEvent.reasoning,
 					outputId: reasoningOutput.id,
 				});
 			}
 			const sourceOutput = runningGeneration.context.actionNode.outputs.find(
 				(output) => output.accessor === "source",
 			);
-			if (sourceOutput !== undefined && event.sources.length > 0) {
+			if (sourceOutput !== undefined && extendedEvent.sources.length > 0) {
 				const sources = await Promise.all(
-					event.sources.map(async (source) => {
+					extendedEvent.sources.map(async (source) => {
 						// When using Gemini search grounding, source provides a proxy URL
 						// We need to access and resolve this proxy URL to get the actual redirect URL
 						if (isVertexAiHost(source.url)) {
@@ -366,7 +387,7 @@ export async function generateText(args: {
 					sources,
 				});
 			}
-			const completedGeneration = {
+			const completedGeneration: CompletedGenerationWithUsage = {
 				...runningGeneration,
 				status: "completed",
 				completedAt: Date.now(),
@@ -379,9 +400,10 @@ export async function generateText(args: {
 							content: "",
 						},
 					],
-					responseMessages: event.response.messages,
+					responseMessages: extendedEvent.response.messages,
 				}),
-			} satisfies CompletedGeneration;
+				usage: extendedEvent.usage,
+			};
 			await Promise.all([
 				setGeneration({
 					storage: args.context.storage,

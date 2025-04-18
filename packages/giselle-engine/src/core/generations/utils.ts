@@ -749,3 +749,12 @@ export async function extractWorkspaceIdFromOrigin(args: {
 	}
 	return run.workspaceId;
 }
+
+export const addUsage = (provider: string) => {
+	switch (provider) {
+		case "perplexity":
+			return { apiCalls: 1 };
+		default:
+			return {};
+	}
+};
