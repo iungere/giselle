@@ -55,41 +55,41 @@ export function FalModelPanel({
 				</SelectContent>
 			</Select>
 
-			<div className="flex flex-col">
-				<div className="text-[14px] py-[1.5px]">Image Size</div>
-				<Select
-					value={languageModel.configurations.size}
-					onValueChange={(value) => {
-						onModelChange(
-							FalLanguageModelData.parse({
-								...languageModel,
-								configurations: {
-									...languageModel.configurations,
-									size: value,
-								},
-							}),
-						);
-					}}
-				>
-					<SelectTrigger>
-						<SelectValue placeholder="Select a Size" />
-					</SelectTrigger>
-					<SelectContent>
-						<SelectGroup>
-							{imageGenerationSizes.options.map((imageGenerationSize) => (
-								<SelectItem
-									key={imageGenerationSize}
-									value={imageGenerationSize}
-								>
-									{imageGenerationSize}
-								</SelectItem>
-							))}
-						</SelectGroup>
-					</SelectContent>
-				</Select>
-			</div>
-
 			<div className="grid grid-cols-2 gap-[24px]">
+				<div className="flex flex-col">
+					<div className="text-[14px] py-[1.5px]">Image Size</div>
+					<Select
+						value={languageModel.configurations.size}
+						onValueChange={(value) => {
+							onModelChange(
+								FalLanguageModelData.parse({
+									...languageModel,
+									configurations: {
+										...languageModel.configurations,
+										size: value,
+									},
+								}),
+							);
+						}}
+					>
+						<SelectTrigger>
+							<SelectValue placeholder="Select a Size" />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectGroup>
+								{imageGenerationSizes.options.map((imageGenerationSize) => (
+									<SelectItem
+										key={imageGenerationSize}
+										value={imageGenerationSize}
+									>
+										{imageGenerationSize}
+									</SelectItem>
+								))}
+							</SelectGroup>
+						</SelectContent>
+					</Select>
+				</div>
+
 				<Slider
 					label="Number of Images"
 					value={languageModel.configurations.n}
