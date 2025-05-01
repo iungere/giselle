@@ -57,9 +57,9 @@ export function OpenAIImageModelPanel({
 				</SelectContent>
 			</Select>
 
-			<div className="grid grid-cols-2 gap-[16px]">
-				<div className="space-y-[4px]">
-					<p>Size</p>
+			<div className="grid grid-cols-2 gap-[24px]">
+				<div className="flex flex-col">
+					<div className="text-[14px] py-[1.5px]">Size</div>
 					<Select
 						value={languageModel.configurations.size}
 						onValueChange={(value) => {
@@ -92,8 +92,8 @@ export function OpenAIImageModelPanel({
 					</Select>
 				</div>
 
-				<div className="space-y-[4px]">
-					<p>Quality</p>
+				<div className="flex flex-col">
+					<div className="text-[14px] py-[1.5px]">Quality</div>
 					<Select
 						value={languageModel.configurations.quality}
 						onValueChange={(value) => {
@@ -126,8 +126,8 @@ export function OpenAIImageModelPanel({
 					</Select>
 				</div>
 
-				<div className="space-y-[4px]">
-					<p>Background</p>
+				<div className="flex flex-col">
+					<div className="text-[14px] py-[1.5px]">Background</div>
 					<Select
 						value={languageModel.configurations.background}
 						onValueChange={(value) => {
@@ -160,8 +160,8 @@ export function OpenAIImageModelPanel({
 					</Select>
 				</div>
 
-				<div className="space-y-[4px]">
-					<p>Moderation</p>
+				<div className="flex flex-col">
+					<div className="text-[14px] py-[1.5px]">Moderation</div>
 					<Select
 						value={languageModel.configurations.moderation}
 						onValueChange={(value) => {
