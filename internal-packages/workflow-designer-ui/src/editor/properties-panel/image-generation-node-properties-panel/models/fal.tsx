@@ -26,36 +26,39 @@ export function FalModelPanel({
 
 	return (
 		<div className="flex flex-col gap-[34px]">
-			<Select
-				value={languageModel.id}
-				onValueChange={(value) => {
-					onModelChange(
-						FalLanguageModelData.parse({
-							...languageModel,
-							id: value,
-						}),
-					);
-				}}
-			>
-				<SelectTrigger>
-					<SelectValue placeholder="Select a LLM" />
-				</SelectTrigger>
-				<SelectContent>
-					<SelectGroup>
-						{falLanguageModels.map((falLanguageModel) => (
-							<SelectItem
-								key={falLanguageModel.id}
-								value={falLanguageModel.id}
-								disabled={!languageModelAvailable(falLanguageModel, limits)}
-							>
-								{falLanguageModel.id}
-							</SelectItem>
-						))}
-					</SelectGroup>
-				</SelectContent>
-			</Select>
-
 			<div className="grid grid-cols-2 gap-[24px]">
+				<div className="flex flex-col col-span-2">
+					<div className="text-[14px] py-[1.5px]">Model</div>
+					<Select
+						value={languageModel.id}
+						onValueChange={(value) => {
+							onModelChange(
+								FalLanguageModelData.parse({
+									...languageModel,
+									id: value,
+								}),
+							);
+						}}
+					>
+						<SelectTrigger className="border-[2px]">
+							<SelectValue placeholder="Select a LLM" />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectGroup>
+								{falLanguageModels.map((falLanguageModel) => (
+									<SelectItem
+										key={falLanguageModel.id}
+										value={falLanguageModel.id}
+										disabled={!languageModelAvailable(falLanguageModel, limits)}
+									>
+										{falLanguageModel.id}
+									</SelectItem>
+								))}
+							</SelectGroup>
+						</SelectContent>
+					</Select>
+				</div>
+
 				<div className="flex flex-col">
 					<div className="text-[14px] py-[1.5px]">Image Size</div>
 					<Select

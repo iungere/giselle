@@ -28,36 +28,39 @@ export function OpenAIImageModelPanel({
 
 	return (
 		<div className="flex flex-col gap-[34px]">
-			<Select
-				value={languageModel.id}
-				onValueChange={(value) => {
-					onModelChange(
-						OpenAIImageLanguageModelData.parse({
-							...languageModel,
-							id: value,
-						}),
-					);
-				}}
-			>
-				<SelectTrigger>
-					<SelectValue placeholder="Select a LLM" />
-				</SelectTrigger>
-				<SelectContent>
-					<SelectGroup>
-						{openaiImageModels.map((openaiImageModel) => (
-							<SelectItem
-								key={openaiImageModel.id}
-								value={openaiImageModel.id}
-								disabled={!languageModelAvailable(openaiImageModel, limits)}
-							>
-								{openaiImageModel.id}
-							</SelectItem>
-						))}
-					</SelectGroup>
-				</SelectContent>
-			</Select>
-
 			<div className="grid grid-cols-2 gap-[24px]">
+				<div className="flex flex-col col-span-2">
+					<div className="text-[14px] py-[1.5px]">Model</div>
+					<Select
+						value={languageModel.id}
+						onValueChange={(value) => {
+							onModelChange(
+								OpenAIImageLanguageModelData.parse({
+									...languageModel,
+									id: value,
+								}),
+							);
+						}}
+					>
+						<SelectTrigger className="border-[2px]">
+							<SelectValue placeholder="Select a LLM" />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectGroup>
+								{openaiImageModels.map((openaiImageModel) => (
+									<SelectItem
+										key={openaiImageModel.id}
+										value={openaiImageModel.id}
+										disabled={!languageModelAvailable(openaiImageModel, limits)}
+									>
+										{openaiImageModel.id}
+									</SelectItem>
+								))}
+							</SelectGroup>
+						</SelectContent>
+					</Select>
+				</div>
+
 				<div className="flex flex-col">
 					<div className="text-[14px] py-[1.5px]">Size</div>
 					<Select
