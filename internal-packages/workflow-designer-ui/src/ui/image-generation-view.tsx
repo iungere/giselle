@@ -41,7 +41,10 @@ function ImagePlaceholder() {
 	
 	return (
 		<div className="w-[240px] h-[240px] bg-[#BBC3D0] rounded-[8px] flex flex-col items-center justify-center">
-			<WilliIcon className="w-[24px] h-[24px] text-[#1E67E6] animate-pop-pop-1" />
+			<WilliIcon 
+				className="w-[24px] h-[24px] text-[#1E67E6] animate-bounce" 
+				style={{ animation: 'bounce 1.5s infinite ease-in-out' }}
+			/>
 			<div className="w-[180px] h-[4px] bg-black/40 rounded-full mt-4 overflow-hidden">
 				<div 
 					className="h-full bg-[#1E67E6] rounded-full transition-all duration-800 ease-in-out"
@@ -162,10 +165,10 @@ function ImageLightbox({
 					</div>
 					<button
 						onClick={onClose}
-						className="p-2 hover:bg-white/10 rounded transition-colors"
+						className="p-2 text-white bg-black/30 hover:bg-black/50 rounded-full transition-colors w-[30px] h-[30px] flex items-center justify-center"
 						title="Close"
 					>
-						✕
+						<span className="text-xl font-bold">✕</span>
 					</button>
 				</div>
 
@@ -204,28 +207,40 @@ export function ImageGenerationView({
 			// Set download start state
 			setDownloadingImages(prev => ({ ...prev, [filename]: true }));
 			
-			// New method: use fetch API to get image as blob
-			const response = await fetch(`${client.basePath}/${pathname}`);
+			// Get full image URL
+			const imageUrl = `${client.basePath}/${pathname}`;
+			
+			// Use fetch to get image as blob for better performance
+			const response = await fetch(imageUrl);
+			if (!response.ok) {
+				throw new Error(`Failed to fetch image: ${response.status} ${response.statusText}`);
+			}
+			
+			// Get image as blob
 			const blob = await response.blob();
 			
-			// Create URL from blob using browser's URL.createObjectURL
-			const url = window.URL.createObjectURL(blob);
+			// Create blob URL
+			const url = URL.createObjectURL(blob);
 			
-			// Create and click download link
+			// Create and trigger download
 			const a = document.createElement("a");
 			a.href = url;
 			a.download = filename;
 			document.body.appendChild(a);
 			a.click();
 			
-			// Cleanup
-			window.URL.revokeObjectURL(url);
-			document.body.removeChild(a);
+			// Clean up
+			setTimeout(() => {
+				URL.revokeObjectURL(url);
+				document.body.removeChild(a);
+			}, 100);
 		} catch (error) {
 			console.error("Download failed:", error);
 		} finally {
-			// Set download completion state
-			setDownloadingImages(prev => ({ ...prev, [filename]: false }));
+			// Short delay before changing download state to avoid UI flicker
+			setTimeout(() => {
+				setDownloadingImages(prev => ({ ...prev, [filename]: false }));
+			}, 500);
 		}
 	};
 
