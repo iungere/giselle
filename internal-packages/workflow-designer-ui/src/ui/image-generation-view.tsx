@@ -15,41 +15,41 @@ import { WilliIcon } from "../icons";
 function ImagePlaceholder() {
 	// Simulated progress state (0-100)
 	const [progress, setProgress] = useState(0);
-	
+
 	// Update progress over time
 	useEffect(() => {
 		// Initial progress from generation start (5-15%)
 		setProgress(Math.floor(Math.random() * 10) + 5);
-		
+
 		// Gradually increase progress
 		const interval = setInterval(() => {
-			setProgress(prev => {
+			setProgress((prev) => {
 				// Max 95% (100% only for completion)
 				if (prev >= 95) {
 					clearInterval(interval);
 					return 95;
 				}
-				
+
 				// Random progress speed changes (for realistic feeling)
 				const increment = Math.random() * 3 + 0.5;
 				return Math.min(95, prev + increment);
 			});
 		}, 800);
-		
+
 		return () => clearInterval(interval);
 	}, []);
-	
+
 	return (
 		<div className="w-[240px] h-[240px] bg-[#BBC3D0] rounded-[8px] flex flex-col items-center justify-center">
-			<WilliIcon 
-				className="w-[24px] h-[24px] text-[#1E67E6] animate-bounce" 
-				style={{ animation: 'bounce 1.5s infinite ease-in-out' }}
+			<WilliIcon
+				className="w-[24px] h-[24px] text-[#1E67E6] animate-bounce"
+				style={{ animation: "bounce 1.5s infinite ease-in-out" }}
 			/>
 			<div className="w-[180px] h-[4px] bg-black/40 rounded-full mt-4 overflow-hidden">
-				<div 
+				<div
 					className="h-full bg-[#1E67E6] rounded-full transition-all duration-800 ease-in-out"
 					style={{ width: `${progress}%` }}
-				></div>
+				/>
 			</div>
 			<p className="text-[14px] text-[#1E67E6]/80 mt-2">
 				{progress < 95 ? `${Math.floor(progress)}%...` : "Almost done..."}
@@ -69,7 +69,10 @@ function ImageLightbox({
 	onClose: () => void;
 }) {
 	// Track original image dimensions
-	const [originalSize, setOriginalSize] = useState<{ width: number; height: number } | null>(null);
+	const [originalSize, setOriginalSize] = useState<{
+		width: number;
+		height: number;
+	} | null>(null);
 	// Track zoom level (1 = actual size, 0.5 = half size, 2 = double size)
 	const [zoomLevel, setZoomLevel] = useState<number>(1);
 	// Track if we're showing actual pixels (1:1)
@@ -81,7 +84,7 @@ function ImageLightbox({
 		img.onload = () => {
 			setOriginalSize({
 				width: img.naturalWidth,
-				height: img.naturalHeight
+				height: img.naturalHeight,
 			});
 		};
 		img.src = imageUrl;
@@ -95,13 +98,13 @@ function ImageLightbox({
 
 	// Increase zoom level
 	const zoomIn = () => {
-		setZoomLevel(prev => Math.min(prev * 1.5, 5)); // Max 5x zoom
+		setZoomLevel((prev) => Math.min(prev * 1.5, 5)); // Max 5x zoom
 		setIsActualSize(true); // When manually zooming, we're in actual size mode
 	};
 
 	// Decrease zoom level
 	const zoomOut = () => {
-		setZoomLevel(prev => Math.max(prev / 1.5, 0.1)); // Min 0.1x zoom
+		setZoomLevel((prev) => Math.max(prev / 1.5, 0.1)); // Min 0.1x zoom
 	};
 
 	// Reset zoom to fit screen
@@ -110,31 +113,49 @@ function ImageLightbox({
 		setIsActualSize(false);
 	};
 
+	// Handle keyboard events
+	const handleKeyDown = (e: React.KeyboardEvent) => {
+		if (e.key === "Escape") {
+			onClose();
+		}
+	};
+
 	return (
 		<div
 			className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center overflow-hidden"
 			onClick={onClose}
+			onKeyDown={handleKeyDown}
+			aria-modal="true"
+			role="presentation"
 		>
-			<div 
-				className="relative overflow-auto" 
-				style={{ 
-					maxWidth: '90vw', 
-					maxHeight: '90vh',
-					cursor: 'move'
+			<div
+				className="relative overflow-auto"
+				style={{
+					maxWidth: "90vw",
+					maxHeight: "90vh",
+					cursor: "move",
 				}}
 				onClick={(e) => e.stopPropagation()} // Prevent closing when clicking the container
+				onKeyDown={(e) => e.stopPropagation()}
 			>
 				{originalSize && (
 					<img
 						src={imageUrl}
-						alt="Enlarged image"
+						alt="Enlarged view"
 						className={isActualSize ? "cursor-zoom-out" : "cursor-zoom-in"}
-						style={{ 
-							width: isActualSize ? `${originalSize.width * zoomLevel}px` : '100%',
-							height: isActualSize ? 'auto' : '100%',
-							objectFit: isActualSize ? 'none' : 'contain'
+						style={{
+							width: isActualSize
+								? `${originalSize.width * zoomLevel}px`
+								: "100%",
+							height: isActualSize ? "auto" : "100%",
+							objectFit: isActualSize ? "none" : "contain",
 						}}
 						onClick={toggleActualSize}
+						onKeyDown={(e) => {
+							if (e.key === "Enter" || e.key === " ") {
+								toggleActualSize();
+							}
+						}}
 					/>
 				)}
 
@@ -142,6 +163,7 @@ function ImageLightbox({
 				<div className="absolute top-[-40px] right-0 flex items-center gap-4 text-white">
 					<div className="flex items-center gap-2">
 						<button
+							type="button"
 							onClick={zoomOut}
 							className="p-2 hover:bg-white/10 rounded transition-colors"
 							title="Zoom out"
@@ -149,6 +171,7 @@ function ImageLightbox({
 							-
 						</button>
 						<button
+							type="button"
 							onClick={resetZoom}
 							className="p-2 hover:bg-white/10 rounded transition-colors"
 							title={isActualSize ? "Fit to screen" : "Actual size"}
@@ -156,6 +179,7 @@ function ImageLightbox({
 							{Math.round(zoomLevel * 100)}%
 						</button>
 						<button
+							type="button"
 							onClick={zoomIn}
 							className="p-2 hover:bg-white/10 rounded transition-colors"
 							title="Zoom in"
@@ -164,6 +188,7 @@ function ImageLightbox({
 						</button>
 					</div>
 					<button
+						type="button"
 						onClick={onClose}
 						className="p-2 text-white bg-black/30 hover:bg-black/50 rounded-full transition-colors w-[30px] h-[30px] flex items-center justify-center"
 						title="Close"
@@ -194,7 +219,9 @@ export function ImageGenerationView({
 	const client = useGiselleEngine();
 	const [lightboxImage, setLightboxImage] = useState<string | null>(null);
 	// Download state management
-	const [downloadingImages, setDownloadingImages] = useState<Record<string, boolean>>({});
+	const [downloadingImages, setDownloadingImages] = useState<
+		Record<string, boolean>
+	>({});
 
 	// Display error message
 	if (isFailedGeneration(generation)) {
@@ -205,30 +232,32 @@ export function ImageGenerationView({
 	const downloadImage = async (pathname: string, filename: string) => {
 		try {
 			// Set download start state
-			setDownloadingImages(prev => ({ ...prev, [filename]: true }));
-			
+			setDownloadingImages((prev) => ({ ...prev, [filename]: true }));
+
 			// Get full image URL
 			const imageUrl = `${client.basePath}/${pathname}`;
-			
+
 			// Use fetch to get image as blob for better performance
 			const response = await fetch(imageUrl);
 			if (!response.ok) {
-				throw new Error(`Failed to fetch image: ${response.status} ${response.statusText}`);
+				throw new Error(
+					`Failed to fetch image: ${response.status} ${response.statusText}`,
+				);
 			}
-			
+
 			// Get image as blob
 			const blob = await response.blob();
-			
+
 			// Create blob URL
 			const url = URL.createObjectURL(blob);
-			
+
 			// Create and trigger download
 			const a = document.createElement("a");
 			a.href = url;
 			a.download = filename;
 			document.body.appendChild(a);
 			a.click();
-			
+
 			// Clean up
 			setTimeout(() => {
 				URL.revokeObjectURL(url);
@@ -239,7 +268,7 @@ export function ImageGenerationView({
 		} finally {
 			// Short delay before changing download state to avoid UI flicker
 			setTimeout(() => {
-				setDownloadingImages(prev => ({ ...prev, [filename]: false }));
+				setDownloadingImages((prev) => ({ ...prev, [filename]: false }));
 			}, 500);
 		}
 	};
@@ -248,12 +277,13 @@ export function ImageGenerationView({
 	if (!isCompletedGeneration(generation)) {
 		// Get expected number of images from node settings
 		// default: 1 image
-		const expectedImageCount = generation.context.operationNode.content.llm?.configurations?.n || 1;
-		
+		const expectedImageCount =
+			generation.context.operationNode.content.llm?.configurations?.n || 1;
+
 		return (
 			<div className="flex gap-[12px] overflow-x-auto pb-2">
 				{Array.from({ length: expectedImageCount }).map((_, index) => (
-					<ImagePlaceholder key={index} />
+					<ImagePlaceholder key={`placeholder-${generation.id}-${index}`} />
 				))}
 			</div>
 		);
@@ -267,28 +297,34 @@ export function ImageGenerationView({
 					if (output.type !== "generated-image") {
 						return null;
 					}
-					
+
 					return (
 						<div key={output.outputId} className="flex gap-[12px]">
 							{output.contents.map((content) => {
 								const imageUrl = `${client.basePath}/${content.pathname}`;
 								const isDownloading = downloadingImages[content.filename];
-								
+
 								return (
-									<div 
+									<div
 										key={content.filename}
 										className="relative w-[240px] flex-shrink-0 group"
 									>
 										<img
 											src={imageUrl}
-											alt="generated image"
+											alt="Generated content"
 											className="w-full h-auto rounded-[8px] cursor-pointer"
 											onClick={() => setLightboxImage(imageUrl)}
+											onKeyDown={(e) => {
+												if (e.key === "Enter" || e.key === " ") {
+													setLightboxImage(imageUrl);
+												}
+											}}
 										/>
 										{/* Black overlay - shown on hover */}
 										<div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors duration-200 rounded-[8px]" />
 										<div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex gap-0.5 z-10">
 											<button
+												type="button"
 												onClick={(e) => {
 													e.stopPropagation();
 													downloadImage(content.pathname, content.filename);
@@ -304,6 +340,7 @@ export function ImageGenerationView({
 												)}
 											</button>
 											<button
+												type="button"
 												onClick={() => setLightboxImage(imageUrl)}
 												className="p-2 text-white hover:text-white/80 transition-all hover:-translate-y-0.5 duration-200"
 												title="Enlarge image"
@@ -328,4 +365,4 @@ export function ImageGenerationView({
 			)}
 		</>
 	);
-} 
+}
