@@ -5,32 +5,32 @@ import {
 	isFailedGeneration,
 } from "@giselle-sdk/data-type";
 import { useGiselleEngine } from "giselle-sdk/react";
-import { Download, ZoomIn } from "lucide-react";
+import { Download, Loader2, ZoomIn } from "lucide-react";
 import { useEffect, useState } from "react";
 import { WilliIcon } from "../icons";
 
 /**
- * 画像生成中のプレースホルダーを表示するコンポーネント
+ * Component to display placeholder during image generation
  */
 function ImagePlaceholder() {
-	// 模擬的な進捗状態（0-100）
+	// Simulated progress state (0-100)
 	const [progress, setProgress] = useState(0);
 	
-	// 時間経過で進捗を更新
+	// Update progress over time
 	useEffect(() => {
-		// 生成開始からの初期進捗（5-15%）
+		// Initial progress from generation start (5-15%)
 		setProgress(Math.floor(Math.random() * 10) + 5);
 		
-		// 進捗を徐々に上げていく
+		// Gradually increase progress
 		const interval = setInterval(() => {
 			setProgress(prev => {
-				// 最大95%まで（100%は完了時のみ）
+				// Max 95% (100% only for completion)
 				if (prev >= 95) {
 					clearInterval(interval);
 					return 95;
 				}
 				
-				// 進捗速度はランダムに変化（リアル感を出すため）
+				// Random progress speed changes (for realistic feeling)
 				const increment = Math.random() * 3 + 0.5;
 				return Math.min(95, prev + increment);
 			});
@@ -56,7 +56,7 @@ function ImagePlaceholder() {
 }
 
 /**
- * 画像ライトボックス（拡大表示）コンポーネント
+ * Lightbox component for enlarged image display
  */
 function ImageLightbox({
 	imageUrl,
@@ -65,30 +65,123 @@ function ImageLightbox({
 	imageUrl: string;
 	onClose: () => void;
 }) {
+	// Track original image dimensions
+	const [originalSize, setOriginalSize] = useState<{ width: number; height: number } | null>(null);
+	// Track zoom level (1 = actual size, 0.5 = half size, 2 = double size)
+	const [zoomLevel, setZoomLevel] = useState<number>(1);
+	// Track if we're showing actual pixels (1:1)
+	const [isActualSize, setIsActualSize] = useState<boolean>(false);
+
+	// Preload image to get dimensions
+	useEffect(() => {
+		const img = new Image();
+		img.onload = () => {
+			setOriginalSize({
+				width: img.naturalWidth,
+				height: img.naturalHeight
+			});
+		};
+		img.src = imageUrl;
+	}, [imageUrl]);
+
+	// Function to toggle between fit-to-screen and actual pixel size
+	const toggleActualSize = () => {
+		setIsActualSize(!isActualSize);
+		setZoomLevel(1); // Reset zoom when toggling
+	};
+
+	// Increase zoom level
+	const zoomIn = () => {
+		setZoomLevel(prev => Math.min(prev * 1.5, 5)); // Max 5x zoom
+		setIsActualSize(true); // When manually zooming, we're in actual size mode
+	};
+
+	// Decrease zoom level
+	const zoomOut = () => {
+		setZoomLevel(prev => Math.max(prev / 1.5, 0.1)); // Min 0.1x zoom
+	};
+
+	// Reset zoom to fit screen
+	const resetZoom = () => {
+		setZoomLevel(1);
+		setIsActualSize(false);
+	};
+
 	return (
 		<div
-			className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center"
+			className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center overflow-hidden"
 			onClick={onClose}
 		>
-			<div className="relative max-w-[90%] max-h-[90%]">
-				<img
-					src={imageUrl}
-					alt="Enlarged image"
-					className="max-w-full max-h-[90vh] object-contain"
-				/>
-				<button
-					onClick={onClose}
-					className="absolute top-[-40px] right-0 text-white p-2"
-				>
-					✕
-				</button>
+			<div 
+				className="relative overflow-auto" 
+				style={{ 
+					maxWidth: '90vw', 
+					maxHeight: '90vh',
+					cursor: 'move'
+				}}
+				onClick={(e) => e.stopPropagation()} // Prevent closing when clicking the container
+			>
+				{originalSize && (
+					<img
+						src={imageUrl}
+						alt="Enlarged image"
+						className={isActualSize ? "cursor-zoom-out" : "cursor-zoom-in"}
+						style={{ 
+							width: isActualSize ? `${originalSize.width * zoomLevel}px` : '100%',
+							height: isActualSize ? 'auto' : '100%',
+							objectFit: isActualSize ? 'none' : 'contain'
+						}}
+						onClick={toggleActualSize}
+					/>
+				)}
+
+				{/* Controls */}
+				<div className="absolute top-[-40px] right-0 flex items-center gap-4 text-white">
+					<div className="flex items-center gap-2">
+						<button
+							onClick={zoomOut}
+							className="p-2 hover:bg-white/10 rounded transition-colors"
+							title="Zoom out"
+						>
+							-
+						</button>
+						<button
+							onClick={resetZoom}
+							className="p-2 hover:bg-white/10 rounded transition-colors"
+							title={isActualSize ? "Fit to screen" : "Actual size"}
+						>
+							{Math.round(zoomLevel * 100)}%
+						</button>
+						<button
+							onClick={zoomIn}
+							className="p-2 hover:bg-white/10 rounded transition-colors"
+							title="Zoom in"
+						>
+							+
+						</button>
+					</div>
+					<button
+						onClick={onClose}
+						className="p-2 hover:bg-white/10 rounded transition-colors"
+						title="Close"
+					>
+						✕
+					</button>
+				</div>
+
+				{/* Image size info */}
+				{originalSize && (
+					<div className="absolute bottom-[-30px] left-0 text-white text-sm opacity-70">
+						{originalSize.width} × {originalSize.height}px
+					</div>
+				)}
 			</div>
 		</div>
 	);
 }
 
 /**
- * 画像生成用の表示コンポーネント
+ * Display component for image generation
  */
 export function ImageGenerationView({
 	generation,
@@ -97,26 +190,49 @@ export function ImageGenerationView({
 }) {
 	const client = useGiselleEngine();
 	const [lightboxImage, setLightboxImage] = useState<string | null>(null);
+	// Download state management
+	const [downloadingImages, setDownloadingImages] = useState<Record<string, boolean>>({});
 
-	// エラー時のメッセージ表示
+	// Display error message
 	if (isFailedGeneration(generation)) {
 		return <div className="text-red-500">{generation.error.message}</div>;
 	}
 
-	// 画像ダウンロード処理
-	const downloadImage = (pathname: string, filename: string) => {
-		const a = document.createElement("a");
-		a.href = `${client.basePath}/${pathname}`;
-		a.download = filename;
-		document.body.appendChild(a);
-		a.click();
-		document.body.removeChild(a);
+	// Image download handling
+	const downloadImage = async (pathname: string, filename: string) => {
+		try {
+			// Set download start state
+			setDownloadingImages(prev => ({ ...prev, [filename]: true }));
+			
+			// New method: use fetch API to get image as blob
+			const response = await fetch(`${client.basePath}/${pathname}`);
+			const blob = await response.blob();
+			
+			// Create URL from blob using browser's URL.createObjectURL
+			const url = window.URL.createObjectURL(blob);
+			
+			// Create and click download link
+			const a = document.createElement("a");
+			a.href = url;
+			a.download = filename;
+			document.body.appendChild(a);
+			a.click();
+			
+			// Cleanup
+			window.URL.revokeObjectURL(url);
+			document.body.removeChild(a);
+		} catch (error) {
+			console.error("Download failed:", error);
+		} finally {
+			// Set download completion state
+			setDownloadingImages(prev => ({ ...prev, [filename]: false }));
+		}
 	};
 
-	// 生成完了していない場合はプレースホルダーを表示
+	// Show placeholders when generation is not completed
 	if (!isCompletedGeneration(generation)) {
-		// 画像生成ノードの設定から予想される生成枚数を取得
-		// default: 1枚
+		// Get expected number of images from node settings
+		// default: 1 image
 		const expectedImageCount = generation.context.operationNode.content.llm?.configurations?.n || 1;
 		
 		return (
@@ -128,7 +244,7 @@ export function ImageGenerationView({
 		);
 	}
 
-	// 完了した生成結果の表示
+	// Display completed generation results
 	return (
 		<>
 			<div className="flex gap-[12px] overflow-x-auto pb-2">
@@ -141,6 +257,7 @@ export function ImageGenerationView({
 						<div key={output.outputId} className="flex gap-[12px]">
 							{output.contents.map((content) => {
 								const imageUrl = `${client.basePath}/${content.pathname}`;
+								const isDownloading = downloadingImages[content.filename];
 								
 								return (
 									<div 
@@ -153,7 +270,7 @@ export function ImageGenerationView({
 											className="w-full h-auto rounded-[8px] cursor-pointer"
 											onClick={() => setLightboxImage(imageUrl)}
 										/>
-										{/* 黒色オーバーレイ - ホバー時に表示 */}
+										{/* Black overlay - shown on hover */}
 										<div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors duration-200 rounded-[8px]" />
 										<div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex gap-0.5 z-10">
 											<button
@@ -161,10 +278,15 @@ export function ImageGenerationView({
 													e.stopPropagation();
 													downloadImage(content.pathname, content.filename);
 												}}
-												className="p-2 text-white hover:text-white/80 transition-all hover:-translate-y-0.5 duration-200"
+												className="p-2 text-white hover:text-white/80 transition-all hover:-translate-y-0.5 duration-200 disabled:opacity-50 disabled:hover:translate-y-0"
 												title="Download image"
+												disabled={isDownloading}
 											>
-												<Download className="w-4 h-4" />
+												{isDownloading ? (
+													<Loader2 className="w-4 h-4 animate-spin" />
+												) : (
+													<Download className="w-4 h-4" />
+												)}
 											</button>
 											<button
 												onClick={() => setLightboxImage(imageUrl)}
@@ -182,7 +304,7 @@ export function ImageGenerationView({
 				})}
 			</div>
 
-			{/* ライトボックス表示 */}
+			{/* Lightbox display */}
 			{lightboxImage && (
 				<ImageLightbox
 					imageUrl={lightboxImage}
