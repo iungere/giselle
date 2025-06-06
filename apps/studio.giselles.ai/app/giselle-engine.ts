@@ -60,6 +60,11 @@ export const giselleEngine = NextGiselleEngine({
 	telemetry: {
 		isEnabled: true,
 		waitForFlushFn: waitForLangfuseFlush,
+		metadata: {
+			...(process.env.VERCEL_DEPLOYMENT_ID && {
+				deploymentId: process.env.VERCEL_DEPLOYMENT_ID,
+			}),
+		},
 	},
 	fetchUsageLimitsFn: fetchUsageLimits,
 	sampleAppWorkspaceId,
