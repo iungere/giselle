@@ -148,6 +148,9 @@ export async function emitTelemetry(
 		}
 
 		const trace = langfuse.trace({
+			...(options?.telemetry?.userId && {
+				userId: String(options.telemetry.userId),
+			}),
 			name: "llm-generation",
 			input,
 			tags: generateTelemetryTags({
