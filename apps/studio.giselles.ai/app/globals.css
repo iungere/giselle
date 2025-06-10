@@ -467,7 +467,8 @@
 
 	/* Auth Container Styles */
 	.auth-main-title {
-		@apply text-[34px] font-[500] text-primary-100 font-sans text-center;
+		@apply text-[34px] font-[500] font-sans text-center;
+		color: hsl(192, 73%, 84%);
 		text-shadow: 0px 0px 20px #0087f6;
 	}
 
@@ -475,26 +476,26 @@
 		@apply relative w-full max-w-[360px] rounded-2xl pt-15 pb-7.5 px-10 flex flex-col shadow-lg shadow-black/30;
 		background: linear-gradient(
 			to bottom,
-			rgba(255, 255, 255, 0.05),
-			rgba(255, 255, 255, 0)
+			rgba(255, 255, 255, 0.08),
+			rgba(255, 255, 255, 0.02)
 		);
-		border: 1px solid transparent;
+		border: 1px solid rgba(255, 255, 255, 0.15);
 		background-clip: padding-box;
 		position: relative;
 
 		/* Fallback for browsers without backdrop-filter support */
-		background-color: rgba(255, 255, 255, 0.1);
+		background-color: rgba(30, 41, 59, 0.4);
 
 		/* Modern browsers with backdrop-filter support */
 		@supports (backdrop-filter: blur(8px)) or
 			(-webkit-backdrop-filter: blur(8px)) {
-			backdrop-filter: blur(8px);
-			-webkit-backdrop-filter: blur(8px);
-			background-color: transparent;
+			backdrop-filter: blur(12px);
+			-webkit-backdrop-filter: blur(12px);
+			background-color: rgba(30, 41, 59, 0.2);
 			background-image: linear-gradient(
 				to bottom,
-				rgba(255, 255, 255, 0.05),
-				rgba(255, 255, 255, 0)
+				rgba(255, 255, 255, 0.08),
+				rgba(255, 255, 255, 0.02)
 			);
 		}
 	}
