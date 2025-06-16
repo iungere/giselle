@@ -12,10 +12,12 @@ export type TooltipProps = Omit<
 	delayDuration?: number;
 	className?: string;
 	variant?: "light" | "dark";
+	side?: "top" | "right" | "bottom" | "left";
 };
 
 export function Tooltip({
 	text,
+	side = "top",
 	sideOffset = 8,
 	delayDuration = 300,
 	className,
@@ -36,6 +38,7 @@ export function Tooltip({
 							className,
 						)}
 						sideOffset={sideOffset}
+						side={side}
 					>
 						{text}
 						<TooltipPrimitive.Arrow

@@ -26,15 +26,22 @@ import {
 import { Background } from "../ui/background";
 import { ReadOnlyBanner } from "../ui/read-only-banner";
 import { ToastProvider, useToasts } from "../ui/toast";
+import { CanvasHeader } from "./canvas-header/index";
 import { edgeTypes } from "./connector";
 import { type ConnectorType, GradientDef } from "./connector/component";
 import { ContextMenu } from "./context-menu";
 import type { ContextMenuProps } from "./context-menu/types";
+import { DrawerContext, type DrawerPanel } from "./context/drawer-context";
+import {
+	EditorTabContext,
+	type EditorTabValue,
+} from "./context/editor-tab-context";
 import { DataSourceTable } from "./data-source";
 import { KeyboardShortcuts } from "./keyboard-shortcuts";
+import { LeftIconBar } from "./left-icon-bar";
 import { type GiselleWorkflowDesignerNode, nodeTypes } from "./node";
 import { PropertiesPanel } from "./properties-panel";
-import { RunButton } from "./run-button";
+import { RunHistoryPlaceholder } from "./run-history-placeholder";
 import { SecretTable } from "./secret/secret-table";
 import { SideMenu } from "./side-menu";
 import {
@@ -232,7 +239,8 @@ function NodeCanvas() {
 		return true;
 	};
 
-	const { sidemenu } = useFeatureFlag();
+	const { sidemenu: _sidemenuFlag } = useFeatureFlag();
+	const sidemenu = false; // Temporarily disable side menu as per request
 
 	return (
 		<ReactFlow<GiselleWorkflowDesignerNode, ConnectorType>
@@ -363,11 +371,6 @@ function NodeCanvas() {
 			<XYFlowPanel position={"bottom-center"}>
 				<Toolbar />
 			</XYFlowPanel>
-			{sidemenu && (
-				<XYFlowPanel position="top-right">
-					<RunButton />
-				</XYFlowPanel>
-			)}
 			{menu && <ContextMenu {...menu} onClose={() => setMenu(null)} />}
 		</ReactFlow>
 	);
@@ -376,9 +379,11 @@ function NodeCanvas() {
 export function Editor({
 	isReadOnly = false,
 	userRole = "viewer",
+	teamName,
 }: {
 	isReadOnly?: boolean;
 	userRole?: "viewer" | "guest" | "editor" | "owner";
+	teamName?: string;
 }) {
 	const { data } = useWorkflowDesigner();
 	const selectedNodes = useMemo(
@@ -390,6 +395,7 @@ export function Editor({
 		[data],
 	);
 	const rightPanelRef = useRef<ImperativePanelHandle>(null);
+	const [panel, setPanel] = useState<DrawerPanel>(null);
 	const rightPanelWidthMotionValue = useSpring(0, {
 		stiffness: 500,
 		damping: 50,
@@ -443,159 +449,242 @@ export function Editor({
 		setShowReadOnlyBanner(false);
 	}, []);
 
-	const { sidemenu } = useFeatureFlag();
+	const { sidemenu: _sidemenuFlag } = useFeatureFlag();
+	const sidemenu = false; // Temporarily disable side menu as per request
+
+	const [tab, setTab] = useState<EditorTabValue>("builder");
 
 	if (sidemenu) {
 		return (
-			<div className="flex-1 overflow-hidden font-sans pl-[16px]">
-				{showReadOnlyBanner && isReadOnly && (
-					<ReadOnlyBanner
-						onDismiss={handleDismissBanner}
-						userRole={userRole}
-						className="z-50"
-					/>
-				)}
+			<EditorTabContext.Provider value={{ tab, setTab }}>
+				<DrawerContext.Provider value={{ panel, setPanel }}>
+					<div className="flex-1 overflow-hidden font-sans pl-[16px]">
+						<LeftIconBar />
+						{showReadOnlyBanner && isReadOnly && (
+							<ReadOnlyBanner
+								onDismiss={handleDismissBanner}
+								userRole={userRole}
+								className="z-50"
+							/>
+						)}
 
-				<ToastProvider>
-					<ReactFlowProvider>
-						<ToolbarContextProvider>
-							<MousePositionProvider>
-								<Tabs.Root defaultValue="builder" asChild>
-									<PanelGroup
-										direction="horizontal"
-										className="bg-black-900 h-full flex pr-[16px] py-[16px]"
-									>
-										<Panel defaultSize={10}>
-											<SideMenu />
-										</Panel>
-
-										<PanelResizeHandle
-											className={clsx(
-												"group pt-[16px] pb-[32px] h-full pl-[3px]",
-											)}
+						<ToastProvider>
+							<ReactFlowProvider>
+								<ToolbarContextProvider>
+									<MousePositionProvider>
+										<KeyboardShortcuts />
+										<Tabs.Root
+											value={tab}
+											onValueChange={(v) => setTab(v as EditorTabValue)}
+											asChild
 										>
-											<div className="w-[2px] h-full bg-transparent group-data-[resize-handle-state=hover]:bg-black-400 group-data-[resize-handle-state=drag]:bg-black-400 transition-colors" />
-										</PanelResizeHandle>
-										<Panel className="flex-1 border border-border rounded-[12px]">
-											<Tabs.Content value="builder" className="h-full">
-												<PanelGroup direction="horizontal">
-													<Panel>
-														<NodeCanvas />
+											<div className="flex flex-col h-full">
+												<CanvasHeader teamName={teamName} />
+												<PanelGroup
+													direction="horizontal"
+													className="bg-black-900 h-full flex pt-[16px] flex-1"
+												>
+													<Panel defaultSize={10}>
+														<SideMenu />
 													</Panel>
+
 													<PanelResizeHandle
 														className={clsx(
-															"w-[1px] bg-border cursor-col-resize",
-															"data-[resize-handle-state=hover]:bg-[#4a90e2]",
-															"opacity-0 data-[right-panel=show]:opacity-100 transition-opacity",
+															"group pt-[16px] pb-[32px] h-full pl-[3px]",
 														)}
-														data-right-panel={
-															selectedNodes.length === 1 ? "show" : "hide"
-														}
-													/>
-													<Panel
-														id="right-panel"
-														className="flex bg-surface-background"
-														ref={rightPanelRef}
-														defaultSize={0}
-														data-right-panel={
-															selectedNodes.length === 1 ? "show" : "hide"
-														}
 													>
-														{selectedNodes.length === 1 && (
-															<div className="flex-1 overflow-hidden">
-																<PropertiesPanel />
-															</div>
-														)}
+														<div className="w-[2px] h-full bg-transparent group-data-[resize-handle-state=hover]:bg-black-400 group-data-[resize-handle-state=drag]:bg-black-400 transition-colors" />
+													</PanelResizeHandle>
+													<Panel className="flex-1 rounded-[12px] overflow-hidden">
+														<Tabs.Content value="builder" className="h-full">
+															<PanelGroup direction="horizontal">
+																<Panel>
+																	<NodeCanvas />
+																</Panel>
+																<PanelResizeHandle
+																	className={clsx(
+																		"w-[1px] bg-border cursor-col-resize",
+																		"data-[resize-handle-state=hover]:bg-[#4a90e2]",
+																		"opacity-0 data-[right-panel=show]:opacity-100 transition-opacity",
+																	)}
+																	data-right-panel={
+																		selectedNodes.length === 1 ? "show" : "hide"
+																	}
+																/>
+																<Panel
+																	id="right-panel"
+																	className="flex bg-surface-background"
+																	ref={rightPanelRef}
+																	defaultSize={0}
+																	data-right-panel={
+																		selectedNodes.length === 1 ? "show" : "hide"
+																	}
+																>
+																	{selectedNodes.length === 1 && (
+																		<div className="flex-1 overflow-hidden">
+																			<PropertiesPanel />
+																		</div>
+																	)}
+																</Panel>
+															</PanelGroup>
+														</Tabs.Content>
+														<Tabs.Content
+															value="run-history"
+															className="h-full outline-none"
+														>
+															<RunHistoryPlaceholder />
+														</Tabs.Content>
+														<Tabs.Content
+															value="secret"
+															className="h-full outline-none"
+														>
+															<SecretTable />
+														</Tabs.Content>
+														<Tabs.Content
+															value="datasource"
+															className="h-full outline-none"
+														>
+															<DataSourceTable />
+														</Tabs.Content>
 													</Panel>
 												</PanelGroup>
-											</Tabs.Content>
-											<Tabs.Content
-												value="secret"
-												className="h-full outline-none"
-											>
-												<SecretTable />
-											</Tabs.Content>
-											<Tabs.Content
-												value="datasource"
-												className="h-full outline-none"
-											>
-												<DataSourceTable />
-											</Tabs.Content>
-										</Panel>
-									</PanelGroup>
-								</Tabs.Root>
-								<KeyboardShortcuts />
-							</MousePositionProvider>
-						</ToolbarContextProvider>
-						<GradientDef />
-					</ReactFlowProvider>
-				</ToastProvider>
-				<WorkspaceTour
-					steps={tourSteps}
-					isOpen={isTourOpen}
-					onOpenChange={setIsTourOpen}
-				/>
-			</div>
+											</div>
+										</Tabs.Root>
+									</MousePositionProvider>
+								</ToolbarContextProvider>
+								<GradientDef />
+							</ReactFlowProvider>
+						</ToastProvider>
+						<WorkspaceTour
+							steps={tourSteps}
+							isOpen={isTourOpen}
+							onOpenChange={setIsTourOpen}
+						/>
+					</div>
+				</DrawerContext.Provider>
+			</EditorTabContext.Provider>
 		);
 	}
 	return (
-		<div className="flex-1 overflow-hidden font-sans">
-			{showReadOnlyBanner && isReadOnly && (
-				<ReadOnlyBanner
-					onDismiss={handleDismissBanner}
-					userRole={userRole}
-					className="z-50"
-				/>
-			)}
+		<EditorTabContext.Provider value={{ tab, setTab }}>
+			<DrawerContext.Provider value={{ panel, setPanel }}>
+				<div className="flex-1 overflow-hidden font-sans pl-[44px]">
+					<LeftIconBar />
+					{showReadOnlyBanner && isReadOnly && (
+						<ReadOnlyBanner
+							onDismiss={handleDismissBanner}
+							userRole={userRole}
+							className="z-50"
+						/>
+					)}
 
-			<ToastProvider>
-				<ReactFlowProvider>
-					<ToolbarContextProvider>
-						<MousePositionProvider>
-							<PanelGroup
-								direction="horizontal"
-								className="bg-black-900 h-full flex"
-							>
-								<Panel
-									className="flex-1 px-[16px] pb-[16px] pr-0"
-									defaultSize={100}
-								>
-									<div className="h-full flex">
-										<NodeCanvas />
-									</div>
-								</Panel>
+					<ToastProvider>
+						<ReactFlowProvider>
+							<ToolbarContextProvider>
+								<MousePositionProvider>
+									<KeyboardShortcuts />
+									<Tabs.Root
+										value={tab}
+										onValueChange={(v) => setTab(v as EditorTabValue)}
+										asChild
+									>
+										<div className="flex flex-col h-full">
+											<CanvasHeader teamName={teamName} />
+											<PanelGroup
+												direction="horizontal"
+												className="bg-black-900 h-full flex"
+											>
+												<Panel className="flex-1 rounded-[12px] overflow-hidden">
+													<Tabs.Content value="builder" className="h-full">
+														<PanelGroup direction="horizontal">
+															<Panel
+																className="flex-1 pl-0 pb-[16px] pr-0"
+																defaultSize={100}
+															>
+																<div className="h-full flex">
+																	<NodeCanvas />
+																</div>
+															</Panel>
 
-								<PanelResizeHandle
-									className={clsx(
-										"w-[12px] flex items-center justify-center cursor-col-resize",
-										"after:content-[''] after:w-[3px] after:h-[32px] after:bg-[#3a3f44] after:rounded-full",
-										"hover:after:bg-[#4a90e2]",
-									)}
-								/>
-								<Panel
-									id="right-panel"
-									className="flex py-[16px]"
-									ref={rightPanelRef}
-									defaultSize={0}
-								>
-									{selectedNodes.length === 1 && (
-										<div className="flex-1 overflow-hidden">
-											<PropertiesPanel />
+															<PanelResizeHandle
+																className={clsx(
+																	"w-[12px] flex items-center justify-center cursor-col-resize",
+																	"after:content-[''] after:w-[3px] after:h-[32px] after:bg-[#3a3f44] after:rounded-full",
+																	"hover:after:bg-[#4a90e2]",
+																)}
+															/>
+															<Panel
+																id="right-panel"
+																className="flex py-[16px]"
+																ref={rightPanelRef}
+																defaultSize={0}
+															>
+																{selectedNodes.length === 1 && (
+																	<div className="flex-1 overflow-hidden">
+																		<PropertiesPanel />
+																	</div>
+																)}
+															</Panel>
+														</PanelGroup>
+													</Tabs.Content>
+													<Tabs.Content
+														value="run-history"
+														className="h-full outline-none"
+													>
+														<RunHistoryPlaceholder />
+													</Tabs.Content>
+													<Tabs.Content
+														value="secret"
+														className="h-full outline-none"
+													>
+														<SecretTable />
+													</Tabs.Content>
+													<Tabs.Content
+														value="datasource"
+														className="h-full outline-none"
+													>
+														<DataSourceTable />
+													</Tabs.Content>
+												</Panel>
+											</PanelGroup>
 										</div>
-									)}
-								</Panel>
-							</PanelGroup>
-							<KeyboardShortcuts />
-						</MousePositionProvider>
-					</ToolbarContextProvider>
-					<GradientDef />
-				</ReactFlowProvider>
-			</ToastProvider>
-			<WorkspaceTour
-				steps={tourSteps}
-				isOpen={isTourOpen}
-				onOpenChange={setIsTourOpen}
-			/>
-		</div>
+									</Tabs.Root>
+								</MousePositionProvider>
+							</ToolbarContextProvider>
+							<GradientDef />
+						</ReactFlowProvider>
+					</ToastProvider>
+					<WorkspaceTour
+						steps={tourSteps}
+						isOpen={isTourOpen}
+						onOpenChange={setIsTourOpen}
+					/>
+					{/* Left Drawer */}
+					{panel && (
+						<div className="fixed left-[44px] top-[54px] bottom-0 w-[360px] bg-black-925 border-r border-black-700 z-50 flex flex-col">
+							<div className="flex items-center justify-between h-[48px] px-[16px] border-b border-black-700">
+								<p className="text-white-950 font-medium text-[14px] capitalize">
+									{panel === "run-history" && "Run history"}
+									{panel === "secret" && "Secrets"}
+									{panel === "datasource" && "Data source"}
+								</p>
+								<button
+									type="button"
+									className="text-white-900 hover:text-white-950"
+									onClick={() => setPanel(null)}
+								>
+									×
+								</button>
+							</div>
+							<div className="flex-1 overflow-auto">
+								{panel === "run-history" && <RunHistoryPlaceholder />}
+								{panel === "secret" && <SecretTable />}
+								{panel === "datasource" && <DataSourceTable />}
+							</div>
+						</div>
+					)}
+				</div>
+			</DrawerContext.Provider>
+		</EditorTabContext.Provider>
 	);
 }
