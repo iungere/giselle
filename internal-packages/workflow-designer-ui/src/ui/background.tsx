@@ -279,8 +279,15 @@ export function Background() {
 		resizeCanvas();
 		window.addEventListener("resize", resizeCanvas);
 
+		// Observe container size changes to ensure canvas resizes when layout adjustments occur
+		const resizeObserver = new ResizeObserver(() => {
+			resizeCanvas();
+		});
+		resizeObserver.observe(container);
+
 		return () => {
 			window.removeEventListener("resize", resizeCanvas);
+			resizeObserver.disconnect();
 			// Clean up WebGL resources
 			gl.deleteProgram(dotProgram);
 			gl.deleteProgram(lineProgram);
