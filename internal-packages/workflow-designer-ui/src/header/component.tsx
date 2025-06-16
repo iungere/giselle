@@ -110,7 +110,7 @@ function Trigger() {
 															triggerNodeDefaultName(
 																triggerNode.content.provider,
 															)}{" "}
-														<span className="text-[10px] text-white-300 font-mono">
+														<span className="text-[10px] text-white-300 font-sans">
 															(id:{triggerNode.id.substring(3, 11)})
 														</span>
 													</span>

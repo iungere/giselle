@@ -56,7 +56,7 @@ export function ShareModal({
 							style={{
 								color: "var(--primary100, #B8E8F4)",
 								textShadow: "0px 0px 10px #0087F6",
-								fontFamily: '"Hubot Sans"',
+								fontFamily: "var(--font-dm-sans)",
 								fontSize: "24px",
 								fontStyle: "normal",
 								fontWeight: 600,
@@ -71,7 +71,7 @@ export function ShareModal({
 								type="button"
 								style={{
 									color: "var(--primary100, #B8E8F4)",
-									fontFamily: '"Hubot Sans"',
+									fontFamily: "var(--font-dm-sans)",
 									fontSize: "14px",
 									fontStyle: "normal",
 									fontWeight: 700,
@@ -107,7 +107,7 @@ export function ShareModal({
 						<h3
 							style={{
 								color: "var(--white-850, #F5F5F5)",
-								fontFamily: "Geist",
+								fontFamily: "var(--font-dm-sans)",
 								fontSize: "12px",
 								fontStyle: "normal",
 								fontWeight: 500,
@@ -140,7 +140,7 @@ export function ShareModal({
 										<span
 											style={{
 												color: "var(--white-900, #F7F9FD)",
-												fontFamily: '"Hubot Sans"',
+												fontFamily: "var(--font-dm-sans)",
 												fontSize: "14px",
 												fontStyle: "normal",
 												fontWeight: 500,
@@ -207,7 +207,7 @@ export function ShareModal({
 							<h3
 								style={{
 									color: "var(--white-850, #F5F5F5)",
-									fontFamily: "Geist",
+									fontFamily: "var(--font-dm-sans)",
 									fontSize: "12px",
 									fontStyle: "normal",
 									fontWeight: 500,
@@ -305,7 +305,7 @@ export function ShareModal({
 							<h3
 								style={{
 									color: "var(--white-850, #F5F5F5)",
-									fontFamily: "Geist",
+									fontFamily: "var(--font-dm-sans)",
 									fontSize: "12px",
 									fontStyle: "normal",
 									fontWeight: 500,
@@ -333,7 +333,7 @@ export function ShareModal({
 									<span
 										style={{
 											color: "var(--white-850, #F5F5F5)",
-											fontFamily: "Geist",
+											fontFamily: "var(--font-dm-sans)",
 											fontSize: "14px",
 											fontStyle: "normal",
 											fontWeight: 500,
@@ -366,7 +366,7 @@ export function ShareModal({
 									<span
 										style={{
 											color: "var(--white-850, #F5F5F5)",
-											fontFamily: "Geist",
+											fontFamily: "var(--font-dm-sans)",
 											fontSize: "14px",
 											fontStyle: "normal",
 											fontWeight: 500,
@@ -407,7 +407,7 @@ export function ShareModal({
 								overflow: "hidden",
 								color: "#FFF",
 								textOverflow: "ellipsis",
-								fontFamily: "Geist",
+								fontFamily: "var(--font-dm-sans)",
 								fontSize: "14px",
 								fontStyle: "normal",
 								fontWeight: 500,

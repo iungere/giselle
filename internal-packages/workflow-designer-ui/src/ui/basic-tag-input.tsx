@@ -94,9 +94,9 @@ export function BasicTagInput({
 		}
 	};
 
-	// Common Geist font style
+	// Common DM Sans font style
 	const geistFontStyle = {
-		fontFamily: "var(--font-geist), system-ui, sans-serif",
+		fontFamily: "var(--font-dm-sans), system-ui, sans-serif",
 	};
 
 	return (
@@ -129,7 +129,7 @@ export function BasicTagInput({
 								color: "var(--black-850, #0D1424)",
 								marginRight: "4px",
 								marginBottom: "4px",
-								fontFamily: "var(--font-geist), system-ui, sans-serif",
+								fontFamily: "var(--font-dm-sans), system-ui, sans-serif",
 							}}
 						>
 							<span className="mr-1 text-sm">{tagItem.value}</span>
@@ -142,7 +142,7 @@ export function BasicTagInput({
 									backgroundColor: "transparent",
 									border: "none",
 									cursor: "pointer",
-									fontFamily: "var(--font-geist), system-ui, sans-serif",
+									fontFamily: "var(--font-dm-sans), system-ui, sans-serif",
 								}}
 							>
 								<XIcon className="h-3 w-3" />
@@ -166,7 +166,7 @@ export function BasicTagInput({
 							style={{
 								color: "var(--color-error-900, #FF627E)",
 								fontSize: "12px",
-								fontFamily: "var(--font-geist), system-ui, sans-serif",
+								fontFamily: "var(--font-dm-sans), system-ui, sans-serif",
 							}}
 						>
 							You can add up to {MAX_DOMAINS} domains only.
@@ -209,7 +209,7 @@ export function BasicTagInput({
 								inputValue || isFocused
 									? "var(--white-900, #F7F9FD)"
 									: "var(--black-400, #505D7B)",
-							fontFamily: "var(--font-geist), system-ui, sans-serif",
+							fontFamily: "var(--font-dm-sans), system-ui, sans-serif",
 							fontSize: "14px",
 							fontStyle: "normal",
 							fontWeight: 500,
@@ -255,7 +255,7 @@ export function BasicTagInput({
 							color: "var(--color-error-900, #FF627E)",
 							fontSize: "12px",
 							marginTop: "4px",
-							fontFamily: "var(--font-geist), system-ui, sans-serif",
+							fontFamily: "var(--font-dm-sans), system-ui, sans-serif",
 						}}
 					>
 						{validationError}

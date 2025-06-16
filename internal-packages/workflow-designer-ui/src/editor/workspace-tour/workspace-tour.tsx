@@ -76,7 +76,7 @@ const NavigationFooter = ({
 							: "border-primary-200 text-primary-200 hover:bg-primary-200/10"
 					}`}
 					style={{
-						fontFamily: "var(--font-geist-sans), system-ui, sans-serif",
+						fontFamily: "var(--font-dm-sans), system-ui, sans-serif",
 					}}
 				>
 					←
@@ -87,7 +87,7 @@ const NavigationFooter = ({
 						onClick={onNext}
 						className="px-3 h-6 flex items-center justify-center rounded-full border border-primary-200 text-primary-200 hover:bg-primary-200/10"
 						style={{
-							fontFamily: "var(--font-geist-sans), system-ui, sans-serif",
+							fontFamily: "var(--font-dm-sans), system-ui, sans-serif",
 						}}
 					>
 						Finish
@@ -98,7 +98,7 @@ const NavigationFooter = ({
 						onClick={onNext}
 						className="w-6 h-6 flex items-center justify-center rounded-full border border-primary-200 text-primary-200 hover:bg-primary-200/10"
 						style={{
-							fontFamily: "var(--font-geist-sans), system-ui, sans-serif",
+							fontFamily: "var(--font-dm-sans), system-ui, sans-serif",
 						}}
 					>
 						→
@@ -116,7 +116,7 @@ const CARD_STYLES = {
 		background:
 			"linear-gradient(169deg, rgba(26, 42, 70, 0.60) 0%, rgba(23, 21, 42, 0.60) 97.46%)",
 		boxShadow: "0px 34px 84px 0px rgba(0, 0, 0, 0.25)",
-		fontFamily: "var(--font-sans-sans), system-ui, sans-serif",
+		fontFamily: "var(--font-dm-sans), system-ui, sans-serif",
 	},
 	small: {
 		width: "264px",
@@ -208,7 +208,7 @@ const TourCard = ({
 								className="text-white/80 font-semibold mb-1"
 								style={{
 									fontSize: "16px",
-									fontFamily: "var(--font-sans-sans), system-ui, sans-serif",
+									fontFamily: "var(--font-dm-sans), system-ui, sans-serif",
 								}}
 							>
 								{title}
@@ -370,7 +370,7 @@ const TourStep1 = (props: TourStepComponentProps) => {
 								className="text-white/80 font-semibold mb-1 text-center"
 								style={{
 									fontSize: "16px",
-									fontFamily: "var(--font-sans-sans), system-ui, sans-serif",
+									fontFamily: "var(--font-dm-sans), system-ui, sans-serif",
 								}}
 							>
 								Navigation
@@ -412,7 +412,7 @@ const TourStep1 = (props: TourStepComponentProps) => {
 								className="text-white/80 font-semibold mb-1 text-center"
 								style={{
 									fontSize: "16px",
-									fontFamily: "var(--font-sans-sans), system-ui, sans-serif",
+									fontFamily: "var(--font-dm-sans), system-ui, sans-serif",
 								}}
 							>
 								Node Controls
@@ -457,7 +457,7 @@ const TourStep1 = (props: TourStepComponentProps) => {
 								className="text-white/80 font-semibold mb-1 text-center"
 								style={{
 									fontSize: "16px",
-									fontFamily: "var(--font-sans-sans), system-ui, sans-serif",
+									fontFamily: "var(--font-dm-sans), system-ui, sans-serif",
 								}}
 							>
 								Run Commands
@@ -731,7 +731,7 @@ const TourStep6 = (props: TourStepComponentProps) => {
 						className="text-white/80 font-semibold mb-1"
 						style={{
 							fontSize: "16px",
-							fontFamily: "var(--font-sans-sans), system-ui, sans-serif",
+							fontFamily: "var(--font-dm-sans), system-ui, sans-serif",
 						}}
 					>
 						{step.title}

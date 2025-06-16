@@ -64,7 +64,7 @@ function ContentPreview({
 
 	return (
 		<div className="space-y-[8px]">
-			<pre className="text-[12px] text-white-800 whitespace-pre-wrap font-mono leading-relaxed">
+			<pre className="text-[12px] text-white-800 whitespace-pre-wrap font-sans leading-relaxed">
 				{displayContent}
 			</pre>
 			{shouldShowToggle && (

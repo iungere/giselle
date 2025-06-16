@@ -24,6 +24,7 @@ const config = {
 		extend: {
 			fontFamily: {
 				sans: ["var(--font-dm-sans)", "DM Sans", "sans-serif"],
+				geist: ["var(--font-dm-sans)", "DM Sans", "sans-serif"],
 			},
 			colors: {
 				border: "hsl(var(--border))",
