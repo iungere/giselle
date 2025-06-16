@@ -8,7 +8,7 @@ import { defaultName } from "@giselle-sdk/node-utils";
 import { buildWorkflowFromNode } from "@giselle-sdk/workflow-utils";
 import clsx from "clsx/lite";
 import { useWorkflowDesigner } from "giselle-sdk/react";
-import { CirclePlayIcon } from "lucide-react";
+import { PlayIcon } from "lucide-react";
 import { Dialog, DropdownMenu } from "radix-ui";
 import {
 	type ButtonHTMLAttributes,
@@ -84,7 +84,15 @@ export function RunButton() {
 	return (
 		<DropdownMenu.Root open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
 			<DropdownMenu.Trigger asChild>
-				<Button leftIcon={<CirclePlayIcon className="size-[15px]" />}>
+				<Button
+					leftIcon={
+						<PlayIcon
+							className="size-[15px] fill-white-900 stroke-none"
+							fill="currentColor"
+							stroke="none"
+						/>
+					}
+				>
 					Run
 				</Button>
 			</DropdownMenu.Trigger>
