@@ -145,7 +145,7 @@ export function AgentCard({ agent }: AgentCardProps) {
 						agentName={agent.name || "Untitled"}
 					/>
 				</div>
-				<div className="flex h-full flex-col pt-2">
+				<Link href={`/workspaces/${agent.workspaceId}`} className="flex h-full flex-col pt-2 group/card focus:outline-none">
 					<div className="aspect-video w-full rounded-lg bg-white/5 flex items-center justify-center">
 						<svg
 							role="img"
@@ -170,7 +170,7 @@ export function AgentCard({ agent }: AgentCardProps) {
 							</span>
 						</div>
 					</div>
-				</div>
+				</Link>
 			</div>
 		</div>
 	);
