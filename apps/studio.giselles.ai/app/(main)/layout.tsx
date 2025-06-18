@@ -9,7 +9,7 @@ import { Nav } from "./nav";
 export default async function Layout({ children }: { children: ReactNode }) {
 	const githubVectorStore = await githubVectorStoreFlag();
 	return (
-		<div className="h-screen overflow-y-hidden bg-black-900 flex flex-col">
+		<div className="h-screen overflow-y-hidden bg-[#00020A] flex flex-col">
 			<header className="flex flex-col">
 				{/* Top row: Logo, Team Selection, User Icon */}
 				<div className="h-[50px] flex items-center px-[24px] justify-between">

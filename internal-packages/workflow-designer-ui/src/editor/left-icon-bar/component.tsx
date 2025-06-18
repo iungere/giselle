@@ -14,7 +14,7 @@ export function LeftIconBar() {
 	const { panel, setPanel } = useDrawer();
 
 	return (
-		<div className="fixed left-0 top-[54px] bottom-0 w-[44px] bg-black-925 flex flex-col items-center py-[12px] gap-[12px] border-r border-black-700 z-40">
+		<div className="fixed left-0 top-[54px] bottom-0 w-[44px] bg-black-925 flex flex-col items-center py-0 gap-[12px] border-r border-black-700 z-40">
 			{items.map(({ id, icon: Icon, label }) => (
 				<Tooltip
 					key={id}

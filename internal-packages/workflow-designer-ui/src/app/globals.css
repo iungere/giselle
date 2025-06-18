@@ -13,16 +13,16 @@
 	border-radius: 16px;
 	border: none;
 	position: relative;
-	box-shadow: inset 8px 8px 48px rgba(0, 0, 0, 0.6),
-		inset -8px -8px 48px rgba(175, 200, 255, 0.15);
+	box-shadow: inset 8px 8px 48px rgba(0, 0, 0, 0.6), inset -8px -8px 48px
+		rgba(175, 200, 255, 0.15);
 }
 
 .giselle-workflow-editor .react-flow__pane {
 	border: none;
 	border-radius: 16px;
 	position: relative;
-	box-shadow: inset 8px 8px 48px rgba(0, 0, 0, 0.6),
-		inset -8px -8px 48px rgba(175, 200, 255, 0.15);
+	box-shadow: inset 8px 8px 48px rgba(0, 0, 0, 0.6), inset -8px -8px 48px
+		rgba(175, 200, 255, 0.15);
 }
 
 /* ★ 外側ストロークを描く擬似要素 */
@@ -34,11 +34,13 @@
 	inset: 0;
 	border-radius: inherit;
 	padding: 1px; /* border thickness */
-	background: linear-gradient(160deg,
+	background: linear-gradient(
+		160deg,
 		rgba(80, 80, 80, 0.5) 0%,
 		rgba(80, 80, 80, 0.5) 15%,
 		rgba(0, 0, 0, 0.5) 85%,
-		rgba(0, 0, 0, 0.5) 100%);
+		rgba(0, 0, 0, 0.5) 100%
+	);
 	mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
 	mask-composite: exclude;
 	-webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
