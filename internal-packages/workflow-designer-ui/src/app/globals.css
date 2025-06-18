@@ -9,20 +9,14 @@
 	background-color: transparent;
 }
 
-.giselle-workflow-editor-v3 .react-flow__pane {
-	border-radius: 16px;
-	border: none;
-	position: relative;
-	box-shadow: inset 8px 8px 48px rgba(0, 0, 0, 0.6), inset -8px -8px 48px
-		rgba(175, 200, 255, 0.15);
-}
-
 .giselle-workflow-editor .react-flow__pane {
 	border: none;
 	border-radius: 16px;
 	position: relative;
-	box-shadow: inset 8px 8px 48px rgba(0, 0, 0, 0.6), inset -8px -8px 48px
-		rgba(175, 200, 255, 0.15);
+	/* 表示結果: 右下=赤, 左上=白 */
+	box-shadow:
+		inset -12px -12px 24px rgba(255, 255, 255, 0.1), /* 白 blurを拡大 */
+		inset 6px 6px 32px rgba(0, 0, 0, 0.8);          /* 赤 */
 }
 
 /* ★ 外側ストロークを描く擬似要素 */
@@ -36,8 +30,8 @@
 	padding: 1px; /* border thickness */
 	background: linear-gradient(
 		160deg,
-		rgba(80, 80, 80, 0.5) 0%,
-		rgba(80, 80, 80, 0.5) 15%,
+		rgba(50, 50, 50, 0.5) 0%,
+		rgba(50, 50, 50, 0.5) 15%,
 		rgba(0, 0, 0, 0.5) 85%,
 		rgba(0, 0, 0, 0.5) 100%
 	);
@@ -45,6 +39,7 @@
 	mask-composite: exclude;
 	-webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
 	-webkit-mask-composite: xor;
+	filter: blur(2px);
 }
 
 .giselle-workflow-editor .react-flow__pane.selection {
