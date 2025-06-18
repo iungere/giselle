@@ -69,7 +69,7 @@ export function CanvasHeader({ teamName }: { teamName?: string }) {
 							align="start"
 						>
 							<DropdownMenu.Item
-								className="flex items-center w-full px-3 py-2 text-[14px] leading-[16px] text-white-400 hover:bg-white/5 rounded-md cursor-pointer"
+								className="flex items-center w-full px-3 py-2 text-[14px] leading-[16px] text-white-400 hover:bg-white/5 rounded-md cursor-pointer focus:outline-none"
 								onSelect={() => {
 									const btn = document.querySelector<HTMLButtonElement>(
 										'button[data-role="editable-display"]',
@@ -80,7 +80,7 @@ export function CanvasHeader({ teamName }: { teamName?: string }) {
 								Rename
 							</DropdownMenu.Item>
 							<DropdownMenu.Item
-								className="flex items-center w-full px-3 py-2 text-[14px] leading-[16px] text-white-400 hover:bg-white/5 rounded-md cursor-pointer"
+								className="flex items-center w-full px-3 py-2 text-[14px] leading-[16px] text-white-400 hover:bg-white/5 rounded-md cursor-pointer focus:outline-none"
 								onSelect={() => {
 									console.debug("Duplicate app – not yet implemented");
 								}}
@@ -89,7 +89,7 @@ export function CanvasHeader({ teamName }: { teamName?: string }) {
 							</DropdownMenu.Item>
 							<DropdownMenu.Item
 								disabled
-								className="flex items-center justify-between w-full px-3 py-2 text-[14px] leading-[16px] text-white-400 rounded-md cursor-not-allowed opacity-50"
+								className="flex items-center justify-between w-full px-3 py-2 text-[14px] leading-[16px] text-white-400 rounded-md cursor-not-allowed opacity-50 focus:outline-none"
 							>
 								<span>Create a Template</span>
 								<span className="ml-2 text-[10px] leading-none text-white-600 bg-white/30 px-1.5 py-[1px] rounded-full">
@@ -98,7 +98,7 @@ export function CanvasHeader({ teamName }: { teamName?: string }) {
 							</DropdownMenu.Item>
 							<DropdownMenu.Separator className="my-2 h-px bg-white/10" />
 							<DropdownMenu.Item
-								className="flex items-center w-full px-3 py-2 text-[14px] leading-[16px] text-error-900 hover:bg-error-900/20 rounded-md cursor-pointer"
+								className="flex items-center w-full px-3 py-2 text-[14px] leading-[16px] text-error-900 hover:bg-error-900/20 rounded-md cursor-pointer focus:outline-none"
 								onSelect={() => {
 									console.debug("Delete app – not yet implemented");
 								}}
