@@ -44,7 +44,7 @@ export function EditableText({
 				type="text"
 				className={clsx(
 					"w-full py-[2px] px-[4px] rounded-[4px] hidden data-[editing=true]:block",
-					"outline-none ring-[1px] ring-primary-900",
+					"outline-none focus:ring-0 focus:outline-none",
 					"text-white-900",
 					"data-[size=medium]:text-[14px] data-[size=large]:text-[16px]",
 				)}
@@ -61,6 +61,7 @@ export function EditableText({
 				data-size={size}
 			/>
 			<button
+				data-role="editable-display"
 				type="button"
 				className={clsx(
 					"py-[2px] px-[4px] rounded-[4px] data-[editing=true]:hidden text-left",

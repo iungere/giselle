@@ -64,30 +64,46 @@ export function CanvasHeader({ teamName }: { teamName?: string }) {
 					</DropdownMenu.Trigger>
 					<DropdownMenu.Portal>
 						<DropdownMenu.Content
-							className={clsx(
-								"relative rounded-[8px] px-[8px] py-[8px] min-w-[160px]",
-								"bg-[rgba(0,0,0,_0.85)] text-white-900 backdrop-blur-[4px]",
-							)}
+							className="p-1 border-[0.25px] border-white/10 rounded-[8px] min-w-[165px] bg-black-900 text-white-900 shadow-none"
 							sideOffset={5}
 							align="start"
 						>
 							<DropdownMenu.Item
-								className="text-[13px] px-[8px] py-[6px] rounded-[4px] cursor-pointer hover:bg-black-400/30"
-								onSelect={() => setTab("run-history")}
+								className="flex items-center w-full px-3 py-2 text-[14px] leading-[16px] text-white-400 hover:bg-white/5 rounded-md cursor-pointer"
+								onSelect={() => {
+									const btn = document.querySelector<HTMLButtonElement>(
+										'button[data-role="editable-display"]',
+									);
+									btn?.click();
+								}}
 							>
-								Run History
+								Rename
 							</DropdownMenu.Item>
 							<DropdownMenu.Item
-								className="text-[13px] px-[8px] py-[6px] rounded-[4px] cursor-pointer hover:bg-black-400/30"
-								onSelect={() => setTab("secret")}
+								className="flex items-center w-full px-3 py-2 text-[14px] leading-[16px] text-white-400 hover:bg-white/5 rounded-md cursor-pointer"
+								onSelect={() => {
+									console.debug("Duplicate app – not yet implemented");
+								}}
 							>
-								Secrets
+								Duplicate
 							</DropdownMenu.Item>
 							<DropdownMenu.Item
-								className="text-[13px] px-[8px] py-[6px] rounded-[4px] cursor-pointer hover:bg-black-400/30"
-								onSelect={() => setTab("datasource")}
+								disabled
+								className="flex items-center justify-between w-full px-3 py-2 text-[14px] leading-[16px] text-white-400 rounded-md cursor-not-allowed opacity-50"
 							>
-								Data Source
+								<span>Create a Template</span>
+								<span className="ml-2 text-[10px] leading-none text-white-600 bg-white/30 px-1.5 py-[1px] rounded-full">
+									Coming&nbsp;soon
+								</span>
+							</DropdownMenu.Item>
+							<DropdownMenu.Separator className="my-2 h-px bg-white/10" />
+							<DropdownMenu.Item
+								className="flex items-center w-full px-3 py-2 text-[14px] leading-[16px] text-error-900 hover:bg-error-900/20 rounded-md cursor-pointer"
+								onSelect={() => {
+									console.debug("Delete app – not yet implemented");
+								}}
+							>
+								Delete
 							</DropdownMenu.Item>
 						</DropdownMenu.Content>
 					</DropdownMenu.Portal>
