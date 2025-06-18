@@ -23,7 +23,7 @@ export function CanvasHeader({ teamName }: { teamName?: string }) {
 			className={clsx(
 				"relative h-[54px] flex items-center justify-between",
 				"pl-[16px] pr-[16px] gap-[12px]",
-				"bg-[rgba(0,0,0,0.75)] backdrop-blur-[6px] border-b border-black-600",
+				"border-b border-black-600",
 				"shrink-0",
 			)}
 		>

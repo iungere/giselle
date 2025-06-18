@@ -87,7 +87,7 @@ export function RunButton() {
 				<Button
 					leftIcon={
 						<PlayIcon
-							className="size-[15px] fill-white-900 stroke-none"
+							className="size-[10px] fill-white-900 stroke-none"
 							fill="currentColor"
 							stroke="none"
 						/>

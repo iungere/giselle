@@ -4,7 +4,8 @@
 	-webkit-mask-composite: destination-out;
 }
 
-.giselle-workflow-editor.react-flow {
+.giselle-workflow-editor .react-flow,
+.giselle-workflow-editor-v3 .react-flow {
 	background-color: transparent;
 }
 
@@ -77,7 +78,7 @@
 	/* surface */
 	--color-elevated-surface-background: #2f343e;
 	--color-surface-background: #2f343e;
-	--color-background: #3b414d;
+	--color-background: #00020b;
 
 	/* element */
 	--color-element-background: #2e343e;
@@ -103,7 +104,7 @@
 
 	/* editor */
 	--color-editor-foreground: #acb2be;
-	--color-editor-background: #282c33;
+	--color-editor-background: #00020b;
 	--color-editor-gutter-background: #282c33;
 	--color-editor-subheader-background: #2f343e;
 	--color-editor-active-line-background: #2f343e;
