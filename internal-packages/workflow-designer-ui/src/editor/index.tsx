@@ -495,7 +495,7 @@ export function Editor({
 													>
 														<div className="w-[2px] h-full bg-transparent group-data-[resize-handle-state=hover]:bg-black-400 group-data-[resize-handle-state=drag]:bg-black-400 transition-colors" />
 													</PanelResizeHandle>
-													<Panel className="flex-1 rounded-[12px] overflow-hidden">
+													<Panel className="flex-1 rounded-[12px] overflow-hidden relative">
 														<Tabs.Content value="builder" className="h-full">
 															<PanelGroup direction="horizontal">
 																<Panel>
@@ -546,6 +546,8 @@ export function Editor({
 														>
 															<DataSourceTable />
 														</Tabs.Content>
+														{/* Stroke overlay */}
+														<div className="pointer-events-none absolute -inset-px rounded-[13px] border border-[hsla(232,36%,72%,0.2)] z-[999]" />
 													</Panel>
 												</PanelGroup>
 											</div>
@@ -645,6 +647,8 @@ export function Editor({
 													>
 														<DataSourceTable />
 													</Tabs.Content>
+													{/* Stroke overlay */}
+													<div className="pointer-events-none absolute -inset-px rounded-[13px] border border-[hsla(232,36%,72%,0.2)] z-[999]" />
 												</Panel>
 											</PanelGroup>
 										</div>
@@ -659,9 +663,11 @@ export function Editor({
 						isOpen={isTourOpen}
 						onOpenChange={setIsTourOpen}
 					/>
+					{/* Stroke overlay */}
+					<div className="pointer-events-none absolute top-[54px] left-[44px] right-0 bottom-0 rounded-[12px] border border-[hsla(232,36%,72%,0.2)] z-[999]" />
 					{/* Left Drawer */}
 					{panel && (
-						<div className="fixed left-[44px] top-[54px] bottom-0 w-[360px] bg-black-925 border-r border-black-700 z-50 flex flex-col">
+						<div className="fixed left-[44px] top-[54px] bottom-0 w-[360px] bg-black-900 border-r border-black-700 z-50 flex flex-col">
 							<div className="flex items-center justify-between h-[48px] px-[16px] border-b border-black-700">
 								<p className="text-white-950 font-medium text-[14px] capitalize">
 									{panel === "run-history" && "Run history"}
