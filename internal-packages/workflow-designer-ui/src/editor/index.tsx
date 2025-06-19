@@ -13,9 +13,9 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import clsx from "clsx/lite";
+import { AnimatePresence, motion } from "framer-motion";
 import { useFeatureFlag, useWorkflowDesigner } from "giselle-sdk/react";
 import { useAnimationFrame, useSpring } from "motion/react";
-import { AnimatePresence, motion } from "framer-motion";
 import { Tabs } from "radix-ui";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -470,28 +470,30 @@ export function Editor({
 										<AnimatePresence>
 											{panel && (
 												<motion.div
-													className="fixed left-[44px] top-[54px] bottom-0 w-[360px] bg-black-900 border-r border-black-700 z-50 flex flex-col"
+													className="fixed left-[44px] top-[54px] bottom-0 w-[720px] bg-black-900/60 border-r border-black-700 z-50 flex flex-col backdrop-blur-sm"
 													initial={{ x: "-100%" }}
 													animate={{ x: 0 }}
 													exit={{ x: "-100%" }}
 													transition={{ duration: 0.3, ease: "easeInOut" }}
 												>
-													<div className="flex items-center justify-between h-[48px] px-[16px] border-b border-black-700">
-														<p className="text-white-950 font-medium text-[14px] capitalize">
+													<div className="flex items-center justify-between h-[48px] px-[16px] pt-[8px] border-b border-black-700">
+														<p className="text-white-400 font-thin text-[24px] capitalize">
 															{panel === "run-history" && "Run history"}
 															{panel === "secret" && "Secrets"}
 															{panel === "datasource" && "Data source"}
 														</p>
 														<button
 															type="button"
-															className="text-white-900 hover:text-white-950"
+															className="text-white-900 hover:text-white-950 font-thin text-[20px] p-1"
 															onClick={() => setPanel(null)}
 														>
 															×
 														</button>
 													</div>
 													<div className="flex-1 overflow-auto">
-														{panel === "run-history" && <RunHistoryPlaceholder />}
+														{panel === "run-history" && (
+															<RunHistoryPlaceholder />
+														)}
 														{panel === "secret" && <SecretTable />}
 														{panel === "datasource" && <DataSourceTable />}
 													</div>
@@ -535,7 +537,10 @@ export function Editor({
 																		<div className="w-[2px] h-full bg-transparent group-data-[resize-handle-state=hover]:bg-black-400 group-data-[resize-handle-state=drag]:bg-black-400 transition-colors" />
 																	</PanelResizeHandle>
 																	<Panel className="flex-1 rounded-[16px] overflow-hidden relative">
-																		<Tabs.Content value="builder" className="h-full">
+																		<Tabs.Content
+																			value="builder"
+																			className="h-full"
+																		>
 																			<PanelGroup direction="horizontal">
 																				<Panel>
 																					<NodeCanvas />
@@ -547,7 +552,9 @@ export function Editor({
 																						"opacity-0 data-[right-panel=show]:opacity-100 transition-opacity",
 																					)}
 																					data-right-panel={
-																						selectedNodes.length === 1 ? "show" : "hide"
+																						selectedNodes.length === 1
+																							? "show"
+																							: "hide"
 																					}
 																				/>
 																				<Panel
@@ -556,7 +563,9 @@ export function Editor({
 																					ref={rightPanelRef}
 																					defaultSize={0}
 																					data-right-panel={
-																						selectedNodes.length === 1 ? "show" : "hide"
+																						selectedNodes.length === 1
+																							? "show"
+																							: "hide"
 																					}
 																				>
 																					{selectedNodes.length === 1 && (
@@ -621,21 +630,21 @@ export function Editor({
 								<AnimatePresence>
 									{panel && (
 										<motion.div
-											className="fixed left-[44px] top-[54px] bottom-0 w-[360px] bg-black-900 border-r border-black-700 z-50 flex flex-col"
+											className="fixed left-[44px] top-[54px] bottom-0 w-[720px] bg-black-900/60 border-r border-black-700 z-50 flex flex-col backdrop-blur-sm"
 											initial={{ x: "-100%" }}
 											animate={{ x: 0 }}
 											exit={{ x: "-100%" }}
 											transition={{ duration: 0.3, ease: "easeInOut" }}
 										>
-											<div className="flex items-center justify-between h-[48px] px-[16px] border-b border-black-700">
-												<p className="text-white-950 font-medium text-[14px] capitalize">
+											<div className="flex items-center justify-between h-[48px] px-[16px] pt-[8px] border-b border-black-700">
+												<p className="text-white-400 font-thin text-[24px] capitalize">
 													{panel === "run-history" && "Run history"}
 													{panel === "secret" && "Secrets"}
 													{panel === "datasource" && "Data source"}
 												</p>
 												<button
 													type="button"
-													className="text-white-900 hover:text-white-950"
+													className="text-white-900 hover:text-white-950 font-thin text-[20px] p-1"
 													onClick={() => setPanel(null)}
 												>
 													×
@@ -675,7 +684,10 @@ export function Editor({
 															className="bg-black-900 h-full flex"
 														>
 															<Panel className="flex-1 rounded-[16px] overflow-hidden">
-																<Tabs.Content value="builder" className="h-full">
+																<Tabs.Content
+																	value="builder"
+																	className="h-full"
+																>
 																	<PanelGroup direction="horizontal">
 																		<Panel
 																			className="flex-1 pl-0 pb-[16px] pr-0"

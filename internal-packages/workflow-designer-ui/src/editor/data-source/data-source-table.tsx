@@ -83,7 +83,7 @@ export function DataSourceTable() {
 	}
 	if (data === undefined || data.length < 1) {
 		return (
-			<div className="h-full bg-surface-background p-[16px] flex items-center justify-center">
+			<div className="h-full p-[16px] flex items-center justify-center">
 				<EmptyState
 					title="No data source connected."
 					description="Add your first one below to start building."
@@ -140,7 +140,7 @@ export function DataSourceTable() {
 		);
 	}
 	return (
-		<div className="p-[16px] bg-surface-background h-full">
+		<div className="p-[16px] h-full">
 			<div className="flex justify-between items-center">
 				<h1 className="font-accent text-text text-[18px] mb-[8px]">Secrets</h1>
 				<Dialog open={presentDialog} onOpenChange={setPresentDialog}>
@@ -175,7 +175,7 @@ export function DataSourceTable() {
 										)}
 									/>
 									<p className="text-[11px] text-text-muted px-[4px] mt-[1px]">
-										Give this token a short name (e.g. “Prod-bot”). You’ll use
+										Give this token a short name (e.g. "Prod-bot"). You'll use
 										it when linking other nodes.
 									</p>
 								</fieldset>
@@ -195,7 +195,7 @@ export function DataSourceTable() {
 										)}
 									/>
 									<p className="text-[11px] text-text-muted px-[4px] mt-[1px]">
-										We’ll encrypt the token with authenticated encryption before
+										We'll encrypt the token with authenticated encryption before
 										saving it.
 									</p>
 								</fieldset>
