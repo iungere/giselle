@@ -29,7 +29,8 @@ export function CanvasHeader({ teamName }: { teamName?: string }) {
 		>
 			{/* Left section: Logo */}
 			<div className="flex items-center gap-[8px] min-w-0">
-				<GiselleLogo className="fill-white-900 w-[60px] h-auto" />
+				<GiselleLogo className="fill-white-900 w-[75px] h-auto" />
+				<span className="text-white-900 text-[14px] font-semibold">Studio</span>
 			</div>
 
 			{/* Center section: Team / App names */}
