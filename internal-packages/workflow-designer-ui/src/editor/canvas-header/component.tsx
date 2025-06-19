@@ -37,7 +37,7 @@ export function CanvasHeader({ teamName }: { teamName?: string }) {
 				{/* Team / App names */}
 				<div className="flex items-center gap-[4px] min-w-0 ml-[8px]">
 					{teamName && (
-						<span className="text-white-700 text-[14px] truncate max-w-[160px]">
+						<span className="text-[#6B8FF0] text-[14px] truncate max-w-[160px]">
 							{teamName}
 						</span>
 					)}
@@ -52,6 +52,7 @@ export function CanvasHeader({ teamName }: { teamName?: string }) {
 							fallbackValue="Untitled"
 							onChange={handleUpdateName}
 							value={data.name}
+							className="text-[#6B8FF0]"
 						/>
 					</span>
 					{/* dropdown */}
@@ -59,7 +60,7 @@ export function CanvasHeader({ teamName }: { teamName?: string }) {
 						<DropdownMenu.Trigger asChild>
 							<button
 								type="button"
-								className="ml-[4px] text-white-900 hover:text-white-950 outline-none"
+								className="ml-[4px] text-[#6B8FF0] hover:text-white-950 outline-none"
 							>
 								<ChevronDownIcon className="size-[16px]" />
 							</button>

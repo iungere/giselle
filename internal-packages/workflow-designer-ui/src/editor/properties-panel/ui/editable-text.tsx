@@ -8,11 +8,13 @@ export function EditableText({
 	fallbackValue,
 	onChange,
 	size = "medium",
+	className,
 }: {
 	value?: string;
 	fallbackValue: string;
 	onChange?: (value?: string) => void;
 	size?: "medium" | "large";
+	className?: string;
 }) {
 	const [edit, setEdit] = useState(false);
 	const inputRef = useRef<HTMLInputElement>(null);
@@ -45,7 +47,7 @@ export function EditableText({
 				className={clsx(
 					"w-full py-[2px] px-[4px] rounded-[4px] hidden data-[editing=true]:block",
 					"outline-none focus:ring-0 focus:outline-none",
-					"text-white-900",
+					className || "text-white-900",
 					"data-[size=medium]:text-[14px] data-[size=large]:text-[16px]",
 				)}
 				ref={inputRef}
@@ -66,7 +68,7 @@ export function EditableText({
 				className={clsx(
 					"py-[2px] px-[4px] rounded-[4px] data-[editing=true]:hidden text-left",
 					"hover:bg-white-900/20 group-hover:bg-white-900/10",
-					"text-white-900",
+					className || "text-white-900",
 					"data-[size=medium]:text-[14px] data-[size=large]:text-[16px]",
 					"cursor-default w-full",
 				)}
