@@ -65,7 +65,7 @@ export function CanvasHeader({ teamName }: { teamName?: string }) {
 					<DropdownMenu.Portal>
 						<DropdownMenu.Content
 							className="p-1 border-[0.25px] border-white/10 rounded-[8px] min-w-[165px] bg-black-900 text-white-900 shadow-none"
-							sideOffset={5}
+							sideOffset={12}
 							align="start"
 						>
 							<DropdownMenu.Item

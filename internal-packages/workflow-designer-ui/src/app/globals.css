@@ -19,7 +19,8 @@
 		inset 6px 6px 32px rgba(0, 0, 0, 0.8);          /* 赤 */
 }
 
-/* ★ 外側ストロークを描く擬似要素 */
+/* ★ 外側ストロークを描く擬似要素 - 削除してコンポーネント化 */
+/* 
 .giselle-workflow-editor-v3 .react-flow__pane::after,
 .giselle-workflow-editor .react-flow__pane::after {
 	content: "";
@@ -27,9 +28,9 @@
 	position: absolute;
 	inset: 0;
 	border-radius: inherit;
-	padding: 1px; /* border thickness */
+	padding: 1px;
 	background: linear-gradient(
-		160deg,
+		135deg,
 		rgba(50, 50, 50, 0.5) 0%,
 		rgba(50, 50, 50, 0.5) 15%,
 		rgba(0, 0, 0, 0.5) 85%,
@@ -40,7 +41,9 @@
 	-webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
 	-webkit-mask-composite: xor;
 	filter: blur(2px);
+	z-index: 60;
 }
+*/
 
 .giselle-workflow-editor .react-flow__pane.selection {
 	cursor: default;

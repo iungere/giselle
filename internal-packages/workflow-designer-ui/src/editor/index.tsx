@@ -15,6 +15,7 @@ import "@xyflow/react/dist/style.css";
 import clsx from "clsx/lite";
 import { useFeatureFlag, useWorkflowDesigner } from "giselle-sdk/react";
 import { useAnimationFrame, useSpring } from "motion/react";
+import { AnimatePresence, motion } from "framer-motion";
 import { Tabs } from "radix-ui";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -27,6 +28,7 @@ import { Background } from "../ui/background";
 import { ReadOnlyBanner } from "../ui/read-only-banner";
 import { ToastProvider, useToasts } from "../ui/toast";
 import { CanvasHeader } from "./canvas-header/index";
+import { CanvasStroke } from "./canvas-stroke/index";
 import { edgeTypes } from "./connector";
 import { type ConnectorType, GradientDef } from "./connector/component";
 import { ContextMenu } from "./context-menu";
@@ -464,6 +466,38 @@ export function Editor({
 							<DrawerContext.Provider value={{ panel, setPanel }}>
 								<EditorTabContext.Provider value={{ tab, setTab }}>
 									<div className="flex-1 overflow-hidden font-sans pl-[16px]">
+										{/* Left Drawer */}
+										<AnimatePresence>
+											{panel && (
+												<motion.div
+													className="fixed left-[44px] top-[54px] bottom-0 w-[360px] bg-black-900 border-r border-black-700 z-50 flex flex-col"
+													initial={{ x: "-100%" }}
+													animate={{ x: 0 }}
+													exit={{ x: "-100%" }}
+													transition={{ duration: 0.3, ease: "easeInOut" }}
+												>
+													<div className="flex items-center justify-between h-[48px] px-[16px] border-b border-black-700">
+														<p className="text-white-950 font-medium text-[14px] capitalize">
+															{panel === "run-history" && "Run history"}
+															{panel === "secret" && "Secrets"}
+															{panel === "datasource" && "Data source"}
+														</p>
+														<button
+															type="button"
+															className="text-white-900 hover:text-white-950"
+															onClick={() => setPanel(null)}
+														>
+															×
+														</button>
+													</div>
+													<div className="flex-1 overflow-auto">
+														{panel === "run-history" && <RunHistoryPlaceholder />}
+														{panel === "secret" && <SecretTable />}
+														{panel === "datasource" && <DataSourceTable />}
+													</div>
+												</motion.div>
+											)}
+										</AnimatePresence>
 										<LeftIconBar />
 										{showReadOnlyBanner && isReadOnly && (
 											<ReadOnlyBanner
@@ -558,6 +592,7 @@ export function Editor({
 													</MousePositionProvider>
 												</ToolbarContextProvider>
 												<GradientDef />
+												<CanvasStroke />
 											</ReactFlowProvider>
 										</ToastProvider>
 										<WorkspaceTour
@@ -565,30 +600,6 @@ export function Editor({
 											isOpen={isTourOpen}
 											onOpenChange={setIsTourOpen}
 										/>
-										{/* Left Drawer */}
-										{panel && (
-											<div className="fixed left-[44px] top-[54px] bottom-0 w-[360px] bg-black-900 border-r border-black-700 z-50 flex flex-col">
-												<div className="flex items-center justify-between h-[48px] px-[16px] border-b border-black-700">
-													<p className="text-white-950 font-medium text-[14px] capitalize">
-														{panel === "run-history" && "Run history"}
-														{panel === "secret" && "Secrets"}
-														{panel === "datasource" && "Data source"}
-													</p>
-													<button
-														type="button"
-														className="text-white-900 hover:text-white-950"
-														onClick={() => setPanel(null)}
-													>
-														×
-													</button>
-												</div>
-												<div className="flex-1 overflow-auto">
-													{panel === "run-history" && <RunHistoryPlaceholder />}
-													{panel === "secret" && <SecretTable />}
-													{panel === "datasource" && <DataSourceTable />}
-												</div>
-											</div>
-										)}
 									</div>
 								</EditorTabContext.Provider>
 							</DrawerContext.Provider>
@@ -606,6 +617,38 @@ export function Editor({
 					<DrawerContext.Provider value={{ panel, setPanel }}>
 						<EditorTabContext.Provider value={{ tab, setTab }}>
 							<div className="flex-1 overflow-hidden font-sans pl-[44px]">
+								{/* Left Drawer */}
+								<AnimatePresence>
+									{panel && (
+										<motion.div
+											className="fixed left-[44px] top-[54px] bottom-0 w-[360px] bg-black-900 border-r border-black-700 z-50 flex flex-col"
+											initial={{ x: "-100%" }}
+											animate={{ x: 0 }}
+											exit={{ x: "-100%" }}
+											transition={{ duration: 0.3, ease: "easeInOut" }}
+										>
+											<div className="flex items-center justify-between h-[48px] px-[16px] border-b border-black-700">
+												<p className="text-white-950 font-medium text-[14px] capitalize">
+													{panel === "run-history" && "Run history"}
+													{panel === "secret" && "Secrets"}
+													{panel === "datasource" && "Data source"}
+												</p>
+												<button
+													type="button"
+													className="text-white-900 hover:text-white-950"
+													onClick={() => setPanel(null)}
+												>
+													×
+												</button>
+											</div>
+											<div className="flex-1 overflow-auto">
+												{panel === "run-history" && <RunHistoryPlaceholder />}
+												{panel === "secret" && <SecretTable />}
+												{panel === "datasource" && <DataSourceTable />}
+											</div>
+										</motion.div>
+									)}
+								</AnimatePresence>
 								<LeftIconBar />
 								{showReadOnlyBanner && isReadOnly && (
 									<ReadOnlyBanner
@@ -689,6 +732,7 @@ export function Editor({
 											</MousePositionProvider>
 										</ToolbarContextProvider>
 										<GradientDef />
+										<CanvasStroke />
 									</ReactFlowProvider>
 								</ToastProvider>
 								<WorkspaceTour
@@ -696,30 +740,6 @@ export function Editor({
 									isOpen={isTourOpen}
 									onOpenChange={setIsTourOpen}
 								/>
-								{/* Left Drawer */}
-								{panel && (
-									<div className="fixed left-[44px] top-[54px] bottom-0 w-[360px] bg-black-900 border-r border-black-700 z-50 flex flex-col">
-										<div className="flex items-center justify-between h-[48px] px-[16px] border-b border-black-700">
-											<p className="text-white-950 font-medium text-[14px] capitalize">
-												{panel === "run-history" && "Run history"}
-												{panel === "secret" && "Secrets"}
-												{panel === "datasource" && "Data source"}
-											</p>
-											<button
-												type="button"
-												className="text-white-900 hover:text-white-950"
-												onClick={() => setPanel(null)}
-											>
-												×
-											</button>
-										</div>
-										<div className="flex-1 overflow-auto">
-											{panel === "run-history" && <RunHistoryPlaceholder />}
-											{panel === "secret" && <SecretTable />}
-											{panel === "datasource" && <DataSourceTable />}
-										</div>
-									</div>
-								)}
 							</div>
 						</EditorTabContext.Provider>
 					</DrawerContext.Provider>
