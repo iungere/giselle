@@ -89,6 +89,13 @@
 
 	--color-error-900: var(--color-red-900);
 
+	/* text */
+	--color-text: #f7f9fd;
+	--color-text-muted: #a9afbc;
+	--color-text-placeholder: #878a98;
+	--color-text-disabled: #878a98;
+	--color-text-accent: #74ade8;
+
 	--font-accent: var(--font-dm-sans);
 	--font-sans: var(--font-dm-sans);
 }
