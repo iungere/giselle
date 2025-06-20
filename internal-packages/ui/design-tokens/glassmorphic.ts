@@ -78,28 +78,5 @@ export const getTopHighlightStyles = () => ({
   height: "1px",
 });
 
-export const getGlassmorphicButtonStyles = () => ({
-  boxShadow: glassmorphicTokens.effects.shadow.glassmorphicButton,
-});
-
-export const getGlassmorphicButtonOuterGlowStyles = () => ({
-  backgroundColor:
-    glassmorphicTokens.colors.button.glassmorphic.outerGlow.color,
-  opacity: glassmorphicTokens.colors.button.glassmorphic.outerGlow.opacity,
-});
-
-export const getGlassmorphicButtonBackgroundStyles = () => ({
-  background: glassmorphicTokens.colors.button.glassmorphic.background,
-});
-
-export const getGlassmorphicButtonTopReflectionStyles = () => ({
-  background: `linear-gradient(to right, transparent, ${glassmorphicTokens.colors.button.glassmorphic.topHighlight}, transparent)`,
-});
-
-export const getGlassmorphicButtonBorderStyles = () => ({
-  border: `1px solid ${glassmorphicTokens.colors.button.glassmorphic.border}`,
-});
-
-export const getGlassmorphicButtonHoverOverlayStyles = () => ({
-  background: `linear-gradient(to top, transparent, ${glassmorphicTokens.colors.button.glassmorphic.hoverOverlay})`,
-});
+// Note: Glassmorphic button styles are now implemented as CSS classes
+// in style.css for better performance and maintainability
