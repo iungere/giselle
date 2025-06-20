@@ -39,6 +39,7 @@ import {
 	type EditorTabValue,
 } from "./context/editor-tab-context";
 import { DataSourceTable } from "./data-source";
+import { EditorLayout } from "./editor-layout";
 import { KeyboardShortcuts } from "./keyboard-shortcuts";
 import { LeftIconBar } from "./left-icon-bar";
 import { type GiselleWorkflowDesignerNode, nodeTypes } from "./node";
@@ -456,6 +457,52 @@ export function Editor({
 
 	const [tab, setTab] = useState<EditorTabValue>("builder");
 
+	const drawerRef = useRef<HTMLDivElement>(null);
+
+	// Handle Escape key to close drawer
+	useEffect(() => {
+		const handleKeyDown = (event: KeyboardEvent) => {
+			if (event.key === "Escape" && panel) {
+				setPanel(null);
+			}
+		};
+
+		document.addEventListener("keydown", handleKeyDown);
+		return () => document.removeEventListener("keydown", handleKeyDown);
+	}, [panel]);
+
+	// Handle click outside to close drawer
+	const handleClickOutside = useCallback(
+		(event: MouseEvent) => {
+			if (!panel) return;
+
+			const target = event.target as Node;
+			const drawerElement = drawerRef.current;
+			const leftIconBar = document.querySelector('[data-left-icon-bar="true"]');
+
+			// Don't close if clicking on the drawer itself or the left icon bar
+			if (
+				drawerElement &&
+				(drawerElement.contains(target) || leftIconBar?.contains(target))
+			) {
+				return;
+			}
+
+			setPanel(null);
+		},
+		[panel],
+	);
+
+	useEffect(() => {
+		if (panel) {
+			document.addEventListener("mousedown", handleClickOutside);
+		} else {
+			document.removeEventListener("mousedown", handleClickOutside);
+		}
+
+		return () => document.removeEventListener("mousedown", handleClickOutside);
+	}, [panel, handleClickOutside]);
+
 	if (isReadOnly) {
 		return (
 			<div className="flex-1">
@@ -470,6 +517,7 @@ export function Editor({
 										<AnimatePresence>
 											{panel && (
 												<motion.div
+													ref={drawerRef}
 													className="fixed left-[44px] top-[54px] bottom-0 w-[720px] bg-black-900/60 border-r border-black-700 z-50 flex flex-col backdrop-blur-sm"
 													initial={{ x: "-100%" }}
 													animate={{ x: 0 }}
@@ -630,6 +678,7 @@ export function Editor({
 								<AnimatePresence>
 									{panel && (
 										<motion.div
+											ref={drawerRef}
 											className="fixed left-[44px] top-[54px] bottom-0 w-[720px] bg-black-900/60 border-r border-black-700 z-50 flex flex-col backdrop-blur-sm"
 											initial={{ x: "-100%" }}
 											animate={{ x: 0 }}
