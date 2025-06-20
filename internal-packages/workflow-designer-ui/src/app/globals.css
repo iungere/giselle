@@ -13,13 +13,13 @@
 	border: none;
 	border-radius: 16px;
 	position: relative;
-	/* 表示結果: 右下=赤, 左上=白 */
+	/* Display result: bottom-right=dark, top-left=light */
 	box-shadow:
-		inset -12px -12px 24px rgba(255, 255, 255, 0.1), /* 白 blurを拡大 */
-		inset 6px 6px 32px rgba(0, 0, 0, 0.8);          /* 赤 */
+		inset -12px -12px 24px rgba(255, 255, 255, 0.1), /* white light shadow */
+		inset 6px 6px 32px rgba(0, 0, 0, 0.8);          /* black dark shadow */
 }
 
-/* ★ 外側ストロークを描く擬似要素 - 削除してコンポーネント化 */
+/* ★ Outer stroke pseudo-element - removed and componentized */
 /* 
 .giselle-workflow-editor-v3 .react-flow__pane::after,
 .giselle-workflow-editor .react-flow__pane::after {
@@ -203,6 +203,46 @@
 		}
 		100% {
 			background-position: 0% 50%;
+		}
+	}
+	@keyframes sparkle {
+		0%, 80%, 100% {
+			opacity: 0;
+			transform: scale(0.8);
+		}
+		85%, 95% {
+			opacity: 1;
+			transform: scale(1.2);
+		}
+	}
+	@keyframes twinkle-effect {
+		0% {
+			opacity: 1;
+			transform: rotate(0deg) scale(1);
+		}
+		0.32% {
+			opacity: 1;
+			transform: rotate(0deg) scale(1);
+		}
+		1.29% {
+			opacity: 1;
+			transform: rotate(720deg) scale(1);
+		}
+		2.58% {
+			opacity: 1;
+			transform: rotate(1440deg) scale(0.2);
+		}
+		2.64% {
+			opacity: 0;
+			transform: rotate(1440deg) scale(0);
+		}
+		2.71% {
+			opacity: 1;
+			transform: rotate(0deg) scale(1);
+		}
+		100% {
+			opacity: 1;
+			transform: rotate(0deg) scale(1);
 		}
 	}
 	--animate-shimmer: shimmer 2s infinite;
