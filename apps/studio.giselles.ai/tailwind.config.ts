@@ -166,6 +166,14 @@ const config = {
 						fill: "hsl(var(--black_40))",
 					},
 				},
+				"star-movement-bottom": {
+					"0%": { transform: "translate(0%, 0%)", opacity: "1" },
+					"100%": { transform: "translate(-100%, 0%)", opacity: "0" },
+				},
+				"star-movement-top": {
+					"0%": { transform: "translate(0%, 0%)", opacity: "1" },
+					"100%": { transform: "translate(100%, 0%)", opacity: "0" },
+				},
 			},
 			animation: {
 				"accordion-down": "accordion-down 0.2s ease-out",
@@ -174,6 +182,9 @@ const config = {
 				"follow-through-spin":
 					"follow-through-overlap-spin 1.75s ease-out infinite",
 				"ticktock-bounce": "ticktock-bounce 1.5s steps(2, jump-none) infinite",
+				"star-movement-bottom":
+					"star-movement-bottom linear infinite alternate",
+				"star-movement-top": "star-movement-top linear infinite alternate",
 			},
 		},
 	},

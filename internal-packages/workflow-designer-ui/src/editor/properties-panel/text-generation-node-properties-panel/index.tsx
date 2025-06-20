@@ -135,6 +135,7 @@ export function TextGenerationNodePropertiesPanel({
         }}
         action={
           <Button
+            variant="ghost"
             loading={isGenerating}
             type="button"
             disabled={disabled}
@@ -145,7 +146,10 @@ export function TextGenerationNodePropertiesPanel({
                 generateText();
               }
             }}
-            className="w-[150px] disabled:cursor-not-allowed disabled:opacity-50"
+            className="w-[150px] text-white font-semibold px-6 py-3 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center gap-2 border-0 disabled:cursor-not-allowed disabled:opacity-50"
+            style={{
+              background: "linear-gradient(to top, #1663F3, #0b4299)",
+            }}
           >
             {isGenerating ? (
               <span>Stop</span>
