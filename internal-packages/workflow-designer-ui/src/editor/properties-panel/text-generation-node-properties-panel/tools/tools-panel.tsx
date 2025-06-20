@@ -18,6 +18,7 @@ import {
 import { z } from "zod/v4";
 import { useWorkspaceSecrets } from "../../../lib/use-workspace-secrets";
 import { GitHubIcon } from "../../../tool";
+import { FormModal } from "../../../../ui/form-modal";
 import { Button } from "./ui/button";
 import {
   Dialog,
@@ -47,8 +48,41 @@ const GitHubToolSetupPayload = z.discriminatedUnion("secretType", [
   }),
 ]);
 
-function GitHubToolSetting({ node }: { node: TextGenerationNode }) {
-  const [presentDialog, setPresentDialog] = useState(false);
+function GitHubToolSetting({
+  node,
+  onOpenModal,
+}: {
+  node: TextGenerationNode;
+  onOpenModal: () => void;
+}) {
+  const enable = !!node.content.tools?.github;
+
+  return (
+    <Button
+      type="button"
+      leftIcon={
+        enable ? (
+          <Settings2Icon className="size-[14px]" />
+        ) : (
+          <PlusIcon className="size-[14px]" />
+        )
+      }
+      onClick={onOpenModal}
+    >
+      {enable ? "Configure" : "Connect"}
+    </Button>
+  );
+}
+
+function GitHubToolModal({
+  node,
+  open,
+  onOpenChange,
+}: {
+  node: TextGenerationNode;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
   const [tabValue, setTabValue] = useState("create");
   const { updateNodeDataContent, data: workspace } = useWorkflowDesigner();
   const { isLoading, data, mutate } = useWorkspaceSecrets();
@@ -118,22 +152,29 @@ function GitHubToolSetting({ node }: { node: TextGenerationNode }) {
           throw new Error(`Unhandled secretType: ${_exhaustiveCheck}`);
         }
       }
-      setPresentDialog(false);
+      onOpenChange(false);
     },
-    [node, updateNodeDataContent, client, workspace.id, data, mutate],
+    [
+      node,
+      updateNodeDataContent,
+      client,
+      workspace.id,
+      data,
+      mutate,
+      onOpenChange,
+    ],
   );
+
   return (
-    <ToolList.Dialog
-      open={presentDialog}
-      onOpenChange={setPresentDialog}
-      enable={!!node.content.tools?.github}
+    <FormModal
+      open={open}
+      onOpenChange={onOpenChange}
+      title="Connect to GitHub"
+      description="How would you like to add your Personal Access Token (PAT)?"
       onSubmit={setupGitHubTool}
-      submitting={isPending}
+      submitText="Save & Connect"
+      isSubmitting={isPending}
     >
-      <ToolList.DialogHeader
-        title="Conenct to GitHub"
-        description="How would you like to add your Personal Access Token (PAT)? "
-      />
       <Tabs value={tabValue} onValueChange={setTabValue}>
         <TabsList className="mb-[12px]">
           <TabsTrigger value="create">Paste New Token</TabsTrigger>
@@ -243,16 +284,23 @@ function GitHubToolSetting({ node }: { node: TextGenerationNode }) {
           )}
         </TabsContent>
       </Tabs>
-    </ToolList.Dialog>
+    </FormModal>
   );
 }
 
 export function ToolsPanel({ node }: { node: TextGenerationNode }) {
+  const [githubModalOpen, setGithubModalOpen] = useState(false);
+
   return (
     <div className="text-white-400 space-y-[16px]">
       <ToolList.Item
         icon={<GitHubIcon data-tool-icon />}
-        configurationPanel={<GitHubToolSetting node={node} />}
+        configurationPanel={
+          <GitHubToolSetting
+            node={node}
+            onOpenModal={() => setGithubModalOpen(true)}
+          />
+        }
       >
         <div className="flex gap-[10px] items-center">
           <h3 className="text-text text-[14px]">GitHub</h3>
@@ -261,6 +309,11 @@ export function ToolsPanel({ node }: { node: TextGenerationNode }) {
           )}
         </div>
       </ToolList.Item>
+      <GitHubToolModal
+        node={node}
+        open={githubModalOpen}
+        onOpenChange={setGithubModalOpen}
+      />
     </div>
   );
 }
