@@ -15,6 +15,7 @@ import { GenerationPanel } from "./generation-panel";
 import { InputPanel } from "./input-panel";
 import { QueryPanel } from "./query-panel";
 import { useConnectedSources } from "./sources";
+import { clsx } from "clsx";
 
 export function QueryNodePropertiesPanel({ node }: { node: QueryNode }) {
 	const { data, updateNodeData } = useWorkflowDesigner();
@@ -109,7 +110,13 @@ export function QueryNodePropertiesPanel({ node }: { node: QueryNode }) {
 						</Tabs.Root>
 					</PropertiesPanelContent>
 				</Panel>
-				<PanelResizeHandle className="h-[1px] bg-black-700/50 data-[resize-handle-state=drag]:bg-black-600 transition-colors duration-100 ease-in-out" />
+				<PanelResizeHandle 
+					className={clsx(
+						"h-[3px] flex items-center justify-center cursor-row-resize",
+						"after:content-[''] after:h-[3px] after:w-[32px] after:bg-[#3a3f44] after:rounded-full",
+						"hover:after:bg-[#4a90e2]",
+					)}
+				/>
 				<Panel defaultSize={50} minSize={20}>
 					<PropertiesPanelContent>
 						<GenerationPanel node={node} onClickGenerateButton={generate} />

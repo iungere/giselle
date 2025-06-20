@@ -179,7 +179,7 @@ export function ImageGenerationNodePropertiesPanel({
 				</Panel>
 				<PanelResizeHandle
 					className={clsx(
-						"h-[12px] flex items-center justify-center cursor-row-resize",
+						"h-[3px] flex items-center justify-center cursor-row-resize",
 						"after:content-[''] after:h-[3px] after:w-[32px] after:bg-[#3a3f44] after:rounded-full",
 						"hover:after:bg-[#4a90e2]",
 					)}

@@ -29,6 +29,7 @@ import { GitHubRepositoryBlock } from "../trigger-node-properties-panel/ui";
 import { SelectRepository } from "../ui";
 import { GenerationPanel } from "./generation-panel";
 import { GitHubActionConfiguredView } from "./ui/github-action-configured-view";
+import { clsx } from "clsx";
 
 export function GitHubActionPropertiesPanel({
 	node,
@@ -54,7 +55,13 @@ export function GitHubActionPropertiesPanel({
 						inputs={node.inputs}
 					/>
 				</Panel>
-				<PanelResizeHandle className="h-[1px] bg-black-700/50 data-[resize-handle-state=drag]:bg-black-600 transition-colors duration-100 ease-in-out" />
+				<PanelResizeHandle 
+					className={clsx(
+						"h-[3px] flex items-center justify-center cursor-row-resize",
+						"after:content-[''] after:h-[3px] after:w-[32px] after:bg-[#3a3f44] after:rounded-full",
+						"hover:after:bg-[#4a90e2]",
+					)}
+				/>
 				<Panel>
 					<GenerationPanel node={node} />
 				</Panel>

@@ -30,7 +30,7 @@ export function CanvasHeader({ teamName }: { teamName?: string }) {
 		>
 			{/* Left section: Logo + Team/App names */}
 			<div className="flex items-center gap-[4px] min-w-0">
-				<GiselleIcon className="text-white-900 w-[36px] h-[36px]" />
+				<GiselleIcon className="text-white-900 w-[30px] h-[30px]" />
 				<span className="text-white-900 text-[14px] font-semibold">Studio</span>
 				<span className="text-white-900/20 text-[20px] font-[250] leading-none ml-[6px]">/</span>
 				

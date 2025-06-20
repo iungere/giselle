@@ -32,18 +32,24 @@ function Empty({ onGenerate }: { onGenerate?: () => void }) {
 					</button>
 				)}
 				<style jsx>{`
-					.generate-star {
-						display: inline-block;
-					}
-					button:hover .generate-star {
-						animation: rotateStar 0.7s ease-in-out;
-					}
-					@keyframes rotateStar {
-						0% { transform: rotate(0deg) scale(1); }
-						50% { transform: rotate(180deg) scale(1.5); }
-						100% { transform: rotate(360deg) scale(1); }
-					}
-				`}</style>
+          .generate-star {
+            display: inline-block;
+          }
+          button:hover .generate-star {
+            animation: rotateStar 0.7s ease-in-out;
+          }
+          @keyframes rotateStar {
+            0% {
+              transform: rotate(0deg) scale(1);
+            }
+            50% {
+              transform: rotate(180deg) scale(1.5);
+            }
+            100% {
+              transform: rotate(360deg) scale(1);
+            }
+          }
+        `}</style>
 			</EmptyState>
 		</div>
 	);
@@ -95,7 +101,10 @@ function getGenerationTextContent(generation: Generation): string {
 export function GenerationPanel({
 	node,
 	onClickGenerateButton,
-}: { node: TextGenerationNode; onClickGenerateButton?: () => void }) {
+}: {
+	node: TextGenerationNode;
+	onClickGenerateButton?: () => void;
+}) {
 	const { data } = useWorkflowDesigner();
 	const { generations } = useNodeGenerations({
 		nodeId: node.id,
@@ -124,7 +133,7 @@ export function GenerationPanel({
 		return <Empty onGenerate={handleGenerate} />;
 	}
 	return (
-		<div className="flex flex-col bg-white-900/10 h-full rounded-[8px] py-[8px]">
+		<div className="flex flex-col bg-white-900/10 h-full rounded-[8px] py-[8px] pb-[16px]">
 			<div
 				className={clsx(
 					"border-b border-white-400/20 py-[4px] px-[16px] flex items-center gap-[8px]",

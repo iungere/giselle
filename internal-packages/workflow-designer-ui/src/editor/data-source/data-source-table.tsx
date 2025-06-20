@@ -90,16 +90,57 @@ export function DataSourceTable() {
 				>
 					<Dialog open={presentDialog} onOpenChange={setPresentDialog}>
 						<DialogTrigger asChild>
-							<Button leftIcon={<PlusIcon />}>Add Data Source</Button>
+							<button
+								type="button"
+								className="group relative overflow-hidden rounded-lg px-4 py-2 text-white transition-all duration-300 hover:scale-[1.01] active:scale-95"
+								style={{
+									boxShadow:
+										"0 8px 20px rgba(107, 143, 240, 0.2), 0 3px 10px rgba(107, 143, 240, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.25), inset 0 -1px 0 rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.08)",
+								}}
+							>
+								{/* Outer glow */}
+								<div
+									className="absolute inset-0 rounded-lg blur-[2px] -z-10"
+									style={{ backgroundColor: "#6B8FF0", opacity: 0.08 }}
+								/>
+
+								{/* Main glass background */}
+								<div
+									className="absolute inset-0 rounded-lg backdrop-blur-md"
+									style={{
+										background:
+											"linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(107,143,240,0.1) 50%, rgba(107,143,240,0.2) 100%)",
+									}}
+								/>
+
+								{/* Top reflection */}
+								<div className="absolute top-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-white/60 to-transparent" />
+
+								{/* Subtle border */}
+								<div className="absolute inset-0 rounded-lg border border-white/20" />
+
+								{/* Content */}
+								<span className="relative z-10 flex items-center gap-2">
+									<span className="grid place-items-center rounded-full size-4 bg-primary-200 opacity-50">
+										<PlusIcon className="size-3 text-black-900" />
+									</span>
+									<span className="text-[14px] leading-[20px] font-medium">
+										Add Data Source
+									</span>
+								</span>
+
+								{/* Hover overlay */}
+								<div className="absolute inset-0 rounded-lg bg-gradient-to-t from-transparent to-white/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+							</button>
 						</DialogTrigger>
 						<DialogContent>
-							<div className="py-[12px]">
-								<DialogTitle>Add Data Source </DialogTitle>
-								<DialogDescription>
-									Enter a name and value for the secret.
-								</DialogDescription>
+							<div className="flex justify-between items-center">
+								<DialogTitle>Add Data Source</DialogTitle>
 							</div>
-							<form onSubmit={handleSubmit}>
+							<DialogDescription>
+								Connect to external data sources to query and use in your workflows.
+							</DialogDescription>
+							<form onSubmit={handleSubmit} className="space-y-4 mt-4">
 								<div className="flex flex-col gap-[12px]">
 									<fieldset className="flex flex-col">
 										<label
@@ -125,11 +166,25 @@ export function DataSourceTable() {
 								</div>
 								<DialogFooter>
 									<button
+										type="button"
+										onClick={() => setPresentDialog(false)}
+										className="flex-1 inline-flex items-center justify-center rounded-lg border-t border-b border-t-white/20 border-b-black/20 px-6 py-2 text-sm font-medium text-white shadow-[0_1px_0_rgba(255,255,255,0.05)_inset,0_-1px_0_rgba(0,0,0,0.2)_inset,0_0_0_1px_rgba(255,255,255,0.08)] transition-all duration-300 hover:shadow-[0_1px_0_rgba(255,255,255,0.1)_inset,0_-1px_0_rgba(0,0,0,0.2)_inset,0_0_0_1px_rgba(255,255,255,0.1)] bg-black/20 border border-white/10 shadow-[inset_0_0_4px_rgba(0,0,0,0.4)] hover:shadow-[inset_0_0_6px_rgba(0,0,0,0.6)]"
+									>
+										Cancel
+									</button>
+									<button
 										type="submit"
-										className="flex items-center gap-[4px] text-[14px] text-text hover:bg-ghost-element-hover transition-colors px-[8px] rounded-[2px] cursor-pointer"
+										className="flex-1 items-center justify-center gap-[4px] text-[14px] rounded-lg px-4 py-2 text-white/80 transition-all duration-200 active:scale-[0.98] disabled:opacity-50"
+										style={{
+											background:
+												"linear-gradient(180deg, #202530 0%, #12151f 100%)",
+											border: "1px solid rgba(0,0,0,0.7)",
+											boxShadow:
+												"inset 0 1px 1px rgba(255,255,255,0.05), 0 2px 8px rgba(5,10,20,0.4), 0 1px 2px rgba(0,0,0,0.3)",
+										}}
 										disabled={isPending}
 									>
-										{isPending ? "..." : "Create"}
+										{isPending ? "Creating..." : "Create"}
 									</button>
 								</DialogFooter>
 							</form>
@@ -145,68 +200,101 @@ export function DataSourceTable() {
 				<h1 className="font-accent text-text text-[18px] mb-[8px]">Secrets</h1>
 				<Dialog open={presentDialog} onOpenChange={setPresentDialog}>
 					<DialogTrigger asChild>
-						<Button type="button" leftIcon={<PlusIcon className="text-text" />}>
-							Add new secret
-						</Button>
+						<button
+							type="button"
+							className="group relative overflow-hidden rounded-lg px-4 py-2 text-white transition-all duration-300 hover:scale-[1.01] active:scale-95"
+							style={{
+								boxShadow:
+									"0 8px 20px rgba(107, 143, 240, 0.2), 0 3px 10px rgba(107, 143, 240, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.25), inset 0 -1px 0 rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.08)",
+							}}
+						>
+							{/* Outer glow */}
+							<div
+								className="absolute inset-0 rounded-lg blur-[2px] -z-10"
+								style={{ backgroundColor: "#6B8FF0", opacity: 0.08 }}
+							/>
+
+							{/* Main glass background */}
+							<div
+								className="absolute inset-0 rounded-lg backdrop-blur-md"
+								style={{
+									background:
+										"linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(107,143,240,0.1) 50%, rgba(107,143,240,0.2) 100%)",
+								}}
+							/>
+
+							{/* Top reflection */}
+							<div className="absolute top-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-white/60 to-transparent" />
+
+							{/* Subtle border */}
+							<div className="absolute inset-0 rounded-lg border border-white/20" />
+
+							{/* Content */}
+							<span className="relative z-10 flex items-center gap-2">
+								<span className="grid place-items-center rounded-full size-4 bg-primary-200 opacity-50">
+									<PlusIcon className="size-3 text-black-900" />
+								</span>
+								<span className="text-[14px] leading-[20px] font-medium">
+									Add Data Source
+								</span>
+							</span>
+
+							{/* Hover overlay */}
+							<div className="absolute inset-0 rounded-lg bg-gradient-to-t from-transparent to-white/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+						</button>
 					</DialogTrigger>
 					<DialogContent>
-						<div className="py-[12px]">
-							<DialogTitle>Add new secret</DialogTitle>
-							<DialogDescription>
-								Enter a name and value for the secret.
-							</DialogDescription>
+						<div className="flex justify-between items-center">
+							<DialogTitle>Add Data Source</DialogTitle>
 						</div>
-						<form onSubmit={handleSubmit}>
+						<DialogDescription>
+							Connect to external data sources to query and use in your workflows.
+						</DialogDescription>
+						<form onSubmit={handleSubmit} className="space-y-4 mt-4">
 							<div className="flex flex-col gap-[12px]">
 								<fieldset className="flex flex-col">
 									<label
-										htmlFor="label"
+										htmlFor="provider"
 										className="text-text text-[13px] mb-[2px]"
 									>
-										Secret Name
+										Provider
 									</label>
-									<input
-										type="text"
-										id="label"
-										name="label"
-										className={clsx(
-											"border border-border rounded-[4px] bg-editor-background outline-none px-[8px] py-[2px] text-[14px]",
-											"focus:border-border-focused",
-										)}
+									<Select
+										name="provider"
+										options={[{ id: "github", label: "GitHub" }]}
+										renderOption={(option) => option.label}
+										placeholder="Select provider..."
+										value={provider}
+										onValueChange={setProvider}
 									/>
 									<p className="text-[11px] text-text-muted px-[4px] mt-[1px]">
-										Give this token a short name (e.g. "Prod-bot"). You'll use
-										it when linking other nodes.
+										Currently, only GitHub is supported. More coming soon!
 									</p>
 								</fieldset>
-								<fieldset className="flex flex-col">
-									<div className="flex justify-between mb-[2px]">
-										<label htmlFor="pat" className="text-text text-[13px]">
-											Value
-										</label>
-									</div>
-									<input
-										type="text"
-										id="pat"
-										name="value"
-										className={clsx(
-											"border border-border rounded-[4px] bg-editor-background outline-none px-[8px] py-[2px] text-[14px]",
-											"focus:border-border-focused",
-										)}
-									/>
-									<p className="text-[11px] text-text-muted px-[4px] mt-[1px]">
-										We'll encrypt the token with authenticated encryption before
-										saving it.
-									</p>
-								</fieldset>
+
+								{provider === "github" && <GitHubConnectFieldsets />}
 							</div>
 							<DialogFooter>
 								<button
+									type="button"
+									onClick={() => setPresentDialog(false)}
+									className="flex-1 inline-flex items-center justify-center rounded-lg border-t border-b border-t-white/20 border-b-black/20 px-6 py-2 text-sm font-medium text-white shadow-[0_1px_0_rgba(255,255,255,0.05)_inset,0_-1px_0_rgba(0,0,0,0.2)_inset,0_0_0_1px_rgba(255,255,255,0.08)] transition-all duration-300 hover:shadow-[0_1px_0_rgba(255,255,255,0.1)_inset,0_-1px_0_rgba(0,0,0,0.2)_inset,0_0_0_1px_rgba(255,255,255,0.1)] bg-black/20 border border-white/10 shadow-[inset_0_0_4px_rgba(0,0,0,0.4)] hover:shadow-[inset_0_0_6px_rgba(0,0,0,0.6)]"
+								>
+									Cancel
+								</button>
+								<button
 									type="submit"
-									className="flex items-center gap-[4px] text-[14px] text-text hover:bg-ghost-element-hover transition-colors px-[8px] rounded-[2px] cursor-pointer"
+									className="flex-1 items-center justify-center gap-[4px] text-[14px] rounded-lg px-4 py-2 text-white/80 transition-all duration-200 active:scale-[0.98] disabled:opacity-50"
+									style={{
+										background:
+											"linear-gradient(180deg, #202530 0%, #12151f 100%)",
+										border: "1px solid rgba(0,0,0,0.7)",
+										boxShadow:
+											"inset 0 1px 1px rgba(255,255,255,0.05), 0 2px 8px rgba(5,10,20,0.4), 0 1px 2px rgba(0,0,0,0.3)",
+									}}
 									disabled={isPending}
 								>
-									{isPending ? "..." : "Create"}
+									{isPending ? "Creating..." : "Create"}
 								</button>
 							</DialogFooter>
 						</form>
