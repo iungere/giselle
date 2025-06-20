@@ -7,6 +7,7 @@ import {
 import { type GitHubActionCommandId, githubActions } from "@giselle-sdk/flow";
 import type { GitHubIntegrationInstallation } from "@giselle-sdk/integration";
 import { useIntegration } from "@giselle-sdk/integration/react";
+import { clsx } from "clsx";
 import { useWorkflowDesigner } from "giselle-sdk/react";
 import {
 	type FormEventHandler,
@@ -29,7 +30,6 @@ import { GitHubRepositoryBlock } from "../trigger-node-properties-panel/ui";
 import { SelectRepository } from "../ui";
 import { GenerationPanel } from "./generation-panel";
 import { GitHubActionConfiguredView } from "./ui/github-action-configured-view";
-import { clsx } from "clsx";
 
 export function GitHubActionPropertiesPanel({
 	node,
@@ -55,7 +55,7 @@ export function GitHubActionPropertiesPanel({
 						inputs={node.inputs}
 					/>
 				</Panel>
-				<PanelResizeHandle 
+				<PanelResizeHandle
 					className={clsx(
 						"h-[3px] flex items-center justify-center cursor-row-resize",
 						"after:content-[''] after:h-[3px] after:w-[32px] after:bg-[#3a3f44] after:rounded-full",

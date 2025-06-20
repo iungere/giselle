@@ -10,7 +10,9 @@ export function CanvasStroke() {
 
 	useEffect(() => {
 		// ReactFlowのpane要素を取得
-		const paneElement = document.querySelector('.react-flow__pane') as HTMLElement;
+		const paneElement = document.querySelector(
+			".react-flow__pane",
+		) as HTMLElement;
 		if (!paneElement) return;
 
 		const updateRect = () => {
@@ -25,13 +27,13 @@ export function CanvasStroke() {
 		const resizeObserver = new ResizeObserver(updateRect);
 		resizeObserver.observe(paneElement);
 
-		window.addEventListener('resize', updateRect);
-		window.addEventListener('scroll', updateRect);
+		window.addEventListener("resize", updateRect);
+		window.addEventListener("scroll", updateRect);
 
 		return () => {
 			resizeObserver.disconnect();
-			window.removeEventListener('resize', updateRect);
-			window.removeEventListener('scroll', updateRect);
+			window.removeEventListener("resize", updateRect);
+			window.removeEventListener("scroll", updateRect);
 		};
 	}, []);
 
@@ -46,8 +48,8 @@ export function CanvasStroke() {
 				top: canvasRect.top,
 				width: canvasRect.width,
 				height: canvasRect.height,
-				borderRadius: '16px',
-				padding: '1px',
+				borderRadius: "16px",
+				padding: "1px",
 				background: `linear-gradient(
 					135deg,
 					rgba(50, 50, 50, 0.7) 0%,
@@ -55,12 +57,13 @@ export function CanvasStroke() {
 					rgba(0, 0, 0, 0.5) 85%,
 					rgba(0, 0, 0, 0.5) 100%
 				)`,
-				mask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
-				maskComposite: 'exclude',
-				WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
-				WebkitMaskComposite: 'xor',
-				filter: 'blur(2px)',
+				mask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+				maskComposite: "exclude",
+				WebkitMask:
+					"linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+				WebkitMaskComposite: "xor",
+				filter: "blur(2px)",
 			}}
 		/>
 	);
-} 
+}

@@ -1,4 +1,5 @@
 import type { QueryNode } from "@giselle-sdk/data-type";
+import { clsx } from "clsx";
 import { useNodeGenerations, useWorkflowDesigner } from "giselle-sdk/react";
 import { CommandIcon, CornerDownLeft, DatabaseZapIcon } from "lucide-react";
 import { Tabs } from "radix-ui";
@@ -15,7 +16,6 @@ import { GenerationPanel } from "./generation-panel";
 import { InputPanel } from "./input-panel";
 import { QueryPanel } from "./query-panel";
 import { useConnectedSources } from "./sources";
-import { clsx } from "clsx";
 
 export function QueryNodePropertiesPanel({ node }: { node: QueryNode }) {
 	const { data, updateNodeData } = useWorkflowDesigner();
@@ -110,7 +110,7 @@ export function QueryNodePropertiesPanel({ node }: { node: QueryNode }) {
 						</Tabs.Root>
 					</PropertiesPanelContent>
 				</Panel>
-				<PanelResizeHandle 
+				<PanelResizeHandle
 					className={clsx(
 						"h-[3px] flex items-center justify-center cursor-row-resize",
 						"after:content-[''] after:h-[3px] after:w-[32px] after:bg-[#3a3f44] after:rounded-full",

@@ -48,9 +48,7 @@ export function GlassmorphicButton({
 			<div className="absolute inset-0 rounded-lg border border-white/20" />
 
 			{/* Content */}
-			<span className="relative z-10 flex items-center gap-2">
-				{children}
-			</span>
+			<span className="relative z-10 flex items-center gap-2">{children}</span>
 
 			{/* Hover overlay */}
 			<div className="absolute inset-0 rounded-lg bg-gradient-to-t from-transparent to-white/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />

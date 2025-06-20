@@ -1,5 +1,5 @@
-import { Editor } from "@giselle-internal/workflow-designer-ui";
 import { fetchCurrentTeam } from "@/services/teams";
+import { Editor } from "@giselle-internal/workflow-designer-ui";
 
 export default async function Page() {
 	const currentTeam = await fetchCurrentTeam();

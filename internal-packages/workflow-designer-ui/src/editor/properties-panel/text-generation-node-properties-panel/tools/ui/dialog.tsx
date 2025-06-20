@@ -29,9 +29,7 @@ export function DialogContent({ children }: PropsWithChildren) {
 					<div className="absolute top-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent" />
 					<div className="absolute inset-0 rounded-[12px] border border-white/10" />
 
-					<div className="relative z-10 text-text px-[12px]">
-						{children}
-					</div>
+					<div className="relative z-10 text-text px-[12px]">{children}</div>
 				</DialogPrimitive.Content>
 			</div>
 		</DialogPortal>

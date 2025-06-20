@@ -29,9 +29,7 @@ export function DialogContent({ children }: PropsWithChildren) {
 					<div className="absolute top-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent" />
 					<div className="absolute inset-0 rounded-[12px] border border-white/10" />
 
-					<div className="relative z-10 text-text">
-						{children}
-					</div>
+					<div className="relative z-10 text-text">{children}</div>
 				</DialogPrimitive.Content>
 			</div>
 		</DialogPortal>
@@ -56,9 +54,7 @@ export function DialogDescription({ children }: PropsWithChildren) {
 export function DialogFooter({ children }: PropsWithChildren) {
 	return (
 		<div className="flex justify-end items-center mt-6">
-			<div className="flex w-full max-w-[280px] space-x-2">
-				{children}
-			</div>
+			<div className="flex w-full max-w-[280px] space-x-2">{children}</div>
 		</div>
 	);
 }

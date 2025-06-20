@@ -36,4 +36,4 @@ export function GlassmorphicContainer({
 			<div className="relative p-2">{children}</div>
 		</div>
 	);
-} 
+}
