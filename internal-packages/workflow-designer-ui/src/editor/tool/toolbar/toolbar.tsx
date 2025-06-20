@@ -218,14 +218,14 @@ export function Toolbar() {
 			showDecorations={false}
 		>
 			<div className="relative -p-8">
-				<div className="flex divide-x divide-[hsla(232,36%,72%,0.2)] items-center px-[8px] py-[8px]">
+				<div className="flex divide-x divide-[hsla(232,36%,72%,0.2)] items-center py-[1px]">
 					<ToggleGroup.Root
 						type="single"
 						className={clsx(
 							"flex items-center px-[8px] z-10 h-full gap-[12px] text-white-950",
 							"**:data-tool:hover:bg-white-850/10 **:data-tool:p-[4px] **:data-tool:rounded-[4px]",
 							"**:data-tool:data-[state=on]:bg-primary-900 **:data-tool:focus:outline-none",
-							"**:data-icon:w-[24px] **:data-icon:h-[24px] **:data-icon:text-white-950 ",
+							"**:data-icon:w-[20px] **:data-icon:h-[20px] **:data-icon:text-white-950 ",
 						)}
 						value={selectedTool?.action}
 						onValueChange={(value) => {
