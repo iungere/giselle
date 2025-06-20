@@ -39,8 +39,8 @@ import {
 import { DatabaseZapIcon, LucideSearch, WorkflowIcon } from "lucide-react";
 import { Popover, ToggleGroup } from "radix-ui";
 import { useEffect, useState } from "react";
-import { Tooltip } from "../../../ui/tooltip";
 import { GlassmorphicContainer } from "../../../ui/glassmorphic-container";
+import { Tooltip } from "../../../ui/tooltip";
 import { isToolAction } from "../types";
 import {
 	AnthropicIcon,
@@ -213,7 +213,7 @@ export function Toolbar() {
 	};
 
 	return (
-		<GlassmorphicContainer 
+		<GlassmorphicContainer
 			className="rounded-[8px] p-0"
 			showDecorations={false}
 		>
@@ -861,7 +861,9 @@ export function Toolbar() {
 								data-tool
 								className="relative"
 							>
-								<Tooltip text={<TooltipAndHotkey text="Retrieval" hotkey="r" />}>
+								<Tooltip
+									text={<TooltipAndHotkey text="Retrieval" hotkey="r" />}
+								>
 									<LucideSearch data-icon />
 								</Tooltip>
 								{selectedTool?.action === "selectRetrievalCategory" && (
@@ -889,13 +891,15 @@ export function Toolbar() {
 														onValueChange={(sourceType) => {
 															switch (sourceType) {
 																case "query":
-																	setSelectedTool(addNodeTool(createQueryNode()));
+																	setSelectedTool(
+																		addNodeTool(createQueryNode()),
+																	);
 																	break;
 															}
 														}}
 													>
 														<ToggleGroup.Item value="query" data-tool>
-															<DatabaseZapIcon className="w-[20px] h-[20px]" />
+															<DatabaseZapIcon className="w-[18px] h-[18px]" />
 															<p className="text-[14px]">Query</p>
 														</ToggleGroup.Item>
 													</ToggleGroup.Root>
@@ -950,17 +954,20 @@ export function Toolbar() {
 													}}
 												>
 													<ToggleGroup.Item value="text" data-tool>
-														<PromptIcon className="w-[20px] h-[20px]" />
+														<PromptIcon className="w-[18px] h-[18px]" />
 														<p className="text-[14px]">Plain Text</p>
 													</ToggleGroup.Item>
 													{githubVectorStore && (
-														<ToggleGroup.Item value="githubVectorStore" data-tool>
-															<GitHubIcon className="w-[20px] h-[20px]" />
+														<ToggleGroup.Item
+															value="githubVectorStore"
+															data-tool
+														>
+															<GitHubIcon className="w-[18px] h-[18px]" />
 															<p className="text-[14px]">GitHub Vector Store</p>
 														</ToggleGroup.Item>
 													)}
 													<ToggleGroup.Item value="webPage" data-tool>
-														<WebPageFileIcon className="w-[20px] h-[20px]" />
+														<WebPageFileIcon className="w-[18px] h-[18px]" />
 														<p className="text-[14px]">Web Page</p>
 													</ToggleGroup.Item>
 												</ToggleGroup.Root>
@@ -1003,25 +1010,27 @@ export function Toolbar() {
 													onValueChange={(fileCategory) => {
 														setSelectedTool(
 															addNodeTool(
-																createFileNode(FileCategory.parse(fileCategory)),
+																createFileNode(
+																	FileCategory.parse(fileCategory),
+																),
 															),
 														);
 													}}
 												>
 													<ToggleGroup.Item value="pdf" data-tool>
-														<PdfFileIcon className="w-[20px] h-[20px]" />
+														<PdfFileIcon className="w-[18px] h-[18px]" />
 														<p className="text-[14px]">PDF</p>
 													</ToggleGroup.Item>
 													<ToggleGroup.Item value="image" data-tool>
-														<PictureIcon className="w-[20px] h-[20px]" />
+														<PictureIcon className="w-[18px] h-[18px]" />
 														<p className="text-[14px]">Image</p>
 													</ToggleGroup.Item>
 													<ToggleGroup.Item value="text" data-tool>
-														<TextFileIcon className="w-[20px] h-[20px]" />
+														<TextFileIcon className="w-[18px] h-[18px]" />
 														<p className="text-[14px]">Text</p>
 													</ToggleGroup.Item>
 													{/* <ToggleGroup.Item value="addGitHubNode" data-tool>
-														<GitHubIcon className="w-[20px] h-[20px]" />
+														<GitHubIcon className="w-[18px] h-[18px]" />
 														<p className="text-[14px]">GitHub</p>
 													</ToggleGroup.Item> */}
 												</ToggleGroup.Root>
