@@ -14,12 +14,12 @@
 	border-radius: 16px;
 	position: relative;
 	/* Display result: bottom-right=dark, top-left=light */
-	box-shadow: inset -12px -12px 24px rgba(255, 255, 255, 0.1), /* white light shadow */
-		inset 6px 6px 32px rgba(0, 0, 0, 0.8); /* black dark shadow */
+	box-shadow: inset -12px -12px 24px rgba(255, 255, 255, 0.1),
+		/* white light shadow */ inset 6px 6px 32px rgba(0, 0, 0, 0.8); /* black dark shadow */
 }
 
 /* ★ Outer stroke pseudo-element - removed and componentized */
-/* 
+/*
 .giselle-workflow-editor-v3 .react-flow__pane::after,
 .giselle-workflow-editor .react-flow__pane::after {
 	content: "";
@@ -226,19 +226,19 @@
 			opacity: 1;
 			transform: rotate(0deg) scale(1);
 		}
-		1.29% {
+		0.43% {
 			opacity: 1;
 			transform: rotate(720deg) scale(1);
 		}
-		2.58% {
+		0.86% {
 			opacity: 1;
 			transform: rotate(1440deg) scale(0.2);
 		}
-		2.64% {
+		0.88% {
 			opacity: 0;
 			transform: rotate(1440deg) scale(0);
 		}
-		2.71% {
+		0.90% {
 			opacity: 1;
 			transform: rotate(0deg) scale(1);
 		}
