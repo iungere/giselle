@@ -1,4 +1,8 @@
 import {
+	type AnthropicLanguageModelData,
+	type GoogleLanguageModelData,
+	type OpenAILanguageModelData,
+	type PerplexityLanguageModelData,
 	type TextGenerationNode,
 	isImageGenerationNode,
 	isTextGenerationNode,
@@ -66,7 +70,13 @@ export function RefactoredTextGenerationNodePropertiesPanel({
 	// Model panel component based on provider
 	const modelPanel = useMemo(() => {
 		const commonProps = {
-			onModelChange: (value: unknown) =>
+			onModelChange: (
+				value:
+					| OpenAILanguageModelData
+					| AnthropicLanguageModelData
+					| GoogleLanguageModelData
+					| PerplexityLanguageModelData,
+			) =>
 				updateNodeDataContent(node, {
 					...node.content,
 					llm: value,
