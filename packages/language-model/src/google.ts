@@ -1,5 +1,7 @@
-import { z } from "zod";
+import { z } from "zod/v4";
 import { Capability, LanguageModelBase, Tier } from "./base";
+import { BaseCostCalculator } from "./costs/calculator";
+import { googleTokenPricing } from "./costs/model-prices";
 
 const GoogleLanguageModelConfigurations = z.object({
 	temperature: z.number(),
@@ -16,26 +18,36 @@ const defaultConfigurations: GoogleLanguageModelConfigurations = {
 	searchGrounding: false,
 };
 
+export const GoogleLanguageModelId = z
+	.enum([
+		"gemini-2.5-pro-preview-06-05",
+		"gemini-2.5-flash-preview-05-20",
+		"gemini-2.0-flash",
+		"gemini-2.0-flash-lite",
+	])
+	.catch((ctx) => {
+		if (typeof ctx.value !== "string") {
+			return "gemini-2.0-flash";
+		}
+		if (ctx.value.startsWith("gemini-2.5-pro-preview-")) {
+			return "gemini-2.5-pro-preview-06-05";
+		}
+		if (ctx.value.startsWith("gemini-2.5-flash-preview-")) {
+			return "gemini-2.5-flash-preview-05-20";
+		}
+		return "gemini-2.0-flash";
+	});
+
 const GoogleLanguageModel = LanguageModelBase.extend({
+	id: GoogleLanguageModelId,
 	provider: z.literal("google"),
 	configurations: GoogleLanguageModelConfigurations,
 });
 type GoogleLanguageModel = z.infer<typeof GoogleLanguageModel>;
 
-const gemini25ProExp: GoogleLanguageModel = {
-	provider: "google",
-	id: "gemini-2.5-pro-exp-03-25",
-	capabilities:
-		Capability.TextGeneration |
-		Capability.GenericFileInput |
-		Capability.OptionalSearchGrounding |
-		Capability.Reasoning,
-	tier: Tier.enum.free,
-	configurations: defaultConfigurations,
-};
 const gemini25ProPreview: GoogleLanguageModel = {
 	provider: "google",
-	id: "gemini-2.5-pro-preview-03-25",
+	id: "gemini-2.5-pro-preview-06-05",
 	capabilities:
 		Capability.TextGeneration |
 		Capability.GenericFileInput |
@@ -47,7 +59,7 @@ const gemini25ProPreview: GoogleLanguageModel = {
 
 const gemini25FlashPreview: GoogleLanguageModel = {
 	provider: "google",
-	id: "gemini-2.5-flash-preview-04-17",
+	id: "gemini-2.5-flash-preview-05-20",
 	capabilities:
 		Capability.TextGeneration |
 		Capability.GenericFileInput |
@@ -68,42 +80,29 @@ const gemini20Flash: GoogleLanguageModel = {
 	configurations: defaultConfigurations,
 };
 
-const gemini20FlashLitePreview: GoogleLanguageModel = {
+const gemini20FlashLite: GoogleLanguageModel = {
 	provider: "google",
-	id: "gemini-2.0-flash-lite-preview-02-05",
-	capabilities: Capability.TextGeneration | Capability.GenericFileInput,
-	tier: Tier.enum.free,
-	configurations: defaultConfigurations,
-};
-const gemini20FlashThinkingExp: GoogleLanguageModel = {
-	provider: "google",
-	id: "gemini-2.0-flash-thinking-exp-01-21",
+	id: "gemini-2.0-flash-lite",
 	capabilities:
 		Capability.TextGeneration |
-		Capability.GenericFileInput |
-		Capability.Reasoning,
-	tier: Tier.enum.free,
-	configurations: defaultConfigurations,
-};
-const gemini20ProExp: GoogleLanguageModel = {
-	provider: "google",
-	id: "gemini-2.0-pro-exp-02-05",
-	capabilities:
-		Capability.TextGeneration |
-		Capability.GenericFileInput |
-		Capability.SearchGrounding,
+		Capability.OptionalSearchGrounding |
+		Capability.GenericFileInput,
 	tier: Tier.enum.free,
 	configurations: defaultConfigurations,
 };
 
 export const models = [
-	gemini25ProExp,
 	gemini25ProPreview,
 	gemini25FlashPreview,
 	gemini20Flash,
-	gemini20FlashThinkingExp,
-	gemini20ProExp,
+	gemini20FlashLite,
 ];
 
 export const LanguageModel = GoogleLanguageModel;
 export type LanguageModel = GoogleLanguageModel;
+
+export class GoogleCostCalculator extends BaseCostCalculator {
+	protected getPricingTable() {
+		return googleTokenPricing;
+	}
+}

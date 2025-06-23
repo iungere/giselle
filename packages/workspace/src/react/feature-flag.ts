@@ -1,8 +1,11 @@
 import { createContext, useContext } from "react";
 
 export interface FeatureFlagContextValue {
-	flowNode: boolean;
-	runV2: boolean;
+	githubVectorStore: boolean;
+	runV3: boolean;
+	sidemenu: boolean;
+	githubTools: boolean;
+	webSearchAction: boolean;
 }
 export const FeatureFlagContext = createContext<
 	FeatureFlagContextValue | undefined

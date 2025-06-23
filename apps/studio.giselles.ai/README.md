@@ -21,3 +21,13 @@ https://studio.giselles.ai/
     ```sh
     pnpm turbo dev
     ```
+
+## Development with vercel(for internal team)
+
+1. Open a terminal window
+
+2. Run the following command:
+
+    ```sh
+    vercel dev --cwd apps/studio.giselles.ai
+    ```

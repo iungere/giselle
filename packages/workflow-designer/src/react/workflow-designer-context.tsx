@@ -1,27 +1,40 @@
 "use client";
 
 import {
+	type ActionNode,
 	type ConnectionId,
+	type FailedFileData,
+	type FileContent,
 	type FileNode,
 	type Node,
+	type NodeBase,
 	type NodeId,
 	type NodeUIState,
+	type SecretId,
+	type TriggerNode,
 	type UploadedFileData,
 	type Viewport,
 	type Workspace,
 	createFailedFileData,
 	createUploadedFileData,
 	createUploadingFileData,
+	isActionNode,
+	isFileNode,
+	isTriggerNode,
+	isVectorStoreNode,
 } from "@giselle-sdk/data-type";
 import { GenerationRunnerSystemProvider } from "@giselle-sdk/giselle-engine/react";
 import {
 	APICallError,
 	useGiselleEngine,
 } from "@giselle-sdk/giselle-engine/react";
-import { RunSystemContextProvider } from "@giselle-sdk/giselle-engine/react";
 import type { LanguageModelProvider } from "@giselle-sdk/language-model";
+import { isClonedFileDataPayload } from "@giselle-sdk/node-utils";
 import { createContext, useCallback, useEffect, useRef, useState } from "react";
-import { WorkflowDesigner } from "../workflow-designer";
+import {
+	type ConnectionCloneStrategy,
+	WorkflowDesigner,
+} from "../workflow-designer";
 import { usePropertiesPanel, useView } from "./state";
 
 type UploadFileFn = (
@@ -56,7 +69,14 @@ export interface WorkflowDesignerContextValue
 	) => void;
 	uploadFile: UploadFileFn;
 	removeFile: (uploadedFile: UploadedFileData) => Promise<void>;
-	deleteNode: (nodeId: NodeId | string) => void;
+	copyNode: (
+		sourceNode: Node,
+		options?: {
+			ui?: NodeUIState;
+			connectionCloneStrategy?: ConnectionCloneStrategy;
+		},
+	) => Promise<Node | undefined>;
+	deleteNode: (nodeId: NodeId | string) => Promise<void>;
 	llmProviders: LanguageModelProvider[];
 	isLoading: boolean;
 }
@@ -132,8 +152,196 @@ export function WorkflowDesignerProvider({
 		[setAndSaveWorkspace],
 	);
 
+	const handleFileNodeCopy = useCallback(
+		async (sourceNode: Node, newNode: Node): Promise<void> => {
+			if (!isFileNode(newNode) || !isFileNode(sourceNode)) {
+				return;
+			}
+
+			const fileCopyPromises = newNode.content.files.map(
+				async (fileDataWithOriginalId) => {
+					if (!isClonedFileDataPayload(fileDataWithOriginalId)) {
+						// Already completed file data, keep as is
+						return fileDataWithOriginalId;
+					}
+
+					const { originalFileIdForCopy, ...newFileData } =
+						fileDataWithOriginalId;
+
+					if (originalFileIdForCopy) {
+						try {
+							await client.copyFile({
+								workspaceId: data.id,
+								sourceFileId: originalFileIdForCopy,
+								destinationFileId: newFileData.id,
+							});
+
+							return newFileData;
+						} catch (error) {
+							console.error(
+								`Failed to copy file for new fileId ${newFileData.id} (source: ${originalFileIdForCopy}):`,
+								error,
+							);
+
+							return {
+								...newFileData,
+								status: "failed",
+								errorMessage:
+									error instanceof Error ? error.message : "Unknown error",
+							} as FailedFileData;
+						}
+					}
+
+					return newFileData;
+				},
+			);
+
+			const resolvedFiles = await Promise.all(fileCopyPromises);
+			const newContentForNode: FileContent = {
+				...newNode.content,
+				files: resolvedFiles,
+			};
+
+			workflowDesignerRef.current.updateNodeData(newNode, {
+				content: newContentForNode,
+			});
+
+			setAndSaveWorkspace();
+		},
+		[client, data.id, setAndSaveWorkspace],
+	);
+
+	const handleTriggerNodeCopy = useCallback(
+		async (sourceNode: Node, newNode: Node): Promise<void> => {
+			if (
+				!isTriggerNode(sourceNode) ||
+				!isTriggerNode(newNode) ||
+				sourceNode.content.state.status !== "configured"
+			) {
+				return;
+			}
+
+			try {
+				const originalTriggerId = sourceNode.content.state.flowTriggerId;
+
+				const originalTriggerResult = await client.getTrigger({
+					flowTriggerId: originalTriggerId,
+				});
+
+				if (originalTriggerResult?.trigger) {
+					const originalTrigger = originalTriggerResult.trigger;
+					const result = await client.configureTrigger({
+						trigger: {
+							workspaceId: originalTrigger.workspaceId,
+							nodeId: newNode.id,
+							enable: originalTrigger.enable,
+							configuration: originalTrigger.configuration,
+						},
+					});
+
+					if (result?.triggerId) {
+						workflowDesignerRef.current.updateNodeData(newNode, {
+							content: {
+								...newNode.content,
+								state: {
+									status: "configured",
+									flowTriggerId: result.triggerId,
+								},
+							},
+						} as Partial<TriggerNode>);
+
+						setAndSaveWorkspace();
+					}
+				}
+			} catch (error) {
+				console.error("Failed to duplicate trigger configuration:", error);
+			}
+		},
+		[client, setAndSaveWorkspace],
+	);
+
+	const handleActionNodeCopy = useCallback(
+		(sourceNode: Node, newNode: Node): void => {
+			if (
+				!isActionNode(sourceNode) ||
+				!isActionNode(newNode) ||
+				sourceNode.content.command.state.status !== "configured" ||
+				sourceNode.content.command.provider !== newNode.content.command.provider
+			) {
+				return;
+			}
+
+			workflowDesignerRef.current.updateNodeData(newNode, {
+				content: {
+					...newNode.content,
+					command: {
+						...newNode.content.command,
+						state: structuredClone(sourceNode.content.command.state),
+					},
+				},
+			} as Partial<ActionNode>);
+			setAndSaveWorkspace();
+		},
+		[setAndSaveWorkspace],
+	);
+
+	const handleVectorStoreNodeCopy = useCallback(
+		(sourceNode: Node, newNode: Node): void => {
+			if (
+				!isVectorStoreNode(sourceNode) ||
+				!isVectorStoreNode(newNode) ||
+				sourceNode.content.source.state.status !== "configured"
+			) {
+				return;
+			}
+
+			workflowDesignerRef.current.updateNodeData(newNode, {
+				content: {
+					...newNode.content,
+					source: structuredClone(sourceNode.content.source),
+				},
+			});
+			setAndSaveWorkspace();
+		},
+		[setAndSaveWorkspace],
+	);
+
+	const copyNode = useCallback(
+		async (
+			sourceNode: Node,
+			options?: {
+				ui?: NodeUIState;
+				connectionCloneStrategy?: ConnectionCloneStrategy;
+			},
+		): Promise<Node | undefined> => {
+			const newNodeDefinition = workflowDesignerRef.current.copyNode(
+				sourceNode,
+				options,
+			);
+			if (!newNodeDefinition) {
+				return undefined;
+			}
+			setAndSaveWorkspace();
+
+			// Handle different node types - following existing pattern
+			await handleFileNodeCopy(sourceNode, newNodeDefinition);
+			await handleTriggerNodeCopy(sourceNode, newNodeDefinition);
+			handleActionNodeCopy(sourceNode, newNodeDefinition);
+			handleVectorStoreNodeCopy(sourceNode, newNodeDefinition);
+
+			return newNodeDefinition;
+		},
+		[
+			setAndSaveWorkspace,
+			handleFileNodeCopy,
+			handleTriggerNodeCopy,
+			handleActionNodeCopy,
+			handleVectorStoreNodeCopy,
+		],
+	);
+
 	const updateNodeData = useCallback(
-		<T extends Node>(node: T, data: Partial<T>) => {
+		<T extends NodeBase>(node: T, data: Partial<T>) => {
 			workflowDesignerRef.current.updateNodeData(node, data);
 			setAndSaveWorkspace();
 		},
@@ -201,11 +409,24 @@ export function WorkflowDesignerProvider({
 	);
 
 	const deleteNode = useCallback(
-		(nodeId: NodeId | string) => {
-			workflowDesignerRef.current.deleteNode(nodeId);
+		async (nodeId: NodeId | string) => {
+			const deletedNode = workflowDesignerRef.current.deleteNode(nodeId);
+			if (
+				deletedNode &&
+				isTriggerNode(deletedNode) &&
+				deletedNode.content.state.status === "configured"
+			) {
+				try {
+					await client.deleteTrigger({
+						flowTriggerId: deletedNode.content.state.flowTriggerId,
+					});
+				} catch (error) {
+					console.error("Failed to delete trigger", error);
+				}
+			}
 			setAndSaveWorkspace();
 		},
-		[setAndSaveWorkspace],
+		[setAndSaveWorkspace, client],
 	);
 
 	const deleteConnection = useCallback(
@@ -309,6 +530,7 @@ export function WorkflowDesignerProvider({
 				data: workspace,
 				textGenerationApi,
 				addNode,
+				copyNode,
 				addConnection,
 				updateNodeData,
 				updateNodeDataContent,
@@ -327,9 +549,7 @@ export function WorkflowDesignerProvider({
 			}}
 		>
 			<GenerationRunnerSystemProvider>
-				<RunSystemContextProvider workspaceId={data.id}>
-					{children}
-				</RunSystemContextProvider>
+				{children}
 			</GenerationRunnerSystemProvider>
 		</WorkflowDesignerContext.Provider>
 	);

@@ -5,6 +5,7 @@ import type {
 } from "@giselle-sdk/data-type";
 import clsx from "clsx/lite";
 import { useNodeGenerations, useWorkflowDesigner } from "giselle-sdk/react";
+import { ArrowDownIcon, ArrowUpIcon, TimerIcon } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { StackBlicksIcon } from "../../../icons";
 import ClipboardButton from "../../../ui/clipboard-button";
@@ -24,28 +25,45 @@ function Empty({ onGenerate }: { onGenerate?: () => void }) {
 					<button
 						type="button"
 						onClick={onGenerate}
-						className="flex items-center justify-center px-[24px] py-[12px] mt-[16px] bg-[#141519] text-white rounded-[9999px] border border-white-900/15 transition-all hover:bg-[#1e1f26] hover:border-white-900/25 hover:translate-y-[-1px] cursor-pointer font-hubot font-[500] text-[14px]"
+						className="flex items-center justify-center px-[24px] py-[12px] mt-[16px] bg-[#141519] text-white rounded-[9999px] border border-white-900/15 transition-all hover:bg-[#1e1f26] hover:border-white-900/25 hover:translate-y-[-1px] cursor-pointer font-sans font-[500] text-[14px]"
 					>
 						<span className="mr-[8px] generate-star">✦</span>
 						Generate with the Current Prompt
 					</button>
 				)}
 				<style jsx>{`
-					.generate-star {
-						display: inline-block;
-					}
-					button:hover .generate-star {
-						animation: rotateStar 0.7s ease-in-out;
-					}
-					@keyframes rotateStar {
-						0% { transform: rotate(0deg) scale(1); }
-						50% { transform: rotate(180deg) scale(1.5); }
-						100% { transform: rotate(360deg) scale(1); }
-					}
-				`}</style>
+          .generate-star {
+            display: inline-block;
+          }
+          button:hover .generate-star {
+            animation: rotateStar 0.7s ease-in-out;
+          }
+          @keyframes rotateStar {
+            0% {
+              transform: rotate(0deg) scale(1);
+            }
+            50% {
+              transform: rotate(180deg) scale(1.5);
+            }
+            100% {
+              transform: rotate(360deg) scale(1);
+            }
+          }
+        `}</style>
 			</EmptyState>
 		</div>
 	);
+}
+
+// Helper function to format execution time
+function formatExecutionTime(startedAt: number, completedAt: number): string {
+	const durationMs = completedAt - startedAt;
+	if (durationMs < 60000) {
+		return `${durationMs.toLocaleString()}ms`;
+	}
+	const minutes = Math.floor(durationMs / 60000);
+	const seconds = Math.floor((durationMs % 60000) / 1000);
+	return `${minutes}m ${seconds}s`;
 }
 
 // Helper function to extract text content from a generation
@@ -66,7 +84,9 @@ function getGenerationTextContent(generation: Generation): string {
 
 	// Fallback to extracting from messages if no outputs or not completed
 	const generatedMessages =
-		generation.messages?.filter((m) => m.role === "assistant") ?? [];
+		"messages" in generation
+			? (generation.messages?.filter((m) => m.role === "assistant") ?? [])
+			: [];
 
 	return generatedMessages
 		.map((message) =>
@@ -81,7 +101,10 @@ function getGenerationTextContent(generation: Generation): string {
 export function GenerationPanel({
 	node,
 	onClickGenerateButton,
-}: { node: TextGenerationNode; onClickGenerateButton?: () => void }) {
+}: {
+	node: TextGenerationNode;
+	onClickGenerateButton?: () => void;
+}) {
 	const { data } = useWorkflowDesigner();
 	const { generations } = useNodeGenerations({
 		nodeId: node.id,
@@ -110,7 +133,7 @@ export function GenerationPanel({
 		return <Empty onGenerate={handleGenerate} />;
 	}
 	return (
-		<div className="flex flex-col bg-white-900/10 h-full rounded-[8px] py-[8px]">
+		<div className="flex flex-col bg-white-900/10 h-full rounded-[8px] py-[8px] pb-[16px]">
 			<div
 				className={clsx(
 					"border-b border-white-400/20 py-[4px] px-[16px] flex items-center gap-[8px]",
@@ -132,6 +155,40 @@ export function GenerationPanel({
 					{currentGeneration.status === "cancelled" && (
 						<p data-header-text>Result</p>
 					)}
+					{currentGeneration.status === "completed" &&
+						currentGeneration.usage && (
+							<div className="flex items-center gap-[10px] text-[11px] text-black-400 font-sans ml-[6px]">
+								{currentGeneration.startedAt &&
+									currentGeneration.completedAt && (
+										<span className="flex items-center gap-[2px]">
+											<TimerIcon className="text-black-400 size-[12px]" />
+											{formatExecutionTime(
+												currentGeneration.startedAt,
+												currentGeneration.completedAt,
+											)}
+										</span>
+									)}
+
+								<span className="flex items-center gap-[2px]">
+									<ArrowUpIcon className="text-black-400 size-[12px]" />
+									{(
+										currentGeneration as unknown as {
+											usage: { promptTokens: number };
+										}
+									).usage.promptTokens.toLocaleString()}
+									t
+								</span>
+								<span className="flex items-center gap-[2px]">
+									<ArrowDownIcon className="text-black-400 size-[12px]" />
+									{(
+										currentGeneration as unknown as {
+											usage: { completionTokens: number };
+										}
+									).usage.completionTokens.toLocaleString()}
+									t
+								</span>
+							</div>
+						)}
 				</div>
 				{(currentGeneration.status === "completed" ||
 					currentGeneration.status === "cancelled") && (

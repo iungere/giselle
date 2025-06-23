@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod/v4";
 import { Capability, LanguageModelBase, Tier } from "./base";
 
 const PerplexityLanguageModelConfigurations = z.object({
@@ -6,6 +6,7 @@ const PerplexityLanguageModelConfigurations = z.object({
 	topP: z.number(),
 	presencePenalty: z.number(),
 	frequencyPenalty: z.number(),
+	searchDomainFilter: z.array(z.string()).optional(),
 });
 type PerplexityLanguageModelConfigurations = z.infer<
 	typeof PerplexityLanguageModelConfigurations
@@ -18,7 +19,10 @@ const defaultConfigurations: PerplexityLanguageModelConfigurations = {
 	frequencyPenalty: 1.0,
 };
 
+const PerplexityLanguageModelId = z.enum(["sonar", "sonar-pro"]).catch("sonar");
+
 const PerplexityLanguageModel = LanguageModelBase.extend({
+	id: PerplexityLanguageModelId,
 	provider: z.literal("perplexity"),
 	configurations: PerplexityLanguageModelConfigurations,
 });

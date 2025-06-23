@@ -1,6 +1,5 @@
 import { createIdGenerator } from "@giselle-sdk/utils";
-import { z } from "zod";
-import { NodeBase } from "../base";
+import { z } from "zod/v4";
 
 export const FileId = createIdGenerator("fl");
 export type FileId = z.infer<typeof FileId.schema>;
@@ -84,18 +83,6 @@ export const FileContent = z.object({
 	files: z.array(FileData),
 });
 export type FileContent = z.infer<typeof FileContent>;
-
-export const OverrideFileContent = z.object({
-	type: z.literal("file"),
-	files: z.array(FileData),
-});
-export type OverrideFileContent = z.infer<typeof OverrideFileContent>;
-
-export function isOverrideFileContent(
-	content: unknown,
-): content is OverrideFileContent {
-	return OverrideFileContent.safeParse(content).success;
-}
 
 export const FileContentReference = z.object({
 	type: FileContent.shape.type,

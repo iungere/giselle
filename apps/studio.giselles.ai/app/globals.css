@@ -1,6 +1,7 @@
 @import "tailwindcss";
-@import "../../../internal-packages/workflow-designer-ui/src/workflow-designer-ui.css";
+@import "../../../internal-packages/workflow-designer-ui/src/app/globals.css";
 
+@source "../../../internal-packages/ui";
 @source "../../../internal-packages/workflow-designer-ui/src";
 @source "../../../packages/text-editor/src/react/";
 
@@ -77,7 +78,7 @@
 	}
 
 	.dark {
-		--background: 240 10% 3.9%;
+		--background: 231 100% 2%;
 		--foreground: 0 0% 98%;
 
 		--card: 240 10% 3.9%;
@@ -242,6 +243,9 @@
 	--color-file-node-1: var(--color-chartreuse-900);
 	--color-file-node-2: hsl(69, 99%, 32%);
 
+	--color-webPage-node-1: var(--color-chartreuse-900);
+	--color-webPage-node-2: hsl(69, 99%, 32%);
+
 	--color-node-data-900: var(--color-chartreuse-900);
 	--color-node-plaintext-900: var(--color-turquoise-900);
 
@@ -250,6 +254,9 @@
 
 	--color-trigger-node-1: var(--color-black-400);
 	--color-trigger-node-2: var(--color-black-400);
+
+	--color-action-node-1: var(--color-deep-purple-900);
+	--color-action-node-2: hsl(275, 91%, 26%);
 
 	--color-github-node-1: var(--color-deep-purple-900);
 	--color-github-node-2: hsl(275, 91%, 26%);
@@ -266,10 +273,12 @@
 	--color-video-generation-node-1: #0098b2;
 	--color-video-generation-node-2: color-mix(in srgb, #0098b2, #000000 20%);
 
+	--color-query-node-1: hsl(200, 80%, 50%);
+	--color-query-node-2: hsl(200, 80%, 30%);
+
 	--color-error-900: var(--color-red-900);
 
-	--font-sans: var(--font-geist-sans);
-	--font-accent: var(--font-hubot-sans);
+	--font-accent: var(--font-dm-sans);
 }
 
 @layer components {
@@ -451,5 +460,75 @@
 		pre code::after {
 			content: none;
 		}
+	}
+
+	/* Auth Container Styles */
+	.auth-glass-container {
+		/* Moved to Tailwind utilities inside AuthContainer component */
+	}
+
+	.auth-gradient-border {
+		@apply absolute inset-0 rounded-2xl pointer-events-none;
+		background: linear-gradient(
+			135deg,
+			rgba(255, 255, 255, 0.4),
+			rgba(255, 255, 255, 0.1)
+		);
+		mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+		mask-composite: xor;
+		-webkit-mask: linear-gradient(#fff 0 0) content-box,
+			linear-gradient(#fff 0 0);
+		-webkit-mask-composite: xor;
+		padding: 1px;
+	}
+
+	.auth-corner-dot {
+		@apply absolute w-1 h-1 rounded-full;
+		background-color: hsl(192, 73%, 84%);
+		box-shadow: 0 0 16px hsla(192, 73%, 84%, 0.6);
+	}
+
+	.auth-corner-dot--top-left {
+		@apply top-4 left-4;
+	}
+
+	.auth-corner-dot--top-right {
+		@apply top-4 right-4;
+	}
+
+	.auth-corner-dot--bottom-left {
+		@apply bottom-4 left-4;
+	}
+
+	.auth-corner-dot--bottom-right {
+		@apply bottom-4 right-4;
+	}
+
+	.auth-container-header {
+		@apply text-center mb-[50px];
+	}
+
+	.auth-container-title {
+		@apply text-[20px] font-[500] text-gray-200 font-sans mb-4;
+	}
+
+	.auth-container-description {
+		@apply text-[14px] font-sans text-black-200;
+	}
+
+	.auth-form-section {
+		@apply mb-6;
+	}
+
+	.auth-legal-section {
+		@apply text-center mb-8;
+	}
+
+	.auth-action-section {
+		@apply text-center mb-7.5;
+	}
+
+	.auth-divider-section {
+		@apply py-2;
 	}
 }

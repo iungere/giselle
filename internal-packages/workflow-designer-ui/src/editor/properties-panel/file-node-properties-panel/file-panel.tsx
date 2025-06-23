@@ -1,23 +1,15 @@
-import type {
-	FileData,
-	FileNode,
-	UploadedFileData,
-} from "@giselle-sdk/data-type";
+import type { FileData, FileNode } from "@giselle-sdk/data-type";
 import clsx from "clsx/lite";
 import { ArrowUpFromLineIcon, FileXIcon, TrashIcon } from "lucide-react";
-import { useCallback, useState } from "react";
+import { Dialog } from "radix-ui";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toRelativeTime } from "../../../helper/datetime";
 import { TriangleAlert } from "../../../icons";
 import { FileNodeIcon } from "../../../icons/node";
 import { useToasts } from "../../../ui/toast";
-import { Tooltip } from "../../../ui/tooltip";
+import { RemoveButton } from "../ui";
+import type { FilePanelProps } from "./file-panel-type";
 import { useFileNode } from "./use-file-node";
-
-export type FileTypeConfig = {
-	accept: string[];
-	label: string;
-	maxSize?: number;
-};
 
 /**
  * Hard limit to upload file since Vercel Serverless Functions have a 4.5MB body size limit
@@ -25,11 +17,6 @@ export type FileTypeConfig = {
  * @todo implement streaming or alternative solution to support larger files (up to 20MB)
  */
 const defaultMaxSize = 1024 * 1024 * 4.5;
-
-type FilePanelProps = {
-	node: FileNode;
-	config: FileTypeConfig;
-};
 
 class FileUploadError extends Error {
 	constructor(message: string) {
@@ -96,6 +83,7 @@ export function FilePanel({ node, config }: FilePanelProps) {
 	const { addFiles: addFilesInternal, removeFile } = useFileNode(node);
 	const toasts = useToasts();
 	const maxFileSize = config.maxSize ?? defaultMaxSize;
+	const panelRef = useRef<HTMLDivElement>(null);
 
 	const validateItems = useCallback(
 		(dataTransferItemList: DataTransferItemList) => {
@@ -207,8 +195,62 @@ export function FilePanel({ node, config }: FilePanelProps) {
 		[addFiles],
 	);
 
+	const handlePaste = useCallback(
+		(e: ClipboardEvent) => {
+			const items = e.clipboardData?.items;
+			if (!items) return;
+
+			const imageItems: DataTransferItem[] = [];
+			for (const item of items) {
+				if (item.type.startsWith("image/")) {
+					imageItems.push(item);
+				}
+			}
+
+			if (imageItems.length === 0) return;
+
+			// Prevent default paste behavior
+			e.preventDefault();
+
+			const files: File[] = [];
+			for (const item of imageItems) {
+				const file = item.getAsFile();
+				if (file) {
+					files.push(file);
+				}
+			}
+
+			if (files.length > 0) {
+				// Create a DataTransfer object to create a FileList
+				const dataTransfer = new DataTransfer();
+				for (const file of files) {
+					dataTransfer.items.add(file);
+				}
+				addFiles(dataTransfer.files);
+			}
+		},
+		[addFiles],
+	);
+
+	useEffect(() => {
+		// Only add paste listener for image file nodes
+		if (node.content.category === "image" && panelRef.current) {
+			const panelEl = panelRef.current;
+			// Focus the panel when it's mounted to enable paste without clicking
+			panelEl.focus();
+			panelEl.addEventListener("paste", handlePaste);
+			return () => {
+				panelEl.removeEventListener("paste", handlePaste);
+			};
+		}
+	}, [handlePaste, node.content.category]);
+
 	return (
-		<div className="relative z-10 flex flex-col gap-[2px] h-full text-[14px] text-black-300">
+		<div
+			ref={panelRef}
+			className="relative z-10 flex flex-col gap-[2px] h-full text-[14px] text-black-300 outline-none"
+			tabIndex={-1}
+		>
 			<div className="p-[16px] divide-y divide-black-50">
 				{node.content.files.length > 0 && (
 					<div className="pb-[16px] flex flex-col gap-[8px]">
@@ -216,7 +258,7 @@ export function FilePanel({ node, config }: FilePanelProps) {
 							<FileListItem
 								key={file.id}
 								fileData={file}
-								onRemove={(uploadedFile) => removeFile(uploadedFile)}
+								onRemove={removeFile}
 							/>
 						))}
 					</div>
@@ -278,6 +320,11 @@ export function FilePanel({ node, config }: FilePanelProps) {
 										className="text-center flex flex-col gap-[16px] text-white-400"
 									>
 										<p>Drop {config.label} files here to upload.</p>
+										{node.content.category === "image" && (
+											<p className="text-[12px] text-black-400">
+												You can also paste images from clipboard (Ctrl/Cmd + V)
+											</p>
+										)}
 										<div className="flex gap-[8px] justify-center items-center">
 											<span>or</span>
 											<span className="font-bold text-[14px] underline cursor-pointer">
@@ -308,7 +355,7 @@ function FileListItem({
 	onRemove,
 }: {
 	fileData: FileData;
-	onRemove: (file: UploadedFileData) => void;
+	onRemove: (file: FileData) => void;
 }) {
 	return (
 		<div className="flex items-center overflow-x-hidden group justify-between bg-black-100 hover:bg-white-900/10 transition-colors p-[8px] rounded-[8px]">
@@ -324,16 +371,48 @@ function FileListItem({
 					{fileData.status === "failed" && <p>Failed</p>}
 				</div>
 			</div>
-			{fileData.status === "uploaded" && (
-				<Tooltip text="Remove">
-					<button
-						type="button"
-						className="hidden group-hover:block px-[4px] py-[4px] bg-transparent hover:bg-white-900/10 rounded-[8px] transition-colors mr-[2px] flex-shrink-0"
-						onClick={() => onRemove(fileData)}
-					>
-						<TrashIcon className="w-[24px] h-[24px] stroke-current stroke-[1px] " />
-					</button>
-				</Tooltip>
+
+			{fileData.status === "failed" ? (
+				<RemoveButton onClick={() => onRemove(fileData)} />
+			) : (
+				<Dialog.Root>
+					<Dialog.Trigger asChild>
+						<RemoveButton />
+					</Dialog.Trigger>
+					<Dialog.Portal>
+						<Dialog.Overlay className="fixed inset-0 bg-black/60 backdrop-blur-[2px] z-50" />
+						<Dialog.Content className="fixed left-[50%] top-[50%] translate-x-[-50%] translate-y-[-50%] w-[400px] bg-black-900 rounded-[12px] p-[24px] shadow-xl z-50 border border-black-400">
+							<Dialog.Title className="text-[18px] font-semibold text-white-800 mb-4">
+								Confirm Removal
+							</Dialog.Title>
+							<Dialog.Description className="text-[14px] text-white-400 mb-6">
+								Are you sure you want to remove this file?
+							</Dialog.Description>
+							<div className="flex justify-end gap-[12px]">
+								<Dialog.Close asChild>
+									<button
+										type="button"
+										className="py-[8px] px-[16px] rounded-[8px] text-[14px] font-medium bg-transparent text-white-800 border border-black-400 hover:bg-white-900/10"
+									>
+										Cancel
+									</button>
+								</Dialog.Close>
+								<button
+									type="button"
+									className="py-[8px] px-[16px] rounded-[8px] text-[14px] font-medium bg-error-900 text-white-800 hover:bg-error-900/80"
+									onClick={() => onRemove(fileData)}
+								>
+									Remove
+								</button>
+							</div>
+							<Dialog.Close
+								className="hidden"
+								tabIndex={-1}
+								aria-hidden="true"
+							/>
+						</Dialog.Content>
+					</Dialog.Portal>
+				</Dialog.Root>
 			)}
 		</div>
 	);

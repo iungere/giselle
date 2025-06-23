@@ -1,33 +1,13 @@
 import { Node as GiselleNode } from "@giselle-sdk/data-type";
-import { type NodeViewProps, NodeViewWrapper, PasteRule } from "@tiptap/react";
-import { ReactNodeViewRenderer } from "@tiptap/react";
+import { defaultName } from "@giselle-sdk/node-utils";
+import { SourceExtension } from "@giselle-sdk/text-editor-utils";
+import {
+	type NodeViewProps,
+	NodeViewWrapper,
+	ReactNodeViewRenderer,
+} from "@tiptap/react";
 import clsx from "clsx/lite";
 import { useMemo } from "react";
-import { SourceExtension } from "../extensions/source-extension";
-
-function defaultName(node: GiselleNode) {
-	switch (node.type) {
-		case "operation":
-			switch (node.content.type) {
-				case "textGeneration":
-				case "imageGeneration":
-					return node.name ?? node.content.llm.id;
-				case "trigger":
-				case "action":
-					return node.name ?? node.content.provider.type;
-				default: {
-					const _exhaustiveCheck: never = node.content;
-					throw new Error(`Unhandled action content type: ${_exhaustiveCheck}`);
-				}
-			}
-		case "variable":
-			return node.name ?? node.content.type;
-		default: {
-			const _exhaustiveCheck: never = node;
-			throw new Error(`Unhandled node type: ${_exhaustiveCheck}`);
-		}
-	}
-}
 
 const Component = (props: NodeViewProps) => {
 	const node = useMemo(
@@ -60,6 +40,10 @@ const Component = (props: NodeViewProps) => {
 					"data-[content-type=github]:bg-github-node-1/20 data-[content-type=github]:text-github-node-1",
 					"data-[content-type=text]:bg-node-plaintext-900/20 data-[content-type=text]:text-node-plaintext-900",
 					"data-[content-type=file]:bg-node-data-900/20 data-[content-type=file]:text-node-data-900",
+					"data-[content-type=webPage]:bg-node-data-900/20 data-[content-type=webPage]:text-node-data-900",
+					"data-[content-type=action]:bg-action-node-1/20 data-[content-type=action]:text-action-node-1",
+					"data-[content-type=trigger]:bg-trigger-node-1/20 data-[content-type=trigger]:text-trigger-node-1",
+					"data-[content-type=query]:bg-query-node-1/20 data-[content-type=query]:text-query-node-1",
 					"border-transparent data-[selected=true]:border-primary-900",
 					"text-[12px] ",
 				)}

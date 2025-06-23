@@ -1,26 +1,26 @@
-import { z } from "zod";
+import { z } from "zod/v4";
 import {
 	OperationNode,
+	OperationNodeLike,
 	OperationNodeReference,
-	OverrideOperationNode,
 } from "./operations";
 import {
-	OverrideVariableNode,
 	VariableNode,
+	VariableNodeLike,
 	VariableNodeReference,
 } from "./variables";
+export * from "./base";
 export * from "./operations";
 export * from "./variables";
-export * from "./base";
 
 export const Node = z.discriminatedUnion("type", [OperationNode, VariableNode]);
 export type Node = z.infer<typeof Node>;
 
-export const OverrideNode = z.discriminatedUnion("type", [
-	OverrideOperationNode,
-	OverrideVariableNode,
+export const NodeLike = z.discriminatedUnion("type", [
+	OperationNodeLike,
+	VariableNodeLike,
 ]);
-export type OverrideNode = z.infer<typeof OverrideNode>;
+export type NodeLike = z.infer<typeof NodeLike>;
 
 export const NodeReference = z.discriminatedUnion("type", [
 	OperationNodeReference,

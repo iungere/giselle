@@ -1,12 +1,19 @@
-import type { WorkspaceId } from "@giselle-sdk/data-type";
+import type { CompletedGeneration, WorkspaceId } from "@giselle-sdk/data-type";
 import type {
 	GitHubInstallationAppAuth,
 	GitHubPersonalAccessTokenAuth,
 } from "@giselle-sdk/github-tool";
 import type { LanguageModelProvider } from "@giselle-sdk/language-model";
+import type { QueryFunction, QueryFunctionParams } from "@giselle-sdk/rag";
+import type { QueryService } from "@giselle-sdk/rag2";
+import type {
+	GenerationCompleteOption,
+	TelemetrySettings,
+} from "@giselle-sdk/telemetry";
 import type { UsageLimits } from "@giselle-sdk/usage-limits";
 import type { Storage } from "unstorage";
 import type { Vault } from "./vault";
+import type { VectorStore } from "./vector-store/types/interface";
 
 export interface GiselleEngineContext {
 	storage: Storage;
@@ -20,8 +27,22 @@ export interface GiselleEngineContext {
 	telemetry?: {
 		isEnabled?: boolean;
 		waitForFlushFn?: () => Promise<unknown>;
+		metadata?: TelemetrySettings["metadata"];
 	};
 	vault?: Vault;
+	vectorStoreQueryFunctions?: {
+		github?: GitHubVectorStoreQueryFunction;
+	};
+	vectorStoreQueryServices?: {
+		github?: GitHubVectorStoreQueryService<Record<string, unknown>>;
+	};
+	callbacks?: {
+		generationComplete: (
+			generation: CompletedGeneration,
+			options: GenerationCompleteOption,
+		) => Promise<void>;
+	};
+	vectorStore?: VectorStore;
 }
 
 interface GitHubInstalltionAppAuthResolver {
@@ -34,6 +55,13 @@ export interface GitHubIntegrationConfig {
 		| (Omit<GitHubInstallationAppAuth, "installationId"> & {
 				resolver: GitHubInstalltionAppAuthResolver;
 		  });
+	authV2: {
+		appId: string;
+		privateKey: string;
+		clientId: string;
+		clientSecret: string;
+		webhookSecret: string;
+	};
 }
 
 export type GiselleIntegrationConfig = {
@@ -50,6 +78,35 @@ export type FetchUsageLimitsFn = (
 	workspaceId: WorkspaceId,
 ) => Promise<UsageLimits>;
 
+export type GithubEmbeddingMetadata = {
+	commitSha: string;
+	fileSha: string;
+	path: string;
+	nodeId: string;
+};
+export type GitHubEmbeddingFilter = {
+	workspaceId: WorkspaceId;
+	owner: string;
+	repo: string;
+};
+export type GitHubVectorStoreQueryFunctionParams =
+	QueryFunctionParams<GitHubEmbeddingFilter>;
+export type GitHubVectorStoreQueryFunction = QueryFunction<
+	GithubEmbeddingMetadata,
+	GitHubEmbeddingFilter
+>;
+
+// GitHub Query Context for rag2 integration
+export interface GitHubQueryContext {
+	workspaceId: WorkspaceId;
+	owner: string;
+	repo: string;
+}
+
+export type GitHubVectorStoreQueryService<
+	M extends Record<string, unknown> = Record<string, never>,
+> = QueryService<GitHubQueryContext, M>;
+
 export interface GiselleEngineConfig {
 	storage: Storage;
 	sampleAppWorkspaceId?: WorkspaceId;
@@ -59,7 +116,21 @@ export interface GiselleEngineConfig {
 	telemetry?: {
 		isEnabled?: boolean;
 		waitForFlushFn?: () => Promise<unknown>;
+		metadata?: TelemetrySettings["metadata"];
 	};
 	fetchUsageLimitsFn?: FetchUsageLimitsFn;
 	vault?: Vault;
+	vectorStoreQueryFunctions?: {
+		github?: GitHubVectorStoreQueryFunction;
+	};
+	vectorStoreQueryServices?: {
+		github?: GitHubVectorStoreQueryService<Record<string, unknown>>;
+	};
+	callbacks?: {
+		generationComplete: (
+			generation: CompletedGeneration,
+			options: GenerationCompleteOption,
+		) => Promise<void>;
+	};
+	vectorStore?: VectorStore;
 }

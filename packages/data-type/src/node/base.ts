@@ -1,5 +1,5 @@
 import { createIdGenerator } from "@giselle-sdk/utils";
-import { z } from "zod";
+import { z } from "zod/v4";
 
 export const InputId = createIdGenerator("inp");
 export type InputId = z.infer<typeof InputId.schema>;
@@ -7,6 +7,12 @@ export type InputId = z.infer<typeof InputId.schema>;
 export const Input = z.object({
 	id: InputId.schema,
 	label: z.string(),
+	accessor: z
+		.string()
+		.describe(
+			"Field used for data access. When not provided, defaults to the label value.",
+		),
+	isRequired: z.optional(z.boolean().default(false)),
 });
 export type Input = z.infer<typeof Input>;
 
@@ -45,6 +51,7 @@ export const NodeUIState = z.object({
 	position: Position,
 	selected: z.boolean().default(false).optional(),
 	tab: z.string().optional(),
+	showError: z.boolean().default(false).optional(),
 });
 export type NodeUIState = z.infer<typeof NodeUIState>;
 
@@ -53,8 +60,3 @@ export const NodeReferenceBase = z.object({
 	type: z.string(),
 });
 export type NodeReferenceBase = z.infer<typeof NodeReferenceBase>;
-
-export const OverrideNodeBase = z.object({
-	id: NodeId.schema,
-	type: z.string(),
-});

@@ -1,5 +1,6 @@
 import { WorkspaceId } from "@giselle-sdk/data-type";
 import { NextGiselleEngine } from "@giselle-sdk/giselle-engine/next-internal";
+import { emitTelemetry } from "@giselle-sdk/telemetry";
 import type {
 	GiselleIntegrationConfig,
 	LanguageModelProvider,
@@ -38,7 +39,40 @@ if (llmProviders.length === 0) {
 	throw new Error("No LLM providers configured");
 }
 
-let integrationConfigs: GiselleIntegrationConfig = {};
+const integrationConfigs: GiselleIntegrationConfig = {};
+
+const githubAppId = process.env.GITHUB_APP_ID;
+const githubAppPrivateKey = process.env.GITHUB_APP_PRIVATE_KEY;
+const githubAppClientId = process.env.GITHUB_APP_CLIENT_ID;
+const githubAppClientSecret = process.env.GITHUB_APP_CLIENT_SECRET;
+const githubAppWebhookSecret = process.env.GITHUB_APP_WEBHOOK_SECRET;
+
+if (
+	githubAppId !== undefined &&
+	githubAppPrivateKey !== undefined &&
+	githubAppClientId !== undefined &&
+	githubAppClientSecret !== undefined &&
+	githubAppWebhookSecret !== undefined
+) {
+	integrationConfigs.github = {
+		auth: {
+			strategy: "app-installation",
+			appId: "",
+			privateKey: "",
+			resolver: {
+				installationIdForRepo: () => 1234,
+				installtionIds: () => [1234],
+			},
+		},
+		authV2: {
+			appId: githubAppId,
+			privateKey: githubAppPrivateKey,
+			clientId: githubAppClientId,
+			clientSecret: githubAppClientSecret,
+			webhookSecret: githubAppWebhookSecret,
+		},
+	};
+}
 // if (
 // 	process.env.GITHUB_APP_ID &&
 // 	process.env.GITHUB_APP_PRIVATE_KEY &&
@@ -54,16 +88,16 @@ let integrationConfigs: GiselleIntegrationConfig = {};
 // 		},
 // 	});
 // }
-if (process.env.GITHUB_TOKEN) {
-	integrationConfigs = {
-		github: {
-			auth: {
-				strategy: "personal-access-token",
-				personalAccessToken: process.env.GITHUB_TOKEN,
-			},
-		},
-	};
-}
+// if (process.env.GITHUB_TOKEN) {
+// 	integrationConfigs = {
+// 		github: {
+// 			auth: {
+// 				strategy: "personal-access-token",
+// 				personalAccessToken: process.env.GITHUB_TOKEN,
+// 			},
+// 		},
+// 	};
+// }
 
 if (process.env.PERPLEXITY_API_KEY) {
 	llmProviders.push("perplexity");
@@ -89,4 +123,16 @@ export const giselleEngine = NextGiselleEngine({
 	llmProviders,
 	integrationConfigs,
 	sampleAppWorkspaceId,
+	callbacks: {
+		generationComplete: async (generation, options) => {
+			try {
+				await emitTelemetry(generation, {
+					telemetry: options?.telemetry,
+					storage,
+				});
+			} catch (error) {
+				console.error("Telemetry emission failed:", error);
+			}
+		},
+	},
 });

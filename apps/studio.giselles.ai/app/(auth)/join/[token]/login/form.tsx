@@ -18,7 +18,7 @@ export const LoginForm = (props: LoginFormProps) => {
 	const [error, setError] = useState<string | null>(null);
 	const [isPending, startTransition] = useTransition();
 
-	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+	const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 		setError(null);
 		const formData = new FormData(e.currentTarget);
@@ -32,7 +32,7 @@ export const LoginForm = (props: LoginFormProps) => {
 	};
 
 	return (
-		<form onSubmit={handleSubmit} className="font-hubot">
+		<form onSubmit={handleSubmit} className="font-sans">
 			<div className="grid gap-6">
 				{error && (
 					<Alert variant="destructive">
@@ -46,7 +46,7 @@ export const LoginForm = (props: LoginFormProps) => {
 						<div className="grid gap-[4px] relative">
 							<Label
 								htmlFor="email"
-								className="text-[14px] font-hubot text-black-70"
+								className="text-[14px] font-sans text-black-70"
 							>
 								Email
 							</Label>
@@ -66,7 +66,7 @@ export const LoginForm = (props: LoginFormProps) => {
 						<div className="grid gap-[4px] relative">
 							<Label
 								htmlFor="password"
-								className="text-[14px] font-hubot text-black-70"
+								className="text-[14px] font-sans text-black-70"
 							>
 								Password
 							</Label>

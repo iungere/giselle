@@ -1,6 +1,16 @@
-import type { Node } from "@giselle-sdk/data-type";
+import {
+	type NodeLike,
+	isActionNode,
+	isFileNode,
+	isImageGenerationNode,
+	isTextGenerationNode,
+	isTriggerNode,
+	isVectorStoreNode,
+} from "@giselle-sdk/data-type";
 import { getImageGenerationModelProvider } from "@giselle-sdk/language-model";
+import { DatabaseZapIcon } from "lucide-react";
 import type { SVGProps } from "react";
+import { SearchIcon } from "..";
 import { AnthropicIcon } from "../anthropic";
 import { Flux1Icon } from "../flux1";
 import { GitHubIcon } from "../github";
@@ -15,6 +25,7 @@ import { RecraftIcon } from "../recraft";
 import { StableDiffusionIcon } from "../stable-diffusion";
 import { TextFileIcon } from "../text-file";
 import { TriggerIcon } from "../trigger";
+import { WebPageFileIcon } from "../web-page-file";
 export * from "./file-node";
 export * from "./image-generation-node";
 export * from "./text-generation-node";
@@ -22,11 +33,16 @@ export * from "./text-generation-node";
 export function NodeIcon({
 	node,
 	...props
-}: { node: Node } & SVGProps<SVGSVGElement>) {
+}: { node: NodeLike } & SVGProps<SVGSVGElement>) {
 	switch (node.type) {
 		case "operation": {
 			switch (node.content.type) {
 				case "textGeneration":
+					if (!isTextGenerationNode(node)) {
+						throw new Error(
+							`Expected TextGenerationNode, got ${JSON.stringify(node)}`,
+						);
+					}
 					switch (node.content.llm.provider) {
 						case "openai":
 							return <OpenaiIcon {...props} data-content-type-icon />;
@@ -47,6 +63,11 @@ export function NodeIcon({
 						}
 					}
 				case "imageGeneration": {
+					if (!isImageGenerationNode(node)) {
+						throw new Error(
+							`Expected ImageGenerationNode, got ${JSON.stringify(node)}`,
+						);
+					}
 					switch (node.content.llm.provider) {
 						case "fal": {
 							const imageModelProvider = getImageGenerationModelProvider(
@@ -83,31 +104,45 @@ export function NodeIcon({
 					}
 				}
 				case "trigger": {
-					switch (node.content.provider.type) {
+					if (!isTriggerNode(node)) {
+						throw new Error(
+							`Expected TriggerNode, got ${JSON.stringify(node)}`,
+						);
+					}
+					switch (node.content.provider) {
 						case "github":
 							return <GitHubIcon {...props} data-content-type-icon />;
 						case "manual":
 							return <TriggerIcon {...props} data-content-type-icon />;
 						default: {
+							const _exhaustiveCheck: never = node.content;
 							throw new Error(
-								`Unhandled TriggerProviderType: ${node.content.provider.type}`,
+								`Unhandled TriggerProviderType: ${_exhaustiveCheck}`,
 							);
 						}
 					}
 				}
 				case "action": {
-					switch (node.content.provider.type) {
+					if (!isActionNode(node)) {
+						throw new Error(`Expected ActionNode, got ${JSON.stringify(node)}`);
+					}
+					switch (node.content.command.provider) {
 						case "github":
 							return <GitHubIcon {...props} data-content-type-icon />;
+						case "web-search":
+							return <SearchIcon {...props} data-content-type-icon />;
 						default: {
+							const _exhaustiveCheck: never = node.content.command;
 							throw new Error(
-								`Unhandled TriggerProviderType: ${node.content.provider.type}`,
+								`Unhandled TriggerProviderType: ${_exhaustiveCheck}`,
 							);
 						}
 					}
 				}
+				case "query":
+					return <DatabaseZapIcon {...props} data-content-type-icon />;
 				default: {
-					const _exhaustiveCheck: never = node.content;
+					const _exhaustiveCheck: never = node.content.type;
 					throw new Error(`Unhandled node type: ${_exhaustiveCheck}`);
 				}
 			}
@@ -117,6 +152,9 @@ export function NodeIcon({
 				case "text":
 					return <PromptIcon {...props} data-content-type-icon />;
 				case "file":
+					if (!isFileNode(node)) {
+						throw new Error(`Expected FileNode, got ${JSON.stringify(node)}`);
+					}
 					switch (node.content.category) {
 						case "pdf":
 							return <PdfFileIcon {...props} data-content-type-icon />;
@@ -129,10 +167,26 @@ export function NodeIcon({
 							throw new Error(`Unhandled node type: ${_exhaustiveCheck}`);
 						}
 					}
+				case "webPage":
+					return <WebPageFileIcon {...props} data-content-type-icon />;
 				case "github":
 					return <GitHubIcon {...props} />;
+				case "vectorStore":
+					if (!isVectorStoreNode(node)) {
+						throw new Error(
+							`Expected VectorStoreNode, got ${JSON.stringify(node)}`,
+						);
+					}
+					switch (node.content.source.provider) {
+						case "github":
+							return <GitHubIcon {...props} data-content-type-icon />;
+						default: {
+							const _exhaustiveCheck: never = node.content.source.provider;
+							throw new Error(`Unhandled node type: ${_exhaustiveCheck}`);
+						}
+					}
 				default: {
-					const _exhaustiveCheck: never = node.content;
+					const _exhaustiveCheck: never = node.content.type;
 					throw new Error(`Unhandled node type: ${_exhaustiveCheck}`);
 				}
 			}

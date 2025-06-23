@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button";
-import { teamInvitationViaEmailFlag } from "@/flags";
 import { getUser } from "@/lib/supabase";
 import type { User } from "@supabase/auth-js";
 import Link from "next/link";
@@ -12,10 +11,6 @@ export default async function Page({
 	params,
 }: { params: Promise<{ token: string }> }) {
 	const { token: tokenParam } = await params;
-	const isTeamInvitationViaEmail = await teamInvitationViaEmailFlag();
-	if (!isTeamInvitationViaEmail) {
-		return notFound();
-	}
 
 	const token = await fetchInvitationToken(tokenParam);
 	if (!token) {
@@ -44,7 +39,7 @@ export default async function Page({
 					<div className="text-center">
 						<p className="text-slate-400 mb-2">You have been invited to join</p>
 						<h2
-							className="text-[28px] font-[500] text-primary-100 font-hubot"
+							className="text-[28px] font-[500] text-primary-100 font-sans"
 							style={{ textShadow: "0px 0px 20px #0087F6" }}
 						>
 							{token.teamName}

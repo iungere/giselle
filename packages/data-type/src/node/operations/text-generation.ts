@@ -4,7 +4,8 @@ import {
 	OpenAILanguageModel,
 	PerplexityLanguageModel,
 } from "@giselle-sdk/language-model";
-import { z } from "zod";
+import { z } from "zod/v4";
+import { SecretId } from "../../secret";
 
 export const AnthropicLanguageModelData = AnthropicLanguageModel.pick({
 	provider: true,
@@ -69,9 +70,14 @@ export const ToolAuthPat = z.object({
 	token: z.string(),
 	userId: z.optional(z.string()),
 });
+const ToolAuthSecret = z.object({
+	type: z.literal("secret"),
+	secretId: SecretId.schema,
+	userId: z.optional(z.string()),
+});
 export const GitHubTool = z.object({
 	tools: z.string().array(),
-	auth: ToolAuthPat,
+	auth: z.discriminatedUnion("type", [ToolAuthPat, ToolAuthSecret]),
 });
 export type GitHubTool = z.infer<typeof GitHubTool>;
 
@@ -109,20 +115,6 @@ export const TextGenerationContent = z.object({
 	tools: z.optional(ToolSet),
 });
 export type TextGenerationContent = z.infer<typeof TextGenerationContent>;
-
-export const OverrideTextGenerationContent = z.object({
-	type: z.literal("textGeneration"),
-	prompt: z.string(),
-});
-export type OverrideTextGenerationContent = z.infer<
-	typeof OverrideTextGenerationContent
->;
-
-export function isOverrideTextGenerationContent(
-	content: unknown,
-): content is OverrideTextGenerationContent {
-	return OverrideTextGenerationContent.safeParse(content).success;
-}
 
 export const TextGenerationContentReference = z.object({
 	type: TextGenerationContent.shape.type,

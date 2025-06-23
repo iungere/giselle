@@ -7,7 +7,7 @@ import { and, eq, isNull, sql } from "drizzle-orm";
 
 export type Invitation = typeof invitations.$inferSelect;
 
-export async function createInvitation(
+export function createInvitation(
 	email: string,
 	role: TeamRole,
 	currentTeam: CurrentTeam,
@@ -118,7 +118,7 @@ export async function sendInvitationEmail(invitation: Invitation) {
 	const teamName = team[0].name;
 
 	await sendEmail(
-		"Invitation to join team",
+		`Invitation to join ${teamName} on Giselle`,
 		`You have been invited to join the team ${teamName} by ${inviter.email}.\n\n${buildJoinLink(
 			invitation.token,
 		)}`,

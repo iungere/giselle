@@ -1,4 +1,5 @@
 import type { Node } from "@giselle-sdk/data-type";
+import { extensions as baseExtensions } from "@giselle-sdk/text-editor-utils";
 import { type Editor, EditorProvider, useCurrentEditor } from "@tiptap/react";
 import clsx from "clsx/lite";
 import {
@@ -10,14 +11,9 @@ import {
 } from "lucide-react";
 import { Toolbar as ToolbarPrimitive } from "radix-ui";
 import { type ReactNode, useMemo } from "react";
-import { extensions as baseExtensions } from "../extensions";
 import { SourceExtensionReact } from "./source-extension-react";
 
-function Toolbar({
-	tools,
-}: {
-	tools?: (editor: Editor) => ReactNode;
-}) {
+function Toolbar({ tools }: { tools?: (editor: Editor) => ReactNode }) {
 	const { editor } = useCurrentEditor();
 	if (!editor) {
 		return null;
@@ -167,7 +163,7 @@ export function TextEditor({
 				editorProps={{
 					attributes: {
 						class:
-							"prompt-editor border-[0.5px] border-white-900 rounded-[8px] p-[16px] h-full overflow-y-auto",
+							"prompt-editor border-[0.25px] border-white-900 rounded-[8px] p-[16px] h-full overflow-y-auto",
 					},
 				}}
 			/>

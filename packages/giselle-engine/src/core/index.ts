@@ -1,21 +1,31 @@
 import type {
-	CreatedRun,
+	FetchingWebPage,
 	FileId,
+	FlowTrigger,
+	FlowTriggerId,
 	Generation,
+	GenerationContextInput,
 	GenerationId,
 	GenerationOrigin,
 	NodeId,
-	OverrideNode,
 	QueuedGeneration,
-	RunId,
-	WorkflowId,
 	Workspace,
-	WorkspaceGitHubIntegrationSetting,
 	WorkspaceId,
 } from "@giselle-sdk/data-type";
+import { calculateDisplayCost } from "@giselle-sdk/language-model";
 import { getLanguageModelProviders } from "./configurations/get-language-model-providers";
-import { removeFile, uploadFile } from "./files";
-import { resolveTrigger } from "./flows/resolve-trigger";
+import { createDataSource, getWorkspaceDataSources } from "./data-source";
+import type { DataSourceProviderObject } from "./data-source/types/object";
+import { copyFile, getFileText, removeFile, uploadFile } from "./files";
+import {
+	type ConfigureTriggerInput,
+	configureTrigger,
+	deleteTrigger,
+	getTrigger,
+	resolveTrigger,
+	runFlow,
+	setTrigger,
+} from "./flows";
 import {
 	type TelemetrySettings,
 	cancelGeneration,
@@ -27,14 +37,14 @@ import {
 	setGeneration,
 } from "./generations";
 import {
-	type HandleGitHubWebhookOptions,
 	getGitHubRepositories,
-	getWorkspaceGitHubIntegrationSetting,
-	handleWebhook,
-	upsertGithubIntegrationSetting,
-	urlToObjectID,
+	getGitHubRepositoryFullname,
+	handleGitHubWebhookV2,
 } from "./github";
-import { addRun, runApi, startRun } from "./runs";
+import { executeAction } from "./operations";
+import { executeQuery } from "./operations/execute-query";
+import { addSecret, getWorkspaceSecrets } from "./secrets";
+import { addWebPage } from "./sources";
 import type { GiselleEngineConfig, GiselleEngineContext } from "./types";
 import {
 	copyWorkspace,
@@ -43,20 +53,16 @@ import {
 	getWorkspace,
 	updateWorkspace,
 } from "./workspaces";
-export { HandleGitHubWebhookResult } from "./github";
 export * from "./types";
 export * from "./vault";
+export * from "./vector-store";
 
 export function GiselleEngine(config: GiselleEngineConfig) {
 	const context: GiselleEngineContext = {
-		storage: config.storage,
+		...config,
 		llmProviders: config.llmProviders ?? [],
 		integrationConfigs: config.integrationConfigs ?? {},
-		onConsumeAgentTime: config.onConsumeAgentTime,
-		telemetry: config.telemetry,
-		fetchUsageLimitsFn: config.fetchUsageLimitsFn,
-		sampleAppWorkspaceId: config.sampleAppWorkspaceId,
-		vault: config.vault,
+		callbacks: config.callbacks,
 	};
 	return {
 		copyWorkspace: async (workspaceId: WorkspaceId) => {
@@ -93,22 +99,17 @@ export function GiselleEngine(config: GiselleEngineConfig) {
 		cancelGeneration: async (generationId: GenerationId) => {
 			return await cancelGeneration({ context, generationId });
 		},
-		addRun: async (
+		copyFile: async (
 			workspaceId: WorkspaceId,
-			workflowId: WorkflowId,
-			run: CreatedRun,
-			overrideNodes?: OverrideNode[],
+			sourceFileId: FileId,
+			destinationFileId: FileId,
 		) => {
-			return await addRun({
+			return await copyFile({
 				context,
 				workspaceId,
-				workflowId,
-				run,
-				overrideNodes: overrideNodes || [],
+				sourceFileId,
+				destinationFileId,
 			});
-		},
-		startRun: async (runId: RunId) => {
-			return await startRun({ context, runId });
 		},
 		uploadFile: async (
 			file: File,
@@ -120,45 +121,6 @@ export function GiselleEngine(config: GiselleEngineConfig) {
 		},
 		removeFile: async (workspaceId: WorkspaceId, fileId: FileId) => {
 			return await removeFile({ context, fileId, workspaceId });
-		},
-
-		githubUrlToObjectId: async (url: string) => {
-			return await urlToObjectID({
-				url,
-				context,
-			});
-		},
-		upsertGithubIntegrationSetting: async (
-			workspaceGitHubIntegrationSetting: WorkspaceGitHubIntegrationSetting,
-		) => {
-			upsertGithubIntegrationSetting({
-				context,
-				workspaceGitHubIntegrationSetting,
-			});
-		},
-		getWorkspaceGitHubIntegrationSetting: async (workspaceId: WorkspaceId) => {
-			return await getWorkspaceGitHubIntegrationSetting({
-				context,
-				workspaceId,
-			});
-		},
-		runApi: async (args: {
-			workspaceId: WorkspaceId;
-			workflowId: WorkflowId;
-			overrideNodes?: OverrideNode[];
-		}) => {
-			return await runApi({ ...args, context });
-		},
-		githubWebhook: async ({
-			options,
-			...args
-		}: {
-			event: string;
-			delivery: string;
-			payload: unknown;
-			options?: HandleGitHubWebhookOptions;
-		}) => {
-			return await handleWebhook({ context, github: args, options });
 		},
 		generateImage: async (
 			generation: QueuedGeneration,
@@ -200,6 +162,71 @@ export function GiselleEngine(config: GiselleEngineConfig) {
 			generation: QueuedGeneration;
 		}) => {
 			return await resolveTrigger({ ...args, context });
+		},
+		configureTrigger: async (args: {
+			trigger: ConfigureTriggerInput;
+		}) => {
+			return await configureTrigger({ ...args, context });
+		},
+		getTrigger: async (args: {
+			flowTriggerId: FlowTriggerId;
+		}) => {
+			return await getTrigger({ ...args, context });
+		},
+		getGitHubRepositoryFullname: async (args: {
+			repositoryNodeId: string;
+			installationId: number;
+		}) => {
+			return await getGitHubRepositoryFullname({ ...args, context });
+		},
+		setTrigger: async (args: { trigger: FlowTrigger }) =>
+			setTrigger({ ...args, context }),
+		deleteTrigger: async (args: { flowTriggerId: FlowTriggerId }) =>
+			deleteTrigger({ ...args, context }),
+		executeAction: async (args: {
+			generation: QueuedGeneration;
+		}) => executeAction({ ...args, context }),
+		runFlow: async (args: {
+			triggerId: FlowTriggerId;
+			triggerInputs?: GenerationContextInput[];
+		}) => runFlow({ ...args, context }),
+		handleGitHubWebhookV2: async (args: { request: Request }) =>
+			handleGitHubWebhookV2({ ...args, context }),
+		executeQuery: async (args: {
+			generation: QueuedGeneration;
+		}) => executeQuery({ ...args, context }),
+		addWebPage: async (args: {
+			workspaceId: WorkspaceId;
+			webpage: FetchingWebPage;
+		}) => addWebPage({ ...args, context }),
+		async getFileText(args: {
+			workspaceId: WorkspaceId;
+			fileId: FileId;
+		}) {
+			return await getFileText({ ...args, context });
+		},
+		async addSecret(args: {
+			workspaceId: WorkspaceId;
+			label: string;
+			value: string;
+		}) {
+			return await addSecret({ ...args, context });
+		},
+		async getWorkspaceSecrets(args: {
+			workspaceId: WorkspaceId;
+		}) {
+			return await getWorkspaceSecrets({ ...args, context });
+		},
+		async createDataSource(args: {
+			workspaceId: WorkspaceId;
+			dataSource: DataSourceProviderObject;
+		}) {
+			return await createDataSource({ ...args, context });
+		},
+		async getWorkspaceDataSources(args: {
+			workspaceId: WorkspaceId;
+		}) {
+			return await getWorkspaceDataSources({ ...args, context });
 		},
 	};
 }

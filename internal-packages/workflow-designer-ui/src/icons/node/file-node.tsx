@@ -3,6 +3,7 @@ import type { SVGProps } from "react";
 import { PdfFileIcon } from "../pdf-file";
 import { PictureIcon } from "../picture";
 import { TextFileIcon } from "../text-file";
+import { WebPageFileIcon } from "../web-page-file";
 
 export function FileNodeIcon({
 	node,

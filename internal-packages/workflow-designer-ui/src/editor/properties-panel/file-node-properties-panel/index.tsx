@@ -6,7 +6,8 @@ import {
 	PropertiesPanelHeader,
 	PropertiesPanelRoot,
 } from "../ui";
-import { FilePanel, type FileTypeConfig } from "./file-panel";
+import { FilePanel } from "./file-panel";
+import type { FileTypeConfig } from "./file-panel-type";
 
 const fileType: Record<FileCategory, FileTypeConfig> = {
 	pdf: {

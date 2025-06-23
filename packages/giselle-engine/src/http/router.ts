@@ -1,20 +1,21 @@
 import {
-	CreatedRun,
+	FetchingWebPage,
 	FileId,
+	FlowTrigger,
+	FlowTriggerId,
 	Generation,
+	GenerationContextInput,
 	GenerationId,
 	GenerationOrigin,
 	NodeId,
-	OverrideNode,
 	QueuedGeneration,
-	RunId,
-	WorkflowId,
 	Workspace,
-	WorkspaceGitHubIntegrationSetting,
 	WorkspaceId,
 } from "@giselle-sdk/data-type";
-import { z } from "zod";
+import { z } from "zod/v4";
 import type { GiselleEngine } from "../core";
+import { DataSourceProviderObject } from "../core/data-source";
+import { ConfigureTriggerInput } from "../core/flows";
 import type { TelemetrySettings } from "../core/generations";
 import { JsonResponse } from "../utils";
 import { createHandler, withUsageLimitErrorHandler } from "./create-handler";
@@ -105,33 +106,6 @@ export const createJsonRouters = {
 				return JsonResponse.json(generation);
 			},
 		}),
-
-	addRun: (giselleEngine: GiselleEngine) =>
-		createHandler({
-			input: z.object({
-				workspaceId: WorkspaceId.schema,
-				workflowId: WorkflowId.schema,
-				run: CreatedRun,
-				overrideNodes: z.array(OverrideNode).optional(),
-			}),
-			handler: async ({ input }) => {
-				const run = await giselleEngine.addRun(
-					input.workspaceId,
-					input.workflowId,
-					input.run,
-					input.overrideNodes,
-				);
-				return JsonResponse.json(run);
-			},
-		}),
-	startRun: (giselleEngine: GiselleEngine) =>
-		createHandler({
-			input: z.object({ runId: RunId.schema }),
-			handler: async ({ input }) => {
-				await giselleEngine.startRun(input.runId);
-				return new Response(null, { status: 202 });
-			},
-		}),
 	removeFile: (giselleEngine: GiselleEngine) =>
 		createHandler({
 			input: z.object({
@@ -143,57 +117,23 @@ export const createJsonRouters = {
 				return new Response(null, { status: 204 });
 			},
 		}),
-	githubUrlToObjectId: (giselleEngine: GiselleEngine) =>
-		createHandler({
-			input: z.object({
-				url: z.string().url(),
-			}),
-			handler: async ({ input }) => {
-				const objectId = await giselleEngine.githubUrlToObjectId(input.url);
-				return JsonResponse.json({ objectId });
-			},
-		}),
-	upsertWorkspaceGitHubIntegrationSetting: (giselleEngine: GiselleEngine) =>
-		createHandler({
-			input: z.object({
-				workspaceGitHubIntegrationSetting: WorkspaceGitHubIntegrationSetting,
-			}),
-			handler: async ({ input }) => {
-				await giselleEngine.upsertGithubIntegrationSetting(
-					input.workspaceGitHubIntegrationSetting,
-				);
-				return new Response(null, { status: 204 });
-			},
-		}),
-	getWorkspaceGitHubIntegrationSetting: (giselleEngine: GiselleEngine) =>
+	copyFile: (giselleEngine: GiselleEngine) =>
 		createHandler({
 			input: z.object({
 				workspaceId: WorkspaceId.schema,
+				sourceFileId: FileId.schema,
+				destinationFileId: FileId.schema,
 			}),
 			handler: async ({ input }) => {
-				const workspaceGitHubIntegrationSetting =
-					await giselleEngine.getWorkspaceGitHubIntegrationSetting(
-						input.workspaceId,
-					);
-				return JsonResponse.json({
-					workspaceGitHubIntegrationSetting,
-				});
+				await giselleEngine.copyFile(
+					input.workspaceId,
+					input.sourceFileId,
+					input.destinationFileId,
+				);
+
+				return new Response(null, { status: 204 });
 			},
 		}),
-	runApi: (giselleEngine: GiselleEngine) =>
-		withUsageLimitErrorHandler(
-			createHandler({
-				input: z.object({
-					workspaceId: WorkspaceId.schema,
-					workflowId: WorkflowId.schema,
-					overrideNodes: z.array(OverrideNode).optional(),
-				}),
-				handler: async ({ input }) => {
-					const result = await giselleEngine.runApi(input);
-					return new Response(result.join("\n"));
-				},
-			}),
-		),
 	generateImage: (giselleEngine: GiselleEngine) =>
 		withUsageLimitErrorHandler(
 			createHandler({
@@ -248,6 +188,151 @@ export const createJsonRouters = {
 					trigger: await giselleEngine.resolveTrigger(input),
 				});
 			},
+		}),
+	configureTrigger: (giselleEngine: GiselleEngine) =>
+		createHandler({
+			input: z.object({
+				trigger: ConfigureTriggerInput,
+			}),
+			handler: async ({ input }) => {
+				return JsonResponse.json({
+					triggerId: await giselleEngine.configureTrigger(input),
+				});
+			},
+		}),
+	getTrigger: (giselleEngine: GiselleEngine) =>
+		createHandler({
+			input: z.object({
+				flowTriggerId: FlowTriggerId.schema,
+			}),
+			handler: async ({ input }) => {
+				return JsonResponse.json({
+					trigger: await giselleEngine.getTrigger(input),
+				});
+			},
+		}),
+	getGitHubRepositoryFullname: (giselleEngine: GiselleEngine) =>
+		createHandler({
+			input: z.object({
+				repositoryNodeId: z.string(),
+				installationId: z.number(),
+			}),
+			handler: async ({ input }) => {
+				return JsonResponse.json({
+					fullname: await giselleEngine.getGitHubRepositoryFullname(input),
+				});
+			},
+		}),
+	setTrigger: (giselleEngine: GiselleEngine) =>
+		createHandler({
+			input: z.object({
+				trigger: FlowTrigger,
+			}),
+			handler: async ({ input }) => {
+				return JsonResponse.json({
+					triggerId: await giselleEngine.setTrigger(input),
+				});
+			},
+		}),
+	deleteTrigger: (giselleEngine: GiselleEngine) =>
+		createHandler({
+			input: z.object({ flowTriggerId: FlowTriggerId.schema }),
+			handler: async ({ input }) => {
+				await giselleEngine.deleteTrigger(input);
+				return new Response(null, { status: 204 });
+			},
+		}),
+	executeAction: (giselleEngine: GiselleEngine) =>
+		createHandler({
+			input: z.object({
+				generation: QueuedGeneration,
+			}),
+			handler: async ({ input }) => {
+				await giselleEngine.executeAction(input);
+				return new Response(null, { status: 204 });
+			},
+		}),
+	runFlow: (giselleEngine: GiselleEngine) =>
+		createHandler({
+			input: z.object({
+				triggerId: FlowTriggerId.schema,
+				triggerInputs: z.array(GenerationContextInput).optional(),
+			}),
+			handler: async ({ input }) => {
+				await giselleEngine.runFlow(input);
+				return new Response(null, { status: 204 });
+			},
+		}),
+	executeQuery: (giselleEngine: GiselleEngine) =>
+		createHandler({
+			input: z.object({
+				generation: QueuedGeneration,
+			}),
+			handler: async ({ input }) => {
+				await giselleEngine.executeQuery(input);
+				return new Response(null, { status: 204 });
+			},
+		}),
+	addWebPage: (giselleEngine: GiselleEngine) =>
+		createHandler({
+			input: z.object({
+				webpage: FetchingWebPage,
+				workspaceId: WorkspaceId.schema,
+			}),
+			handler: async ({ input }) =>
+				JsonResponse.json(await giselleEngine.addWebPage(input)),
+		}),
+	getFileText: (giselleEngine: GiselleEngine) =>
+		createHandler({
+			input: z.object({
+				workspaceId: WorkspaceId.schema,
+				fileId: FileId.schema,
+			}),
+			handler: async ({ input }) =>
+				JsonResponse.json({ text: await giselleEngine.getFileText(input) }),
+		}),
+	addSecret: (giselleEngine: GiselleEngine) =>
+		createHandler({
+			input: z.object({
+				workspaceId: WorkspaceId.schema,
+				label: z.string(),
+				value: z.string(),
+			}),
+			handler: async ({ input }) =>
+				JsonResponse.json({
+					secret: await giselleEngine.addSecret(input),
+				}),
+		}),
+	getWorkspaceSecrets: (giselleEngine: GiselleEngine) =>
+		createHandler({
+			input: z.object({
+				workspaceId: WorkspaceId.schema,
+			}),
+			handler: async ({ input }) =>
+				JsonResponse.json({
+					secrets: await giselleEngine.getWorkspaceSecrets(input),
+				}),
+		}),
+	createDataSource: (giselleEngine: GiselleEngine) =>
+		createHandler({
+			input: z.object({
+				workspaceId: WorkspaceId.schema,
+				dataSource: DataSourceProviderObject,
+			}),
+			handler: async ({ input }) =>
+				JsonResponse.json({
+					dataSource: await giselleEngine.createDataSource(input),
+				}),
+		}),
+	getWorkspaceDataSources: (giselleEngine: GiselleEngine) =>
+		createHandler({
+			input: z.object({
+				workspaceId: WorkspaceId.schema,
+			}),
+			handler: async ({ input }) =>
+				JsonResponse.json({
+					dataSources: await giselleEngine.getWorkspaceDataSources(input),
+				}),
 		}),
 } as const;
 

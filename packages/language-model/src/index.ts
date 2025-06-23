@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod/v4";
 import {
 	LanguageModel as AnthropicLanguageModel,
 	models as anthropicLanguageModels,
@@ -25,12 +25,13 @@ import {
 } from "./perplexity";
 export * from "./base";
 export * from "./helper";
+export * from "./costs";
 export {
 	getImageGenerationModelProvider,
 	falImageGenerationSizes as imageGenerationSizes,
-	createUsageCalculator,
 } from "./fal";
-export type { FalImageResult, GeneratedImageData } from "./fal";
+export { createUsageCalculator } from "./usage-factory";
+export type { GeneratedImageData } from "./fal";
 export {
 	size as openaiImageSize,
 	quality as openaiImageQuality,

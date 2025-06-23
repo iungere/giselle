@@ -29,10 +29,12 @@
 		"tsup": "catalog:"
 	},
 	"dependencies": {
+		"@giselle-sdk/rag": "workspace:*",
 		"@octokit/auth-app": "catalog:",
 		"@octokit/core": "catalog:",
 		"@octokit/graphql": "catalog:",
 		"@octokit/request-error": "catalog:",
+		"@octokit/webhooks": "catalog:",
 		"@urql/core": "catalog:",
 		"ai": "catalog:",
 		"gql.tada": "catalog:",

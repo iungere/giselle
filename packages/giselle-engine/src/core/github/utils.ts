@@ -1,8 +1,3 @@
-import {
-	WorkspaceGitHubIntegrationSetting,
-	type WorkspaceId,
-} from "@giselle-sdk/data-type";
-import type { Storage } from "unstorage";
 export type GitHubUrlInfo =
 	| { owner: string; repo: string; type: "issue"; issueNumber: number }
 	| {
@@ -159,108 +154,6 @@ export function parseGitHubUrl(url: string): GitHubUrlInfo | null {
 	}
 }
 
-export function githubIntegrationRepositorySettingsPath(
-	repositoryNodeId: string,
-) {
-	return `workspace-github-integration-repositories/${repositoryNodeId}.json`;
-}
-export async function getWorkspaceGitHubIntegrationRepositorySettings(params: {
-	storage: Storage;
-	repositoryNodeId: string;
-}) {
-	const unsafeWorkspaceGitHubIntegrationSettings = await params.storage.getItem(
-		githubIntegrationRepositorySettingsPath(params.repositoryNodeId),
-	);
-	if (unsafeWorkspaceGitHubIntegrationSettings === null) {
-		return undefined;
-	}
-	return WorkspaceGitHubIntegrationSetting.array().parse(
-		unsafeWorkspaceGitHubIntegrationSettings,
-	);
-}
-export function workspaceGithubIntegrationSettingPath(
-	workspaceId: WorkspaceId,
-) {
-	return `workspaces/${workspaceId}/github-integration.json`;
-}
-export async function getWorkspaceGitHubIntegrationSetting(params: {
-	storage: Storage;
-	workspaceId: WorkspaceId;
-}) {
-	const unsafeWorkspaceGitHubIntegration = await params.storage.getItem(
-		workspaceGithubIntegrationSettingPath(params.workspaceId),
-	);
-	if (unsafeWorkspaceGitHubIntegration === null) {
-		return undefined;
-	}
-	return WorkspaceGitHubIntegrationSetting.parse(
-		unsafeWorkspaceGitHubIntegration,
-	);
-}
-
-export async function upsertWorkspcaeGitHubIntegrationResitorySetting(params: {
-	storage: Storage;
-	workspaceGitHubIntegrationSetting: WorkspaceGitHubIntegrationSetting;
-}) {
-	const workspaceGithubIntegrationSettings =
-		(await getWorkspaceGitHubIntegrationRepositorySettings({
-			storage: params.storage,
-			repositoryNodeId:
-				params.workspaceGitHubIntegrationSetting.repositoryNodeId,
-		})) ?? [];
-	const index = workspaceGithubIntegrationSettings?.findIndex(
-		(integration) =>
-			integration.workspaceId ===
-			params.workspaceGitHubIntegrationSetting.workspaceId,
-	);
-	if (index === -1) {
-		await params.storage.setItem(
-			githubIntegrationRepositorySettingsPath(
-				params.workspaceGitHubIntegrationSetting.repositoryNodeId,
-			),
-			[
-				...workspaceGithubIntegrationSettings,
-				params.workspaceGitHubIntegrationSetting,
-			],
-			{
-				// Disable caching by setting cacheControlMaxAge to 0 for Vercel Blob storage
-				cacheControlMaxAge: 0,
-			},
-		);
-	} else {
-		await params.storage.setItem(
-			githubIntegrationRepositorySettingsPath(
-				params.workspaceGitHubIntegrationSetting.repositoryNodeId,
-			),
-			[
-				...workspaceGithubIntegrationSettings.slice(0, index),
-				params.workspaceGitHubIntegrationSetting,
-				...workspaceGithubIntegrationSettings.slice(index + 1),
-			],
-			{
-				// Disable caching by setting cacheControlMaxAge to 0 for Vercel Blob storage
-				cacheControlMaxAge: 0,
-			},
-		);
-	}
-}
-
-export async function upsertWorkspaceGitHubIntegrationSetting(params: {
-	storage: Storage;
-	workspaceGitHubIntegrationSetting: WorkspaceGitHubIntegrationSetting;
-}) {
-	await params.storage.setItem(
-		workspaceGithubIntegrationSettingPath(
-			params.workspaceGitHubIntegrationSetting.workspaceId,
-		),
-		params.workspaceGitHubIntegrationSetting,
-		{
-			// Disable caching by setting cacheControlMaxAge to 0 for Vercel Blob storage
-			cacheControlMaxAge: 0,
-		},
-	);
-}
-
 export interface Command {
 	callsign: string;
 	content: string;
@@ -272,7 +165,7 @@ export function parseCommand(text: string): Command | null {
 	const lines = normalizedText.trim().split("\n");
 
 	const commandLine = lines[0];
-	const commandMatch = commandLine.match(/^\/giselle\s+([^\n]+)/);
+	const commandMatch = commandLine.match(/^\/([^\n]+)/);
 	if (!commandMatch) {
 		return null;
 	}

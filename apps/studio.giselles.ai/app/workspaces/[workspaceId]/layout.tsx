@@ -1,7 +1,15 @@
+import { getGitHubVectorStores } from "@/app/services/vector-store";
 import { db } from "@/drizzle";
-import { flowNodeFlag, runV2Flag } from "@/flags";
+import {
+	githubToolsFlag,
+	githubVectorStoreFlag,
+	runV3Flag,
+	sidemenuFlag,
+	webSearchActionFlag,
+} from "@/flags";
 import { getGitHubIntegrationState } from "@/packages/lib/github";
 import { getUsageLimitsForTeam } from "@/packages/lib/usage-limits";
+import { fetchCurrentUser } from "@/services/accounts";
 import { fetchCurrentTeam, isProPlan } from "@/services/teams";
 import { WorkspaceId } from "@giselle-sdk/data-type";
 import { WorkspaceProvider } from "giselle-sdk/react";
@@ -25,14 +33,19 @@ export default async function Layout({
 	}
 	const gitHubIntegrationState = await getGitHubIntegrationState(agent.dbId);
 
+	const currentUser = await fetchCurrentUser();
+
 	const currentTeam = await fetchCurrentTeam();
 	if (currentTeam.dbId !== agent.teamDbId) {
 		return notFound();
 	}
 	const usageLimits = await getUsageLimitsForTeam(currentTeam);
-	const flowNode = await flowNodeFlag();
-	const runV2 = await runV2Flag();
-
+	const githubVectorStore = await githubVectorStoreFlag();
+	const gitHubVectorStores = await getGitHubVectorStores(currentTeam.dbId);
+	const runV3 = await runV3Flag();
+	const sidemenu = await sidemenuFlag();
+	const githubTools = await githubToolsFlag();
+	const webSearchAction = await webSearchActionFlag();
 	return (
 		<WorkspaceProvider
 			workspaceId={workspaceId}
@@ -45,17 +58,25 @@ export default async function Layout({
 					return { github: await getGitHubIntegrationState(agent.dbId) };
 				},
 			}}
+			vectorStore={{
+				github: gitHubVectorStores,
+				settingPath: "/settings/team/vector-stores",
+			}}
 			usageLimits={usageLimits}
 			telemetry={{
 				metadata: {
 					isProPlan: isProPlan(currentTeam),
 					teamType: currentTeam.type,
+					userId: currentUser.id,
 					subscriptionId: currentTeam.activeSubscriptionId ?? "",
 				},
 			}}
 			featureFlag={{
-				flowNode,
-				runV2,
+				githubVectorStore,
+				runV3,
+				sidemenu,
+				githubTools,
+				webSearchAction,
 			}}
 		>
 			{children}

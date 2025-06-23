@@ -1,42 +1,74 @@
-import { z } from "zod";
+import type {
+	GitHubActionCommandId,
+	WebSearchActionCommandId,
+} from "@giselle-sdk/flow";
+import { z } from "zod/v4";
 
-const GitHubActionProviderAuthUnauthenticated = z.object({
-	state: z.literal("unauthenticated"),
+const GitHubActionCommandUnconfiguredState = z.object({
+	status: z.literal("unconfigured"),
 });
-const GitHubActionProviderAuthAuthenticated = z.object({
-	state: z.literal("authenticated"),
-	installtionId: z.number(),
+export type GitHubActionCommandUnconfiguredState = z.infer<
+	typeof GitHubActionCommandUnconfiguredState
+>;
+
+const GitHubActionCommandConfiguredState = z.object({
+	status: z.literal("configured"),
+	commandId: z.custom<GitHubActionCommandId>(),
+	installationId: z.number(),
+	repositoryNodeId: z.string(),
 });
-const GitHubActionProviderAuth = z.discriminatedUnion("state", [
-	GitHubActionProviderAuthUnauthenticated,
-	GitHubActionProviderAuthAuthenticated,
+export type GitHubActionCommandConfiguredState = z.infer<
+	typeof GitHubActionCommandConfiguredState
+>;
+
+const GitHubActionCommandData = z.object({
+	provider: z.literal("github"),
+	state: z.discriminatedUnion("status", [
+		GitHubActionCommandUnconfiguredState,
+		GitHubActionCommandConfiguredState,
+	]),
+});
+export type GitHubActionCommandData = z.infer<typeof GitHubActionCommandData>;
+
+const WebSearchActionCommandUnconfiguredState = z.object({
+	status: z.literal("unconfigured"),
+});
+export type WebSearchActionCommandUnconfiguredState = z.infer<
+	typeof WebSearchActionCommandUnconfiguredState
+>;
+
+const WebSearchActionCommandConfiguredState = z.object({
+	status: z.literal("configured"),
+	commandId: z.custom<WebSearchActionCommandId>(),
+});
+export type WebSearchActionCommandConfiguredState = z.infer<
+	typeof WebSearchActionCommandConfiguredState
+>;
+
+const WebSearchActionCommandData = z.object({
+	provider: z.literal("web-search"),
+	state: z.discriminatedUnion("status", [
+		WebSearchActionCommandUnconfiguredState,
+		WebSearchActionCommandConfiguredState,
+	]),
+});
+export type WebSearchActionCommandData = z.infer<
+	typeof WebSearchActionCommandData
+>;
+
+const ActionCommandData = z.discriminatedUnion("provider", [
+	GitHubActionCommandData,
+	WebSearchActionCommandData,
 ]);
-
-export const GitHubActionProvider = z.object({
-	type: z.literal("github"),
-	actionId: z.string(),
-	auth: GitHubActionProviderAuth,
-});
-export type GitHubActionProvider = z.infer<typeof GitHubActionProvider>;
-
-export const ActionProvider = z.discriminatedUnion("type", [
-	GitHubActionProvider,
-]);
-export type ActionProvider = z.infer<typeof ActionProvider>;
-
-export const ActionProviderLike = z.object({
-	type: z.string(),
-	actionId: z.string(),
-});
-export type ActionProviderLike = z.infer<typeof ActionProviderLike>;
+export type ActionCommandData = z.infer<typeof ActionCommandData>;
 
 export const ActionContent = z.object({
 	type: z.literal("action"),
-	provider: ActionProviderLike,
+	command: ActionCommandData,
 });
 export type ActionContent = z.infer<typeof ActionContent>;
 
 export const ActionContentReference = z.object({
-	type: z.literal("action"),
+	type: ActionContent.shape.type,
 });
 export type ActionContentReference = z.infer<typeof ActionContentReference>;

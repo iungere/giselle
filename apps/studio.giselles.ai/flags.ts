@@ -1,3 +1,4 @@
+import { get } from "@vercel/edge-config";
 import { flag } from "flags/next";
 
 function takeLocalEnv(localEnvironmentKey: string) {
@@ -13,35 +14,9 @@ function takeLocalEnv(localEnvironmentKey: string) {
 	return true;
 }
 
-export const debugFlag = flag<boolean>({
-	key: "debug",
-	async decide() {
-		return takeLocalEnv("DEBUG_FLAG");
-	},
-	description: "Enable debug mode",
-	defaultValue: false,
-	options: [
-		{ value: false, label: "disable" },
-		{ value: true, label: "Enable" },
-	],
-});
-
-export const viewFlag = flag<boolean>({
-	key: "view",
-	async decide() {
-		return takeLocalEnv("VIEW_FLAG");
-	},
-	description: "Enable view mode",
-	defaultValue: false,
-	options: [
-		{ value: false, label: "disable" },
-		{ value: true, label: "Enable" },
-	],
-});
-
 export const developerFlag = flag<boolean>({
 	key: "developer",
-	async decide() {
+	decide() {
 		return takeLocalEnv("DEVELOPER_FLAG");
 	},
 	description: "Enable Developer",
@@ -54,7 +29,7 @@ export const developerFlag = flag<boolean>({
 
 export const githubToolsFlag = flag<boolean>({
 	key: "github-tools",
-	async decide() {
+	decide() {
 		return takeLocalEnv("GITHUB_TOOLS_FLAG");
 	},
 	description: "Enable GitHub Tools",
@@ -65,12 +40,12 @@ export const githubToolsFlag = flag<boolean>({
 	],
 });
 
-export const teamInvitationViaEmailFlag = flag<boolean>({
-	key: "teamInvitationViaEmail",
-	async decide() {
-		return true;
+export const githubVectorStoreFlag = flag<boolean>({
+	key: "github-vector-store",
+	decide() {
+		return takeLocalEnv("GITHUB_VECTOR_STORE_FLAG");
 	},
-	description: "Enable team invitation via email",
+	description: "Enable GitHub Vector Store",
 	defaultValue: false,
 	options: [
 		{ value: false, label: "disable" },
@@ -78,12 +53,12 @@ export const teamInvitationViaEmailFlag = flag<boolean>({
 	],
 });
 
-export const flowNodeFlag = flag<boolean>({
-	key: "flow-node",
-	async decide() {
-		return takeLocalEnv("FLOW_NODE_FLAG");
+export const webSearchActionFlag = flag<boolean>({
+	key: "web-search-action",
+	decide() {
+		return takeLocalEnv("WEB_SEARCH_ACTION_FLAG");
 	},
-	description: "Enable Flow Node",
+	description: "Enable Web Search Action",
 	defaultValue: false,
 	options: [
 		{ value: false, label: "disable" },
@@ -91,13 +66,38 @@ export const flowNodeFlag = flag<boolean>({
 	],
 });
 
-export const runV2Flag = flag<boolean>({
-	key: "run-v2",
+export const runV3Flag = flag<boolean>({
+	key: "run-v3",
 	async decide() {
-		return takeLocalEnv("RUN_V2_FLAG");
+		if (process.env.NODE_ENV === "development") {
+			return takeLocalEnv("RUN_V3_FLAG");
+		}
+		const edgeConfig = await get(`flag__${this.key}`);
+		if (edgeConfig === undefined) {
+			return false;
+		}
+		return edgeConfig === true || edgeConfig === "true";
 	},
-	description: "Enable Run v2",
-	defaultValue: false,
+	description: "Enable Run v3",
+	options: [
+		{ value: false, label: "disable" },
+		{ value: true, label: "Enable" },
+	],
+});
+
+export const sidemenuFlag = flag<boolean>({
+	key: "sidemenu",
+	async decide() {
+		if (process.env.NODE_ENV === "development") {
+			return takeLocalEnv("SIDEMENU_FLAG");
+		}
+		const edgeConfig = await get(`flag__${this.key}`);
+		if (edgeConfig === undefined) {
+			return false;
+		}
+		return edgeConfig === true || edgeConfig === "true";
+	},
+	description: "Enable Side Menu",
 	options: [
 		{ value: false, label: "disable" },
 		{ value: true, label: "Enable" },

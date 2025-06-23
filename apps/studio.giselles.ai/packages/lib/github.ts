@@ -4,6 +4,7 @@ import { db, type githubIntegrationSettings } from "@/drizzle";
 import { getGitHubIdentityState } from "@/services/accounts";
 import { gitHubAppInstallURL } from "@/services/external/github";
 import type {
+	GitHubIntegrationErrorState,
 	GitHubIntegrationInstalledState,
 	GitHubIntegrationInvalidCredentialState,
 	GitHubIntegrationNotInstalledState,
@@ -25,36 +26,61 @@ export async function getGitHubIntegrationState(
 			status: identityState.status,
 		};
 	}
-
-	const gitHubUserClient = identityState.gitHubUserClient;
-	const { installations } = await gitHubUserClient.getInstallations();
-	if (installations.length === 0) {
+	if (identityState.status === "error") {
 		return {
-			status: "not-installed",
-			installationUrl: await gitHubAppInstallURL(),
+			status: "error",
+			errorMessage: identityState.errorMessage,
 		};
 	}
 
-	const [repositories, githubIntegrationSetting] = await Promise.all([
-		Promise.all(
-			installations.map(async (installation) => {
-				const { repositories: repos } = await gitHubUserClient.getRepositories(
-					installation.id,
-				);
-				return repos;
-			}),
-		).then((repos) =>
-			repos.flat().sort((a, b) => a.name.localeCompare(b.name)),
-		),
-		db.query.githubIntegrationSettings.findFirst({
-			where: (githubIntegrationSettings, { eq }) =>
-				eq(githubIntegrationSettings.agentDbId, agentDbId),
-		}),
+	const gitHubUserClient = identityState.gitHubUserClient;
+	const [{ installations }, installationUrl] = await Promise.all([
+		gitHubUserClient.getInstallations(),
+		gitHubAppInstallURL(),
 	]);
+	if (installationUrl == null) {
+		return {
+			status: "error",
+			errorMessage: "Failed to get GitHub App installation URL.",
+		};
+	}
+	if (installations.length === 0) {
+		return {
+			status: "not-installed",
+			installationUrl,
+		};
+	}
+
+	const [installationsWithRepositories, githubIntegrationSetting] =
+		await Promise.all([
+			Promise.all(
+				installations.map(async (installation) => {
+					const data = await gitHubUserClient.getRepositories(installation.id);
+					return {
+						...installation,
+						repositories: data.repositories,
+					};
+				}),
+			),
+			db.query.githubIntegrationSettings.findFirst({
+				where: (githubIntegrationSettings, { eq }) =>
+					eq(githubIntegrationSettings.agentDbId, agentDbId),
+			}),
+		]);
+
+	const allRepositories = installationsWithRepositories
+		.flatMap(
+			(installationWithRepositories) =>
+				installationWithRepositories.repositories,
+		)
+		.sort((a, b) => a.name.localeCompare(b.name));
+
 	return {
 		status: "installed",
-		repositories,
+		repositories: allRepositories,
+		installations: installationsWithRepositories,
 		setting: githubIntegrationSetting,
+		installationUrl,
 	};
 }
 
@@ -63,6 +89,7 @@ export type GitHubIntegrationState = (
 	| GitHubIntegrationInvalidCredentialState
 	| GitHubIntegrationNotInstalledState
 	| GitHubIntegrationInstalledState
+	| GitHubIntegrationErrorState
 ) &
 	GitHubIntegrationSettingState;
 

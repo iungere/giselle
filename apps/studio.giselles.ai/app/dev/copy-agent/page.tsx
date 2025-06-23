@@ -9,7 +9,7 @@ export default async function CopyAgentPage() {
 	}
 
 	return (
-		<div className="font-mono p-8 text-black-30">
+		<div className="font-sans p-8 text-black-30">
 			<p>
 				Please fill in the agent id, then copy it in your
 				account.(agnt_[0-9a-zA-Z]+)

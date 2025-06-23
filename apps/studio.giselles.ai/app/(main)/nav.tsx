@@ -9,11 +9,17 @@ const menuItems = [
 	{ name: "Apps", path: "/apps" },
 	{ name: "Members", path: "/settings/team/members" },
 	{ name: "Integrations", path: "/settings/team/integrations" },
+	{ name: "Vector Stores", path: "/settings/team/vector-stores" },
 	{ name: "Usage", path: "/settings/team/usage" },
-	{ name: "Settings", path: "/settings/team" },
+	{ name: "Team Settings", path: "/settings/team" },
 ];
 
-export const Nav: FC = () => {
+// receive githubVectorStoreFlag as props
+interface NavProps {
+	githubVectorStoreFlag: boolean;
+}
+
+export const Nav: FC<NavProps> = ({ githubVectorStoreFlag }) => {
 	const pathname = usePathname();
 
 	// hide nav on settings/account page
@@ -21,11 +27,16 @@ export const Nav: FC = () => {
 		return null;
 	}
 
-	// 現在のパスに最もマッチする項目を見つける
+	// remove Vector Store link
+	const filteredMenuItems = githubVectorStoreFlag
+		? menuItems
+		: menuItems.filter((item) => item.name !== "Vector Stores");
+
+	// find the best match path
 	let bestMatchPath = "";
 	let bestMatchIndex = -1;
 
-	menuItems.forEach((item, index) => {
+	filteredMenuItems.forEach((item, index) => {
 		if (
 			pathname.startsWith(item.path) &&
 			item.path.length > bestMatchPath.length
@@ -37,19 +48,19 @@ export const Nav: FC = () => {
 
 	return (
 		<div className="flex items-center px-[24px] py-0 border-t border-black-900/50">
-			<div className="flex items-center">
-				{menuItems.map((item, index) => {
+			<div className="flex items-center space-x-[12px]">
+				{filteredMenuItems.map((item, index) => {
 					const isActive = index === bestMatchIndex;
 
 					return (
 						<Link
 							key={item.path}
 							href={item.path}
-							className={`text-[16px] font-hubot font-medium transition-colors px-2 py-2 relative rounded-md
+							className={`text-[16px] font-sans font-medium transition-colors px-2 py-2 relative rounded-md
 							${
 								isActive
-									? "text-primary-100 after:content-[''] after:absolute after:left-0 after:right-0 after:bottom-0 after:h-[2px] after:bg-primary-100"
-									: "text-black-70 hover:text-white-100 hover:bg-white-950/20"
+									? "text-primary-100 [text-shadow:0px_0px_20px_#0087f6] after:content-[''] after:absolute after:left-0 after:right-0 after:bottom-0 after:h-[2px] after:bg-primary-100"
+									: "text-black-70 hover:text-white-100 hover:after:content-[''] hover:after:absolute hover:after:left-0 hover:after:right-0 hover:after:bottom-0 hover:after:h-[2px] hover:after:bg-primary-100"
 							}`}
 						>
 							{item.name}

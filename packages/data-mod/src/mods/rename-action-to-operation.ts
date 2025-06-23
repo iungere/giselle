@@ -1,4 +1,4 @@
-import type { ZodIssue } from "zod";
+import type { $ZodIssue } from "@zod/core";
 
 import { getValueAtPath, isObject, setValueAtPath } from "../utils";
 
@@ -55,9 +55,13 @@ function transformNodeTypes(obj: unknown): unknown {
 	return result;
 }
 
-export function renameActionToOperation(data: unknown, issue: ZodIssue) {
+export function renameActionToOperation(data: unknown, issue: $ZodIssue) {
 	// Skip if not a relevant issue
 	if (!isObject(data)) {
+		return data;
+	}
+
+	if (issue.code === "invalid_type" && issue.expected === "string") {
 		return data;
 	}
 
@@ -65,7 +69,6 @@ export function renameActionToOperation(data: unknown, issue: ZodIssue) {
 	if (
 		issue.code === "invalid_type" &&
 		issue.expected === "object" &&
-		issue.received === "undefined" &&
 		issue.path.includes("operationNode")
 	) {
 		// biome-ignore lint/suspicious/noExplicitAny: Using any for generic deep copying
@@ -111,23 +114,13 @@ export function renameActionToOperation(data: unknown, issue: ZodIssue) {
 		return transformNodeTypes(data);
 	}
 
-	// If this is a discriminator error related to the type field
-	if (
-		issue.code === "invalid_union_discriminator" &&
-		issue.path.includes("type") &&
-		issue.options.includes("operation")
-	) {
-		// Use the deep transformer to fix all node types
-		return transformNodeTypes(data);
-	}
-
 	// biome-ignore lint/suspicious/noExplicitAny: Using any for generic deep copying
 	const newData = structuredClone(data as Record<string, any>);
 
 	// Case 1: Handle node type rename from "action" to "operation"
 	if (
-		(issue.path.includes("type") && issue.code === "invalid_literal") ||
-		issue.code === "invalid_union_discriminator"
+		(issue.path.includes("type") && issue.code === "invalid_type") ||
+		issue.code === "invalid_union"
 	) {
 		// Get the path to the node
 		const nodePath = issue.path.slice(0, issue.path.indexOf("type"));

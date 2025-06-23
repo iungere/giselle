@@ -3,9 +3,14 @@ import { fetchUsageLimits } from "@/packages/lib/fetch-usage-limits";
 import { onConsumeAgentTime } from "@/packages/lib/on-consume-agent-time";
 import supabaseStorageDriver from "@/supabase-storage-driver";
 import { WorkspaceId } from "@giselle-sdk/data-type";
+import type { CompletedGeneration } from "@giselle-sdk/data-type";
 import { NextGiselleEngine } from "@giselle-sdk/giselle-engine/next";
 import { supabaseVaultDriver } from "@giselle-sdk/supabase-driver";
+import { emitTelemetry } from "@giselle-sdk/telemetry";
+import type { TelemetrySettings } from "@giselle-sdk/telemetry";
 import { createStorage } from "unstorage";
+import { gitHubQueryService } from "../lib/vector-stores/github-blob-stores";
+import { queryGithubVectorStore } from "./services/vector-store/";
 
 export const publicStorage = createStorage({
 	driver: supabaseStorageDriver({
@@ -32,6 +37,22 @@ const sampleAppWorkspaceId = WorkspaceId.parse(
 	process.env.SAMPLE_APP_WORKSPACE_ID,
 );
 
+const githubAppId = process.env.GITHUB_APP_ID;
+const githubAppPrivateKey = process.env.GITHUB_APP_PRIVATE_KEY;
+const githubAppClientId = process.env.GITHUB_APP_CLIENT_ID;
+const githubAppClientSecret = process.env.GITHUB_APP_CLIENT_SECRET;
+const githubAppWebhookSecret = process.env.GITHUB_APP_WEBHOOK_SECRET;
+
+if (
+	githubAppId === undefined ||
+	githubAppPrivateKey === undefined ||
+	githubAppClientId === undefined ||
+	githubAppClientSecret === undefined ||
+	githubAppWebhookSecret === undefined
+) {
+	throw new Error("missing github credentials");
+}
+
 export const giselleEngine = NextGiselleEngine({
 	basePath: "/api/giselle",
 	storage,
@@ -54,15 +75,33 @@ export const giselleEngine = NextGiselleEngine({
 					installtionIds: () => [1234],
 				},
 			},
+			authV2: {
+				appId: githubAppId,
+				privateKey: githubAppPrivateKey,
+				clientId: githubAppClientId,
+				clientSecret: githubAppClientSecret,
+				webhookSecret: githubAppWebhookSecret,
+			},
 		},
-		// github: {
-		// 	provider: "github",
-		// 	auth: {
-		// 		strategy: "app-installation",
-		// 		appId: 1234,
-		// 		privateKey: "pp",
-		// 	},
-		// },
 	},
 	vault,
+	vectorStoreQueryFunctions: {
+		github: queryGithubVectorStore,
+	},
+	vectorStoreQueryServices: {
+		github: gitHubQueryService,
+	},
+	callbacks: {
+		generationComplete: async (generation, options) => {
+			try {
+				await emitTelemetry(generation, {
+					telemetry: options.telemetry,
+					storage,
+				});
+			} catch (error) {
+				console.error("Telemetry emission failed:", error);
+			}
+		},
+	},
+	// vectorStore: openaiVectorStore(process.env.OPENAI_API_KEY ?? ""),
 });

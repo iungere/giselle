@@ -2,27 +2,30 @@ import { parseAndMod } from "@giselle-sdk/data-mod";
 import {
 	type CompletedGeneration,
 	type FileContent,
-	type FileData,
+	type FileId,
 	Generation,
 	GenerationContext,
 	type GenerationId,
-	GenerationIndex,
-	type GenerationOrigin,
+	type GenerationOutput,
 	type ImageGenerationNode,
 	type Node,
 	NodeGenerationIndex,
 	NodeId,
 	type OperationNode,
 	OutputId,
-	type RunId,
 	type TextGenerationNode,
+	type WebPageContent,
 	type WorkspaceId,
+	isImageGenerationNode,
+	isTextGenerationNode,
 } from "@giselle-sdk/data-type";
 import { hasTierAccess, languageModels } from "@giselle-sdk/language-model";
-import { isJsonContent, jsonContentToText } from "@giselle-sdk/text-editor";
+import {
+	isJsonContent,
+	jsonContentToText,
+} from "@giselle-sdk/text-editor-utils";
 import type { CoreMessage, DataContent, FilePart, ImagePart } from "ai";
 import type { Storage } from "unstorage";
-import { getRun } from "../runs/utils";
 import type { GiselleEngineContext } from "../types";
 
 export interface GeneratedImageData {
@@ -39,7 +42,7 @@ export interface FileIndex {
 export async function buildMessageObject(
 	node: OperationNode,
 	contextNodes: Node[],
-	fileResolver: (file: FileData) => Promise<DataContent>,
+	fileResolver: (fileId: FileId) => Promise<DataContent>,
 	textGenerationResolver: (
 		nodeId: NodeId,
 		outputId: OutputId,
@@ -63,7 +66,8 @@ export async function buildMessageObject(
 			);
 		}
 		case "action":
-		case "trigger": {
+		case "trigger":
+		case "query": {
 			return [];
 		}
 		default: {
@@ -76,7 +80,7 @@ export async function buildMessageObject(
 async function buildGenerationMessageForTextGeneration(
 	node: TextGenerationNode,
 	contextNodes: Node[],
-	fileResolver: (file: FileData) => Promise<DataContent>,
+	fileResolver: (fileId: FileId) => Promise<DataContent>,
 	textGenerationResolver: (
 		nodeId: NodeId,
 		outputId: OutputId,
@@ -125,9 +129,8 @@ async function buildGenerationMessageForTextGeneration(
 					contextNode.id,
 					sourceKeyword.outputId,
 				);
-				if (result !== undefined) {
-					userMessage = userMessage.replace(replaceKeyword, result);
-				}
+				// If there is no matching Output, replace it with an empty string (remove the pattern string from userMessage)
+				userMessage = userMessage.replace(replaceKeyword, result ?? "");
 				break;
 			}
 			case "file":
@@ -187,9 +190,35 @@ async function buildGenerationMessageForTextGeneration(
 
 			case "github":
 			case "imageGeneration":
-			case "trigger":
-			case "action":
+			case "vectorStore":
 				throw new Error("Not implemented");
+
+			case "webPage": {
+				const fileContents = await geWebPageContents(
+					contextNode.content,
+					fileResolver,
+				);
+				userMessage = userMessage.replace(
+					replaceKeyword,
+					getFilesDescription(attachedFiles.length, fileContents.length),
+				);
+
+				attachedFiles.push(...fileContents);
+				attachedFileNodeIds.push(contextNode.id);
+				break;
+			}
+
+			case "query":
+			case "trigger":
+			case "action": {
+				const result = await textGenerationResolver(
+					contextNode.id,
+					sourceKeyword.outputId,
+				);
+				// If there is no matching Output, replace it with an empty string (remove the pattern string from userMessage)
+				userMessage = userMessage.replace(replaceKeyword, result ?? "");
+				break;
+			}
 
 			default: {
 				const _exhaustiveCheck: never = contextNode.content;
@@ -260,168 +289,61 @@ function getOrdinal(n: number): string {
 	return `${n}${suffix}`;
 }
 
-function generationIndexPath(generationId: GenerationId) {
-	return `generations/${generationId}.json`;
-}
-export async function getGenerationIndex(params: {
-	storage: Storage;
-	generationId: GenerationId;
-}) {
-	const unsafeGenerationIndex = await params.storage.getItem(
-		generationIndexPath(params.generationId),
-	);
-	if (unsafeGenerationIndex === null) {
-		return undefined;
-	}
-	return GenerationIndex.parse(unsafeGenerationIndex);
-}
-export async function setGenerationIndex(params: {
-	storage: Storage;
-	generationIndex: GenerationIndex;
-}) {
-	await params.storage.setItem(
-		generationIndexPath(params.generationIndex.id),
-		GenerationIndex.parse(params.generationIndex),
-	);
-}
-export function generationPath(generationIndex: GenerationIndex) {
-	const generationOrigin = generationIndex.origin;
-	const originType = generationOrigin.type;
-	switch (originType) {
-		case "workspace":
-			return `workspaces/${generationOrigin.id}/generations/${generationIndex.id}/generation.json`;
-		case "run":
-			return `runs/${generationOrigin.id}/generations/${generationIndex.id}/generation.json`;
-		default: {
-			const _exhaustiveCheck: never = originType;
-			return _exhaustiveCheck;
-		}
-	}
-}
-
-export function activeNodeGenerationIdPath(
-	params: {
-		storage: Storage;
-		nodeId: NodeId;
-	} & { origin: GenerationOrigin },
-) {
-	switch (params.origin.type) {
-		case "workspace":
-			return `workspaces/${params.origin.id}/node-generations/${params.nodeId}/activeGenerationId.txt`;
-		case "run":
-			return `runs/${params.origin.id}/node-generations/${params.nodeId}/activeGenerationId.txt`;
-		default: {
-			const _exhaustiveCheck: never = params.origin;
-			return _exhaustiveCheck;
-		}
-	}
-}
-
-export async function setGeneration(params: {
-	storage: Storage;
-	generation: Generation;
-}) {
-	await params.storage.setItem(
-		generationPath({
-			id: params.generation.id,
-			origin: params.generation.context.origin,
-		}),
-		Generation.parse(params.generation),
-		{
-			// Disable caching by setting cacheControlMaxAge to 0 for Vercel Blob storage
-			cacheControlMaxAge: 0,
-		},
-	);
+export function generationPath(generationId: GenerationId) {
+	return `generations/${generationId}/generation.json`;
 }
 
 export async function getGeneration(params: {
 	storage: Storage;
 	generationId: GenerationId;
+	options?: {
+		bypassingCache?: boolean;
+		skipMod?: boolean;
+	};
 }): Promise<Generation | undefined> {
-	const generationIndex = await getGenerationIndex({
-		storage: params.storage,
-		generationId: params.generationId,
-	});
-	if (generationIndex == null) {
+	const unsafeGeneration = await params.storage.getItem(
+		`${generationPath(params.generationId)}`,
+		{
+			bypassingCache: params.options?.bypassingCache ?? false,
+		},
+	);
+	if (unsafeGeneration == null) {
 		throw new Error("Generation not found");
 	}
-	const unsafeGeneration = await params.storage.getItem(
-		`${generationPath(generationIndex)}`,
+	if (params.options?.skipMod) {
+		const parsedGeneration = Generation.parse(unsafeGeneration);
+		const parsedGenerationContext = GenerationContext.parse(
+			parsedGeneration.context,
+		);
+		return {
+			...parsedGeneration,
+			context: parsedGenerationContext,
+		};
+	}
+	const parsedGeneration = parseAndMod(Generation, unsafeGeneration);
+	const parsedGenerationContext = parseAndMod(
+		GenerationContext,
+		parsedGeneration.context,
+	);
+	return {
+		...parsedGeneration,
+		context: parsedGenerationContext,
+	};
+}
+
+export function nodeGenerationIndexPath(nodeId: NodeId) {
+	return `generations/byNode/${nodeId}.json`;
+}
+
+export async function getNodeGenerationIndexes(params: {
+	storage: Storage;
+	nodeId: NodeId;
+}) {
+	const unsafeNodeGenerationIndexData = await params.storage.getItem(
+		nodeGenerationIndexPath(params.nodeId),
 		{
 			bypassingCache: true,
 		},
-	);
-	return parseAndMod(Generation, unsafeGeneration);
-}
-
-export function nodeGenerationIndexPath(
-	params: {
-		storage: Storage;
-		nodeId: NodeId;
-	} & { origin: GenerationOrigin },
-) {
-	switch (params.origin.type) {
-		case "workspace":
-			return `workspaces/${params.origin.id}/node-generations/${params.nodeId}.json`;
-		case "run":
-			return `runs/${params.origin.id}/node-generations/${params.nodeId}.json`;
-		default: {
-			const _exhaustiveCheck: never = params.origin;
-			return _exhaustiveCheck;
-		}
-	}
-}
-export async function setNodeGenerationIndex(
-	params: {
-		storage: Storage;
-		nodeId: NodeId;
-		nodeGenerationIndex: NodeGenerationIndex;
-	} & { origin: GenerationOrigin },
-) {
-	let newNodeGenerationIndexes: NodeGenerationIndex[] | undefined;
-	const nodeGenerationIndexes = await getNodeGenerationIndexes({
-		storage: params.storage,
-		nodeId: params.nodeId,
-		origin: params.origin,
-	});
-	if (nodeGenerationIndexes === undefined) {
-		newNodeGenerationIndexes = [params.nodeGenerationIndex];
-	} else {
-		const index = nodeGenerationIndexes.findIndex(
-			(nodeGenerationIndex) =>
-				nodeGenerationIndex.id === params.nodeGenerationIndex.id,
-		);
-		if (index === -1) {
-			newNodeGenerationIndexes = [
-				...nodeGenerationIndexes,
-				params.nodeGenerationIndex,
-			];
-		} else {
-			newNodeGenerationIndexes = [
-				...nodeGenerationIndexes.slice(0, index),
-				params.nodeGenerationIndex,
-				...nodeGenerationIndexes.slice(index + 1),
-			];
-		}
-	}
-	await params.storage.setItem(
-		nodeGenerationIndexPath(params),
-		newNodeGenerationIndexes,
-		{
-			// Disable caching by setting cacheControlMaxAge to 0 for Vercel Blob storage
-			cacheControlMaxAge: 0,
-		},
-	);
-}
-
-export async function getNodeGenerationIndexes(
-	params: {
-		storage: Storage;
-		nodeId: NodeId;
-	} & { origin: GenerationOrigin },
-) {
-	const unsafeNodeGenerationIndexData = await params.storage.getItem(
-		nodeGenerationIndexPath(params),
 	);
 	if (unsafeNodeGenerationIndexData === null) {
 		return undefined;
@@ -429,16 +351,36 @@ export async function getNodeGenerationIndexes(
 	return NodeGenerationIndex.array().parse(unsafeNodeGenerationIndexData);
 }
 
+async function geWebPageContents(
+	webpageContent: WebPageContent,
+	fileResolver: (fileId: FileId) => Promise<DataContent>,
+) {
+	return await Promise.all(
+		webpageContent.webpages.map(async (webpage) => {
+			if (webpage.status !== "fetched") {
+				return null;
+			}
+			const data = await fileResolver(webpage.fileId);
+			return {
+				type: "file",
+				data,
+				filename: webpage.title,
+				mimeType: "text/markdown",
+			} satisfies FilePart;
+		}),
+	).then((result) => result.filter((data) => data !== null));
+}
+
 async function getFileContents(
 	fileContent: FileContent,
-	fileResolver: (file: FileData) => Promise<DataContent>,
+	fileResolver: (fileId: FileId) => Promise<DataContent>,
 ): Promise<(FilePart | ImagePart)[]> {
 	return await Promise.all(
 		fileContent.files.map(async (file) => {
 			if (file.status !== "uploaded") {
 				return null;
 			}
-			const data = await fileResolver(file);
+			const data = await fileResolver(file.id);
 			switch (fileContent.category) {
 				case "pdf":
 				case "text":
@@ -500,7 +442,7 @@ export async function getRedirectedUrlAndTitle(url: string) {
 async function buildGenerationMessageForImageGeneration(
 	node: ImageGenerationNode,
 	contextNodes: Node[],
-	fileResolver: (file: FileData) => Promise<DataContent>,
+	fileResolver: (fileId: FileId) => Promise<DataContent>,
 	textGenerationResolver: (
 		nodeId: NodeId,
 		outputId: OutputId,
@@ -574,10 +516,36 @@ async function buildGenerationMessageForImageGeneration(
 				}
 				break;
 
+			case "webPage": {
+				const fileContents = await geWebPageContents(
+					contextNode.content,
+					fileResolver,
+				);
+
+				userMessage = userMessage.replace(
+					replaceKeyword,
+					getFilesDescription(attachedFiles.length, fileContents.length),
+				);
+
+				attachedFiles.push(...fileContents);
+				break;
+			}
+
+			case "query": {
+				const result = await textGenerationResolver(
+					contextNode.id,
+					sourceKeyword.outputId,
+				);
+				// If there is no matching Output, replace it with an empty string (remove the pattern string from userMessage)
+				userMessage = userMessage.replace(replaceKeyword, result ?? "");
+				break;
+			}
+
 			case "github":
 			case "imageGeneration":
 			case "trigger":
 			case "action":
+			case "vectorStore":
 				throw new Error("Not implemented");
 
 			default: {
@@ -599,19 +567,11 @@ async function buildGenerationMessageForImageGeneration(
 	];
 }
 
-export function generatedImagePath(generation: Generation, filename: string) {
-	const generationContext = GenerationContext.parse(generation.context);
-	const originType = generationContext.origin.type;
-	switch (originType) {
-		case "workspace":
-			return `workspaces/${generation.context.origin.id}/generations/${generation.id}/${filename}`;
-		case "run":
-			return `runs/${generation.context.origin.id}/generations/${generation.id}/${filename}`;
-		default: {
-			const _exhaustiveCheck: never = originType;
-			return _exhaustiveCheck;
-		}
-	}
+export function generatedImagePath(
+	generationId: GenerationId,
+	filename: string,
+) {
+	return `generations/${generationId}/generated-images/${filename}`;
 }
 
 export async function setGeneratedImage(params: {
@@ -621,7 +581,7 @@ export async function setGeneratedImage(params: {
 	generatedImage: GeneratedImageData;
 }) {
 	await params.storage.setItemRaw(
-		generatedImagePath(params.generation, params.generatedImageFilename),
+		generatedImagePath(params.generation.id, params.generatedImageFilename),
 		params.generatedImage.uint8Array,
 	);
 }
@@ -632,7 +592,7 @@ export async function getGeneratedImage(params: {
 	filename: string;
 }) {
 	let image = await params.storage.getItemRaw(
-		generatedImagePath(params.generation, params.filename),
+		generatedImagePath(params.generation.id, params.filename),
 	);
 	if (image instanceof ArrayBuffer) {
 		image = new Uint8Array(image);
@@ -736,62 +696,82 @@ export async function checkUsageLimits(args: {
 
 	const generationContext = GenerationContext.parse(generation.context);
 	const operationNode = generationContext.operationNode;
-	switch (operationNode.content.type) {
-		case "imageGeneration":
-		case "textGeneration": {
-			const llm = operationNode.content.llm;
-			const languageModel = languageModels.find((model) => model.id === llm.id);
-			if (languageModel === undefined) {
-				return {
-					type: "error",
-					error: "Language model not found",
-				};
-			}
-			if (!hasTierAccess(languageModel, usageLimits.featureTier)) {
-				return {
-					type: "error",
-					error:
-						"Access denied: insufficient tier for the requested language model.",
-				};
-			}
-
-			const agentTimeLimits = usageLimits.resourceLimits.agentTime;
-			if (agentTimeLimits.used >= agentTimeLimits.limit) {
-				return {
-					type: "error",
-					error:
-						"Access denied: insufficient agent time for the requested generation.",
-				};
-			}
-			return { type: "ok" };
-		}
-		case "trigger":
-		case "action":
-			return { type: "ok" };
-		default: {
-			const _exhaustiveCheck: never = operationNode.content;
-			throw new Error(`Unhandled type: ${_exhaustiveCheck}`);
-		}
+	if (
+		!isTextGenerationNode(operationNode) &&
+		!isImageGenerationNode(operationNode)
+	) {
+		return { type: "ok" };
 	}
+	const llm = operationNode.content.llm;
+	const languageModel = languageModels.find((model) => model.id === llm.id);
+	if (languageModel === undefined) {
+		return {
+			type: "error",
+			error: "Language model not found",
+		};
+	}
+	if (!hasTierAccess(languageModel, usageLimits.featureTier)) {
+		return {
+			type: "error",
+			error:
+				"Access denied: insufficient tier for the requested language model.",
+		};
+	}
+
+	const agentTimeLimits = usageLimits.resourceLimits.agentTime;
+	if (agentTimeLimits.used >= agentTimeLimits.limit) {
+		return {
+			type: "error",
+			error:
+				"Access denied: insufficient agent time for the requested generation.",
+		};
+	}
+	return { type: "ok" };
 }
 
-export async function extractWorkspaceIdFromOrigin(args: {
-	storage: GiselleEngineContext["storage"];
-	origin: { type: "workspace"; id: WorkspaceId } | { type: "run"; id: RunId };
-}) {
-	const { origin, storage } = args;
-
-	if (origin.type === "workspace") {
-		return origin.id;
+export function queryResultToText(
+	queryResult: Extract<GenerationOutput, { type: "query-result" }>,
+): string | undefined {
+	if (!queryResult.content || queryResult.content.length === 0) {
+		return undefined;
 	}
 
-	const run = await getRun({
-		storage: storage,
-		runId: origin.id,
-	});
+	const sections: string[] = [];
 
-	if (run == null || !("workspaceId" in run)) {
-		throw new Error("Run not completed");
+	for (const result of queryResult.content) {
+		if (result.type === "vector-store") {
+			let sourceInfo = "## Vector Store Search Results";
+			if (
+				result.source.provider === "github" &&
+				result.source.state.status === "configured"
+			) {
+				sourceInfo += ` from ${result.source.state.owner}/${result.source.state.repo}`;
+			}
+			sections.push(sourceInfo);
+
+			if (result.records.length === 0) {
+				sections.push("No matching results found.");
+				continue;
+			}
+
+			for (let i = 0; i < result.records.length; i++) {
+				const record = result.records[i];
+				const recordSections = [
+					`### Result ${i + 1} (Relevance: ${record.score.toFixed(3)})`,
+					record.chunkContent.trim(),
+				];
+
+				if (record.metadata && Object.keys(record.metadata).length > 0) {
+					const metadataEntries = Object.entries(record.metadata)
+						.map(([key, value]) => `${key}: ${value}`)
+						.join(", ");
+					recordSections.push(`*Source: ${metadataEntries}*`);
+				}
+
+				sections.push(recordSections.join("\n\n"));
+			}
+		}
 	}
-	return run.workspaceId;
+
+	return sections.length > 0 ? sections.join("\n\n---\n\n") : undefined;
 }

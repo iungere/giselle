@@ -1,7 +1,8 @@
 @import "tailwindcss";
-@import "../../../internal-packages/workflow-designer-ui/src/workflow-designer-ui.css";
+@import "../../../internal-packages/workflow-designer-ui/src/app/globals.css";
 
 @source "../../../internal-packages/workflow-designer-ui/src";
+@source "../../../internal-packages/ui";
 @source "../../../packages/text-editor/src/react/";
 
 @theme {
@@ -53,6 +54,9 @@
 	--color-file-node-1: var(--color-chartreuse-900);
 	--color-file-node-2: hsl(69, 99%, 32%);
 
+	--color-webPage-node-1: var(--color-chartreuse-900);
+	--color-webPage-node-2: hsl(69, 99%, 32%);
+
 	--color-node-data-900: var(--color-chartreuse-900);
 	--color-node-plaintext-900: var(--color-turquoise-900);
 
@@ -80,10 +84,20 @@
 	--color-video-generation-node-1: #0098b2;
 	--color-video-generation-node-2: color-mix(in srgb, #0098b2, #000000 20%);
 
+	--color-query-node-1: hsl(200, 80%, 50%);
+	--color-query-node-2: hsl(200, 80%, 30%);
+
 	--color-error-900: var(--color-red-900);
 
-	--font-sans: var(--font-geist-sans);
-	--font-accent: var(--font-hubot-sans);
+	/* text */
+	--color-text: #f7f9fd;
+	--color-text-muted: #a9afbc;
+	--color-text-placeholder: #878a98;
+	--color-text-disabled: #878a98;
+	--color-text-accent: #74ade8;
+
+	--font-accent: var(--font-dm-sans);
+	--font-sans: var(--font-dm-sans);
 }
 
 @layer components {

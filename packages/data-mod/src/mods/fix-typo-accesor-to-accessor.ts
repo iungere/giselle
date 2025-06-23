@@ -1,12 +1,21 @@
 import type { Output } from "@giselle-sdk/data-type";
-import type { ZodIssue } from "zod";
+import type { $ZodIssue } from "@zod/core";
 import { getValueAtPath, isObject, setValueAtPath } from "../utils";
 
-export function fixTypoAccesorToAccessor(data: unknown, issue: ZodIssue) {
+export function fixTypoAccesorToAccessor(data: unknown, issue: $ZodIssue) {
 	const lastPath = issue.path[issue.path.length - 1];
 	if (lastPath !== "accessor") {
 		return data;
 	}
+
+	// Check if the path includes "outputs"
+	const pathContainsOutput = issue.path.some(
+		(segment) => typeof segment === "string" && segment === "outputs",
+	);
+	if (!pathContainsOutput) {
+		return data;
+	}
+
 	if (!isObject(data)) {
 		return data;
 	}

@@ -1,16 +1,16 @@
 import {
 	ConnectionId,
 	type ImageGenerationNode,
+	Node,
 	isTextGenerationNode,
 } from "@giselle-sdk/data-type";
-import {
-	TextEditor,
-	createSourceExtensionJSONContent,
-} from "@giselle-sdk/text-editor/react-internal";
+import { createSourceExtensionJSONContent } from "@giselle-sdk/text-editor-utils";
+import { TextEditor } from "@giselle-sdk/text-editor/react-internal";
 import clsx from "clsx/lite";
 import { useWorkflowDesigner } from "giselle-sdk/react";
 import { AtSignIcon } from "lucide-react";
 import { DropdownMenu, Toolbar } from "radix-ui";
+import { useMemo } from "react";
 import { type Source, useConnectedSources } from "./sources";
 
 function getDefaultNodeName(source: Source): string {
@@ -27,13 +27,22 @@ export function PromptPanel({
 }) {
 	const { updateNodeDataContent } = useWorkflowDesigner();
 	const { all: connectedSources } = useConnectedSources(node);
+	const nodes = useMemo(
+		() =>
+			connectedSources
+				.map((source) => Node.safeParse(source.node))
+				.map((parse) => (parse.success ? parse.data : null))
+				.filter((data) => data !== null),
+		[connectedSources],
+	);
+
 	return (
 		<TextEditor
 			value={node.content.prompt}
 			onValueChange={(value) => {
 				updateNodeDataContent(node, { prompt: value });
 			}}
-			nodes={connectedSources.map((source) => source.node)}
+			nodes={nodes}
 			tools={(editor) => (
 				<DropdownMenu.Root>
 					<Toolbar.Button

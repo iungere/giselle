@@ -1,11 +1,11 @@
 export * from "./circle-check";
 export * from "./circle-plus";
 export * from "./circle-x";
-export * from "./content-type-icon";
 export * from "./data";
 export * from "./document";
 export * from "./folder";
 export * from "./giselle-logo";
+export * from "./giselle-icon";
 export * from "./globe";
 export * from "./layers";
 export * from "./panel-close";
@@ -44,3 +44,4 @@ export { AudioIcon } from "./audio";
 export { VideoIcon } from "./video";
 export { GenerateImageIcon } from "./generate-image";
 export * from "./trigger";
+export * from "./web-page-file";

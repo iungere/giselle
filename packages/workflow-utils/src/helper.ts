@@ -1,13 +1,12 @@
 import {
 	type Connection,
 	type ConnectionId,
-	type GenerationTemplate,
 	type Job,
 	JobId,
-	type Node,
+	Node,
 	type NodeId,
+	type NodeLike,
 	type Operation,
-	type OperationNode,
 	type WorkflowId,
 	isOperationNode,
 } from "@giselle-sdk/data-type";
@@ -50,15 +49,75 @@ export function createConnectedNodeIdMap(
 }
 
 /**
+ * Creates a map of node IDs to their downstream node IDs (output direction only).
+ */
+export function createDownstreamNodeIdMap(
+	connectionSet: Set<Connection>,
+	nodeIdSet: Set<NodeId>,
+) {
+	const downstreamMap = new Map<NodeId, Set<NodeId>>();
+	for (const connection of connectionSet) {
+		if (
+			!nodeIdSet.has(connection.outputNode.id) ||
+			!nodeIdSet.has(connection.inputNode.id)
+		) {
+			continue;
+		}
+		if (!downstreamMap.has(connection.outputNode.id)) {
+			downstreamMap.set(connection.outputNode.id, new Set());
+		}
+		const downstreamSet = downstreamMap.get(connection.outputNode.id);
+		if (downstreamSet) {
+			downstreamSet.add(connection.inputNode.id);
+		}
+	}
+	return downstreamMap;
+}
+
+/**
+ * Finds all downstream nodes from a starting node using breadth-first search.
+ * Only follows output direction connections.
+ * Returns a map of node IDs to their node objects.
+ */
+export function findDownstreamNodeMap(
+	startNodeId: NodeId,
+	nodeMap: Map<NodeId, NodeLike>,
+	downstreamMap: Map<NodeId, Set<NodeId>>,
+): Map<NodeId, NodeLike> {
+	const connectedNodeMap = new Map<NodeId, NodeLike>();
+	const stack: NodeId[] = [startNodeId];
+
+	while (stack.length > 0) {
+		const currentNodeId = stack.pop() || startNodeId;
+		if (connectedNodeMap.has(currentNodeId)) continue;
+		const currentNode = nodeMap.get(currentNodeId);
+		if (currentNode === undefined) continue;
+
+		connectedNodeMap.set(currentNodeId, currentNode);
+
+		const downstreamNodeIdSet = downstreamMap.get(currentNodeId);
+		if (downstreamNodeIdSet) {
+			for (const downstreamNodeId of downstreamNodeIdSet) {
+				if (!connectedNodeMap.has(downstreamNodeId)) {
+					stack.push(downstreamNodeId);
+				}
+			}
+		}
+	}
+
+	return connectedNodeMap;
+}
+
+/**
  * Finds all nodes connected to a starting node using breadth-first search.
  * Returns a map of node IDs to their node objects.
  */
 export function findConnectedNodeMap(
 	startNodeId: NodeId,
-	nodeMap: Map<NodeId, Node>,
+	nodeMap: Map<NodeId, NodeLike>,
 	connectionMap: ConnectedNodeIdMap,
-): Map<NodeId, Node> {
-	const connectedNodeMap = new Map<NodeId, Node>();
+): Map<NodeId, NodeLike> {
+	const connectedNodeMap = new Map<NodeId, NodeLike>();
 	const stack: NodeId[] = [startNodeId];
 
 	while (stack.length > 0) {
@@ -118,7 +177,7 @@ export function findConnectedConnectionMap(
  * @returns Map of job IDs to job objects
  */
 export function createJobMap(
-	nodeSet: Set<Node>,
+	nodeSet: Set<NodeLike>,
 	connectionSet: Set<Connection>,
 	workflowId: WorkflowId,
 ) {
@@ -211,32 +270,7 @@ export function createJobMap(
 		return levels;
 	};
 
-	/**
-	 * Creates a generation context for an operation node by finding its source nodes.
-	 */
-	function createGenerationContext(node: OperationNode): GenerationTemplate {
-		const connectionArray = Array.from(connectionSet);
-		const nodeArray = Array.from(nodeSet);
-
-		const sourceNodes = node.inputs
-			.map((input) => {
-				const connections = connectionArray.filter(
-					(connection) => connection.inputId === input.id,
-				);
-				return nodeArray.find((tmpNode) =>
-					connections.some(
-						(connection) => connection.outputNode.id === tmpNode.id,
-					),
-				);
-			})
-			.filter((node) => node !== undefined);
-		return {
-			operationNode: node,
-			sourceNodes,
-		};
-	}
-
-	// Filter for operation nodes and connections
+	// Filter for operation nodes and connections between operation nodes only
 	const operationNodeIdSet = new Set<NodeId>();
 	for (const node of nodeSet) {
 		if (node.type === "operation") {
@@ -245,7 +279,10 @@ export function createJobMap(
 	}
 	const operationConnectionSet = new Set<Connection>();
 	for (const connection of connectionSet) {
-		if (connection.outputNode.type === "operation") {
+		if (
+			connection.outputNode.type === "operation" &&
+			connection.inputNode.type === "operation"
+		) {
 			operationConnectionSet.add(connection);
 		}
 	}
@@ -258,13 +295,40 @@ export function createJobMap(
 		const nodes = Array.from(nodeSet)
 			.filter((node) => level.has(node.id))
 			.filter((node) => isOperationNode(node));
-		const operations = nodes.map(
-			(node) =>
-				({
-					node,
-					generationTemplate: createGenerationContext(node),
-				}) satisfies Operation,
-		);
+		const operations = nodes.map((node) => {
+			const connectionArray = Array.from(connectionSet);
+			const nodeArray = Array.from(nodeSet);
+
+			const connectedConnections = connectionArray.filter(
+				(connection) => connection.inputNode.id === node.id,
+			);
+
+			// Map through each input to find source nodes, preserving duplicates
+			const sourceNodes = node.inputs
+				.map((input) => {
+					// Find connections for this specific input
+					const inputConnections = connectedConnections.filter(
+						(connection) => connection.inputId === input.id,
+					);
+					// For each input connection, find the corresponding source node
+					if (inputConnections.length > 0) {
+						const sourceNodeId = inputConnections[0].outputNode.id;
+						const node = nodeArray.find((n) => n.id === sourceNodeId);
+						const parseResult = Node.safeParse(node);
+						if (parseResult.success) {
+							return parseResult.data;
+						}
+						return undefined;
+					}
+					return undefined;
+				})
+				.filter((node) => node !== undefined);
+			return {
+				node,
+				sourceNodes,
+				connections: connectedConnections,
+			} satisfies Operation;
+		});
 
 		const job = {
 			id: jobId,

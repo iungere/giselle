@@ -1,8 +1,8 @@
-import { z } from "zod";
+import { z } from "zod/v4";
 
 const GitHubObjectType = z.enum(["issue", "issueComment"]);
 const GitHubObjectReference = z.object({
-	url: z.string().url(),
+	url: z.url(),
 	owner: z.string(),
 	repo: z.string(),
 	type: GitHubObjectType,
@@ -12,18 +12,7 @@ export const GitHubContent = z.object({
 	type: z.literal("github"),
 	objectReferences: z.array(GitHubObjectReference),
 });
-
-export const OverrideGitHubContent = z.object({
-	type: z.literal("github"),
-	objectReferences: z.array(GitHubObjectReference),
-});
-export type OverrideGitHubContent = z.infer<typeof OverrideGitHubContent>;
-
-export function isOverrideGitHubContent(
-	content: unknown,
-): content is OverrideGitHubContent {
-	return OverrideGitHubContent.safeParse(content).success;
-}
+export type GitHubContent = z.infer<typeof GitHubContent>;
 
 export const GitHubContentReference = z.object({
 	type: GitHubContent.shape.type,

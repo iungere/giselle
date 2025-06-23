@@ -10,6 +10,7 @@ import {
 	SelectValue,
 } from "../../../../ui/select";
 import { Slider } from "../../../../ui/slider";
+import { SimpleDomainFilter } from "./simple-domain-filter";
 import { languageModelAvailable } from "./utils";
 
 export function PerplexityModelPanel({
@@ -20,6 +21,18 @@ export function PerplexityModelPanel({
 	onModelChange: (changedValue: PerplexityLanguageModelData) => void;
 }) {
 	const limits = useUsageLimits();
+
+	const handleSearchDomainFilterChange = (newFilter: string[]) => {
+		onModelChange(
+			PerplexityLanguageModelData.parse({
+				...perplexityLanguageModel,
+				configurations: {
+					...perplexityLanguageModel.configurations,
+					searchDomainFilter: newFilter,
+				},
+			}),
+		);
+	};
 
 	return (
 		<div className="flex flex-col gap-[34px]">
@@ -133,6 +146,12 @@ export function PerplexityModelPanel({
 					/>
 				</div>
 			</div>
+			<SimpleDomainFilter
+				searchDomainFilter={
+					perplexityLanguageModel.configurations.searchDomainFilter || []
+				}
+				onSearchDomainFilterChange={handleSearchDomainFilterChange}
+			/>
 		</div>
 	);
 }

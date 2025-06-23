@@ -1,4 +1,9 @@
-import { OutputId, type TextGenerationNode } from "@giselle-sdk/data-type";
+import {
+	OutputId,
+	type TextGenerationNode,
+	isImageGenerationNode,
+	isTextGenerationNode,
+} from "@giselle-sdk/data-type";
 import clsx from "clsx/lite";
 import { useWorkflowDesigner } from "giselle-sdk/react";
 import { CheckIcon, TrashIcon } from "lucide-react";
@@ -9,15 +14,24 @@ import {
 	useCallback,
 	useState,
 } from "react";
+import {
+	getGlassButtonStyles,
+	getGlassStyles,
+	getTopHighlightStyles,
+	glassmorphicTokens,
+} from "../../../../ui/design-tokens/glassmorphic";
 import type { OutputWithDetails } from "./types";
 import { useCategoriedOutputs } from "./use-categoried-outputs";
 
 function OutputToggleItem({
 	input,
 	disabled = false,
-}: { input: OutputWithDetails; disabled?: boolean }) {
+}: {
+	input: OutputWithDetails;
+	disabled?: boolean;
+}) {
 	const getDisplayName = () => {
-		if ("content" in input.node && "llm" in input.node.content) {
+		if (isTextGenerationNode(input.node) || isImageGenerationNode(input.node)) {
 			return input.node.name ?? input.node.content.llm.id;
 		}
 		return input.node.name ?? "Source";
@@ -66,8 +80,15 @@ export function SelectOutputPopover({
 	>;
 }) {
 	const [selectedOutputIds, setSelectedOutputIds] = useState<OutputId[]>([]);
-	const { generatedInputs, textInputs, fileInputs, githubInputs } =
-		useCategoriedOutputs(outputs);
+	const {
+		generatedInputs,
+		textInputs,
+		fileInputs,
+		githubInputs,
+		actionInputs,
+		triggerInputs,
+		queryInputs,
+	} = useCategoriedOutputs(outputs);
 	const { isSupportedConnection } = useWorkflowDesigner();
 	const isSupported = useCallback(
 		(input: OutputWithDetails) => {
@@ -102,22 +123,33 @@ export function SelectOutputPopover({
 			<Popover.Anchor />
 			<Popover.Portal>
 				<Popover.Content
-					className={clsx(
-						"relative w-[300px] py-[8px]",
-						"rounded-[8px] border-[1px] bg-black-900/60 backdrop-blur-[8px]",
-						"shadow-[-2px_-1px_0px_0px_rgba(0,0,0,0.1),1px_1px_8px_0px_rgba(0,0,0,0.25)]",
-					)}
+					className={clsx("relative w-[300px] py-[8px] focus:outline-none")}
+					style={getGlassStyles()}
 					{...contentProps}
 				>
+					{/* Glass effect layers */}
 					<div
-						className={clsx(
-							"absolute z-0 rounded-[8px] inset-0 border-[1px] mask-fill bg-gradient-to-br bg-origin-border bg-clip-boarder border-transparent",
-							"from-[hsl(232,_36%,_72%)]/40 to-[hsl(218,_58%,_21%)]/90",
-						)}
+						className="absolute inset-0"
+						style={{
+							borderRadius: glassmorphicTokens.borders.radius.modal,
+							backdropFilter: glassmorphicTokens.effects.blur.medium,
+							background: glassmorphicTokens.colors.glass.background,
+						}}
+					/>
+					<div
+						className="absolute top-0 left-4 right-4"
+						style={getTopHighlightStyles()}
+					/>
+					<div
+						className="absolute inset-0"
+						style={{
+							borderRadius: glassmorphicTokens.borders.radius.modal,
+							border: `1px solid ${glassmorphicTokens.colors.glass.border}`,
+						}}
 					/>
 					<ToggleGroup.Root
 						type="multiple"
-						className="relative max-h-[300px] flex flex-col"
+						className="relative z-10 max-h-[300px] flex flex-col"
 						value={selectedOutputIds}
 						onValueChange={(unsafeValue) => {
 							const safeValue = unsafeValue
@@ -139,6 +171,20 @@ export function SelectOutputPopover({
 							<div className="border-t border-black-300/20" />
 						</div>
 						<div className="grow flex flex-col pb-[8px] gap-[8px] overflow-y-auto min-h-0">
+							{triggerInputs.length > 0 && (
+								<div className="flex flex-col px-[8px]">
+									<p className="py-[4px] px-[8px] text-black-400 text-[10px] font-[700]">
+										Action
+									</p>
+									{triggerInputs.map((triggerInput) => (
+										<OutputToggleItem
+											key={triggerInput.id}
+											input={triggerInput}
+											disabled={!isSupported(triggerInput)}
+										/>
+									))}
+								</div>
+							)}
 							{generatedInputs.length > 0 && (
 								<div className="flex flex-col px-[8px]">
 									<p className="py-[4px] px-[8px] text-black-400 text-[10px] font-[700]">
@@ -196,16 +242,46 @@ export function SelectOutputPopover({
 									))}
 								</div>
 							)}
-						</div>
-						<div className="flex flex-col py-[4px]">
-							<div className="border-t border-black-300/20" />
+							{actionInputs.length > 0 && (
+								<div className="flex flex-col px-[8px]">
+									<p className="py-[4px] px-[8px] text-black-400 text-[10px] font-[700]">
+										Action
+									</p>
+									{actionInputs.map((actionInput) => (
+										<OutputToggleItem
+											key={actionInput.id}
+											input={actionInput}
+											disabled={!isSupported(actionInput)}
+										/>
+									))}
+								</div>
+							)}
+							{queryInputs.length > 0 && (
+								<div className="flex flex-col px-[8px]">
+									<p className="py-[4px] px-[8px] text-black-400 text-[10px] font-[700]">
+										Query
+									</p>
+									{queryInputs.map((queryInput) => (
+										<OutputToggleItem
+											key={queryInput.id}
+											input={queryInput}
+											disabled={!isSupported(queryInput)}
+										/>
+									))}
+								</div>
+							)}
 						</div>
 						<div className="flex px-[16px] py-[4px] gap-[8px]">
 							<Popover.Close
 								onClick={() => {
 									onValueChange?.(selectedOutputIds);
 								}}
-								className="h-[32px] w-full flex justify-center items-center bg-white-900 text-black-900 rounded-[8px] cursor-pointer text-[12px]"
+								className={clsx(
+									"h-[32px] w-full flex items-center justify-center gap-[4px] text-[14px] px-4 py-2 cursor-pointer whitespace-nowrap",
+									glassmorphicTokens.transitions.default,
+									glassmorphicTokens.transitions.button,
+								)}
+								style={getGlassButtonStyles()}
 							>
 								Update
 							</Popover.Close>

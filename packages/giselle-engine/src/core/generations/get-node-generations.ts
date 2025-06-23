@@ -11,7 +11,6 @@ export async function getNodeGenerations(args: {
 }) {
 	const nodeGenerationIndexes = await getNodeGenerationIndexes({
 		storage: args.context.storage,
-		origin: args.origin,
 		nodeId: args.nodeId,
 	});
 	if (nodeGenerationIndexes === undefined) {
@@ -26,7 +25,11 @@ export async function getNodeGenerations(args: {
 				getGeneration({
 					generationId: nodeGenerationIndex.id,
 					storage: args.context.storage,
-				}),
+					options: {
+						bypassingCache: true,
+						skipMod: true,
+					},
+				}).catch(() => null),
 			),
-	).then((result) => result.filter((generation) => generation !== undefined));
+	).then((result) => result.filter((generation) => !!generation));
 }

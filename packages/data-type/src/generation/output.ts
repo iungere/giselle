@@ -1,7 +1,7 @@
 import { createIdGenerator } from "@giselle-sdk/utils";
 import type { ProviderMetadata } from "ai";
-import { z } from "zod";
-import { OutputId } from "../node";
+import { z } from "zod/v4";
+import { GitHubVectorStoreSource, OutputId } from "../node";
 
 export const GenerationOutputBase = z.object({
 	type: z.string(),
@@ -44,7 +44,7 @@ export interface UrlSource {
 export const UrlSource = z.object({
 	sourceType: z.literal("url"),
 	id: z.string(),
-	url: z.string().url(),
+	url: z.url(),
 	title: z.string(),
 	providerMetadata: z.custom<ProviderMetadata>().optional(),
 }) as z.ZodType<UrlSource>;
@@ -56,10 +56,35 @@ export const SourceOutput = GenerationOutputBase.extend({
 	sources: z.array(Source),
 });
 
+const VectorStoreSource = z.discriminatedUnion("provider", [
+	GitHubVectorStoreSource,
+]);
+const VectorStoreQueryResultRecord = z.object({
+	chunkContent: z.string(),
+	chunkIndex: z.number(),
+	score: z.number(),
+	metadata: z.record(z.string(), z.string()),
+});
+const VectorStoreQueryResult = z.object({
+	type: z.literal("vector-store"),
+	source: VectorStoreSource,
+	records: z.array(VectorStoreQueryResultRecord),
+});
+
+export const QueryResult = z.discriminatedUnion("type", [
+	VectorStoreQueryResult,
+]);
+export const QueryResultOutputType = z.literal("query-result");
+export const QueryResultOutput = GenerationOutputBase.extend({
+	type: QueryResultOutputType,
+	content: QueryResult.array(),
+});
+
 export const GenerationOutput = z.discriminatedUnion("type", [
 	GeneratedTextContentOutput,
 	GeneratedImageContentOutput,
 	ReasoningOutput,
 	SourceOutput,
+	QueryResultOutput,
 ]);
 export type GenerationOutput = z.infer<typeof GenerationOutput>;

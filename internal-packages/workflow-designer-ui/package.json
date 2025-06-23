@@ -11,12 +11,15 @@
 		".": "./src/index.ts"
 	},
 	"dependencies": {
+		"@giselle-internal/ui": "workspace:^",
 		"@giselle-sdk/data-type": "workspace:*",
 		"@giselle-sdk/flow": "workspace:^",
 		"@giselle-sdk/giselle-engine": "workspace:*",
 		"@giselle-sdk/integration": "workspace:^",
 		"@giselle-sdk/language-model": "workspace:^",
+		"@giselle-sdk/node-utils": "workspace:^",
 		"@giselle-sdk/text-editor": "workspace:^",
+		"@giselle-sdk/text-editor-utils": "workspace:^",
 		"@giselle-sdk/usage-limits": "workspace:^",
 		"@giselle-sdk/workflow-utils": "workspace:^",
 		"@giselle/giselle-sdk-tsconfig": "workspace:*",
@@ -35,13 +38,16 @@
 		"react-markdown": "catalog:",
 		"react-resizable-panels": "catalog:",
 		"rehype-raw": "^7.0.0",
-		"remark-gfm": "^4.0.1"
+		"remark-gfm": "^4.0.1",
+		"swr": "catalog:",
+		"zod": "catalog:"
 	},
 	"devDependencies": {
 		"@types/node": "catalog:",
 		"@types/pluralize": "catalog:",
 		"@types/react": "catalog:",
 		"@types/react-dom": "catalog:",
+		"tailwindcss": "catalog:",
 		"typescript": "catalog:"
 	}
 }

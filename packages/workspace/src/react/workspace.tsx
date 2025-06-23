@@ -5,7 +5,6 @@ import {
 	GenerationRunnerSystemProvider,
 	useGiselleEngine,
 } from "@giselle-sdk/giselle-engine/react";
-import { RunSystemContextProvider } from "@giselle-sdk/giselle-engine/react";
 import {
 	IntegrationProvider,
 	type IntegrationProviderProps,
@@ -14,6 +13,10 @@ import type { TelemetrySettings } from "@giselle-sdk/telemetry";
 import { TelemetryProvider } from "@giselle-sdk/telemetry/react";
 import type { UsageLimits } from "@giselle-sdk/usage-limits";
 import { UsageLimitsProvider } from "@giselle-sdk/usage-limits/react";
+import {
+	type VectorStoreContextValue,
+	VectorStoreProvider,
+} from "@giselle-sdk/vector-store/react";
 import { WorkflowDesignerProvider } from "@giselle-sdk/workflow-designer/react";
 import { type ReactNode, useEffect, useState } from "react";
 import {
@@ -28,6 +31,7 @@ export function WorkspaceProvider({
 	usageLimits,
 	telemetry,
 	featureFlag,
+	vectorStore,
 }: {
 	children: ReactNode;
 	workspaceId: WorkspaceId;
@@ -35,6 +39,7 @@ export function WorkspaceProvider({
 	usageLimits?: UsageLimits;
 	telemetry?: TelemetrySettings;
 	featureFlag?: FeatureFlagContextValue;
+	vectorStore?: VectorStoreContextValue;
 }) {
 	const client = useGiselleEngine();
 
@@ -55,20 +60,23 @@ export function WorkspaceProvider({
 		<TelemetryProvider settings={telemetry}>
 			<UsageLimitsProvider limits={usageLimits}>
 				<IntegrationProvider {...integration}>
-					<WorkflowDesignerProvider data={workspace}>
-						<GenerationRunnerSystemProvider>
-							<RunSystemContextProvider workspaceId={workspaceId}>
+					<VectorStoreProvider value={vectorStore}>
+						<WorkflowDesignerProvider data={workspace}>
+							<GenerationRunnerSystemProvider>
 								<FeatureFlagContext
 									value={{
-										flowNode: featureFlag?.flowNode ?? false,
-										runV2: featureFlag?.runV2 ?? false,
+										githubVectorStore: featureFlag?.githubVectorStore ?? false,
+										runV3: featureFlag?.runV3 ?? false,
+										sidemenu: featureFlag?.sidemenu ?? false,
+										githubTools: featureFlag?.githubTools ?? false,
+										webSearchAction: featureFlag?.webSearchAction ?? false,
 									}}
 								>
 									{children}
 								</FeatureFlagContext>
-							</RunSystemContextProvider>
-						</GenerationRunnerSystemProvider>
-					</WorkflowDesignerProvider>
+							</GenerationRunnerSystemProvider>
+						</WorkflowDesignerProvider>
+					</VectorStoreProvider>
 				</IntegrationProvider>
 			</UsageLimitsProvider>
 		</TelemetryProvider>

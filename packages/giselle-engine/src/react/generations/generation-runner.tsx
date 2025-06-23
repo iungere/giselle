@@ -3,6 +3,7 @@ import {
 	type Generation,
 	GenerationContext,
 	isQueuedGeneration,
+	isTextGenerationNode,
 } from "@giselle-sdk/data-type";
 import { useTelemetry } from "@giselle-sdk/telemetry/react";
 import { useEffect, useRef } from "react";
@@ -36,7 +37,9 @@ export function GenerationRunner({
 		case "trigger":
 			return <TriggerRunner generation={generation} />;
 		case "action":
-			return null;
+			return <ActionRunner generation={generation} />;
+		case "query":
+			return <QueryRunner generation={generation} />;
 		default: {
 			const _exhaustiveCheck: never = generationContext.operationNode.content;
 			return _exhaustiveCheck;
@@ -53,7 +56,7 @@ function TextGenerationRunner({
 		return null;
 	}
 	const generationContext = GenerationContext.parse(generation.context);
-	if (generationContext.operationNode.content.type !== "textGeneration") {
+	if (!isTextGenerationNode(generationContext.operationNode)) {
 		throw new Error("Invalid generation type");
 	}
 	const content = generationContext.operationNode.content;
@@ -132,6 +135,7 @@ function ImageGenerationRunner({
 	} = useGenerationRunnerSystem();
 	const client = useGiselleEngine();
 	const telemetry = useTelemetry();
+	const stop = () => {};
 	useOnce(() => {
 		if (!isQueuedGeneration(generation)) {
 			return;
@@ -163,6 +167,7 @@ function TriggerRunner({
 		addStopHandler,
 	} = useGenerationRunnerSystem();
 	const client = useGiselleEngine();
+	const stop = () => {};
 	useOnce(() => {
 		if (!isQueuedGeneration(generation)) {
 			return;
@@ -178,6 +183,79 @@ function TriggerRunner({
 					updateGenerationStatusToComplete(generation.id);
 				});
 		});
+	});
+	return null;
+}
+
+function ActionRunner({
+	generation,
+}: {
+	generation: Generation;
+}) {
+	const {
+		updateGenerationStatusToComplete,
+		updateGenerationStatusToRunning,
+		addStopHandler,
+	} = useGenerationRunnerSystem();
+	const client = useGiselleEngine();
+	const stop = () => {};
+	useOnce(() => {
+		if (!isQueuedGeneration(generation)) {
+			return;
+		}
+		addStopHandler(generation.id, stop);
+		client.setGeneration({ generation }).then(() => {
+			updateGenerationStatusToRunning(generation.id);
+			client
+				.executeAction({
+					generation,
+				})
+				.then(() => {
+					updateGenerationStatusToComplete(generation.id);
+				});
+		});
+	});
+	return null;
+}
+
+function QueryRunner({
+	generation,
+}: {
+	generation: Generation;
+}) {
+	const {
+		updateGenerationStatusToComplete,
+		updateGenerationStatusToRunning,
+		updateGenerationStatusToFailure,
+		addStopHandler,
+	} = useGenerationRunnerSystem();
+	const client = useGiselleEngine();
+	const stop = () => {};
+	useOnce(() => {
+		if (!isQueuedGeneration(generation)) {
+			return;
+		}
+		addStopHandler(generation.id, stop);
+		client
+			.setGeneration({ generation })
+			.then(() => {
+				updateGenerationStatusToRunning(generation.id);
+				client
+					.executeQuery({
+						generation,
+					})
+					.then(() => {
+						updateGenerationStatusToComplete(generation.id);
+					})
+					.catch((error) => {
+						console.error("Query execution failed:", error);
+						updateGenerationStatusToFailure(generation.id);
+					});
+			})
+			.catch((error) => {
+				console.error("Failed to set generation:", error);
+				updateGenerationStatusToFailure(generation.id);
+			});
 	});
 	return null;
 }

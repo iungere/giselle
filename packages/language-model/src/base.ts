@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod/v4";
 
 export const Capability = {
 	TextGeneration: 1 << 0,
@@ -29,7 +29,23 @@ export const LanguageModelBase = z.object({
 	capabilities: Capabilities,
 	tier: Tier,
 	experimental: z.boolean().optional(),
-	configurations: z.record(z.string(), z.any()),
+	configurations: z.unknown(),
 });
 
 export type LanguageModelBase = z.infer<typeof LanguageModelBase>;
+
+export type ImageGenerationParams = {
+	width: number;
+	height: number;
+	n: number;
+	quality?: "standard" | "hd";
+};
+
+export interface UsageCalculator {
+	calculateUsage(params: unknown): {
+		output: number;
+		unit: "IMAGES";
+		outputCost?: number;
+		totalCost?: number;
+	};
+}
