@@ -517,94 +517,9 @@ export function Toolbar() {
 													{/* Flat list of models with filtering applied */}
 													<div className="flex flex-col gap-[4px] max-h-[200px] overflow-y-auto pr-[4px]">
 														{filteredModels.length > 0 ? (
-															filteredModels.map((model) => (
-																<button
-																	type="button"
-																	key={model.id}
-																	className="flex gap-[12px] items-center hover:bg-white-850/10 focus:bg-white-850/10 p-[4px] rounded-[4px]"
-																	onClick={() => {
-																		const languageModelData = {
-																			id: model.id,
-																			provider: model.provider,
-																			configurations: model.configurations,
-																		};
-
-																		if (
-																			isTextGenerationLanguageModelData(
-																				languageModelData,
-																			)
-																		) {
-																			setSelectedTool(
-																				addNodeTool(
-																					createTextGenerationNode(
-																						languageModelData,
-																					),
-																				),
-																			);
-																		}
-
-																		if (
-																			isImageGenerationLanguageModelData(
-																				languageModelData,
-																			)
-																		) {
-																			setSelectedTool(
-																				addNodeTool(
-																					createImageGenerationNode(
-																						languageModelData,
-																					),
-																				),
-																			);
-																		}
-																	}}
-																	onMouseEnter={() =>
-																		setLanguageModelMouseHovered(model)
-																	}
-																	onMouseLeave={() =>
-																		setLanguageModelMouseHovered(null)
-																	}
-																>
-																	<div className="flex items-center">
-																		{model.provider === "anthropic" && (
-																			<AnthropicIcon
-																				className="w-[18px] h-[18px]"
-																				data-icon
-																			/>
-																		)}
-																		{model.provider === "openai" && (
-																			<OpenaiIcon
-																				className="w-[18px] h-[18px]"
-																				data-icon
-																			/>
-																		)}
-																		{model.provider === "google" && (
-																			<GoogleWhiteIcon
-																				className="w-[18px] h-[18px]"
-																				data-icon
-																			/>
-																		)}
-																		{model.provider === "perplexity" && (
-																			<PerplexityIcon
-																				className="w-[18px] h-[18px]"
-																				data-icon
-																			/>
-																		)}
-																		{model.provider === "fal" && (
-																			<ImageGenerationNodeIcon
-																				modelId={model.id}
-																				className="w-[18px] h-[18px]"
-																				data-icon
-																			/>
-																		)}
-																	</div>
-																	<div className="flex items-center gap-[8px]">
-																		<p className="text-[14px] text-left text-nowrap">
-																			{model.id}
-																		</p>
-																		{model.tier === "pro" && <ProTag />}
-																	</div>
-																</button>
-															))
+															filteredModels.map((model) =>
+																renderModelButton(model),
+															)
 														) : (
 															<p className="text-[#505D7B] text-[12px] font-medium leading-[170%] p-[8px] text-center">
 																No matching models found

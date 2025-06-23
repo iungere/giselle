@@ -39,7 +39,7 @@ import {
 	type EditorTabValue,
 } from "./context/editor-tab-context";
 import { DataSourceTable } from "./data-source";
-import { EditorLayout } from "./editor-layout";
+
 import { KeyboardShortcuts } from "./keyboard-shortcuts";
 import { LeftIconBar } from "./left-icon-bar";
 import { type GiselleWorkflowDesignerNode, nodeTypes } from "./node";
