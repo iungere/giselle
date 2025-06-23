@@ -8,53 +8,49 @@ import { useGiselleEngine } from "giselle-sdk/react";
 import { Download, Loader2, ZoomIn } from "lucide-react";
 import { useEffect, useState } from "react";
 import { WilliIcon } from "../icons";
+import GlareHover from "./glare-hover";
 
 /**
  * Component to display placeholder during image generation
  */
 function ImagePlaceholder() {
-	// Simulated progress state (0-100)
-	const [progress, setProgress] = useState(0);
+	// Track elapsed time in seconds
+	const [elapsedSeconds, setElapsedSeconds] = useState(0);
 
-	// Update progress over time
+	// Update elapsed time every second
 	useEffect(() => {
-		// Initial progress from generation start (5-15%)
-		setProgress(Math.floor(Math.random() * 10) + 5);
-
-		// Gradually increase progress
 		const interval = setInterval(() => {
-			setProgress((prev) => {
-				// Max 95% (100% only for completion)
-				if (prev >= 95) {
-					clearInterval(interval);
-					return 95;
-				}
-
-				// Random progress speed changes (for realistic feeling)
-				const increment = Math.random() * 3 + 0.5;
-				return Math.min(95, prev + increment);
-			});
-		}, 800);
+			setElapsedSeconds((prev) => prev + 1);
+		}, 1000);
 
 		return () => clearInterval(interval);
 	}, []);
 
 	return (
-		<div className="w-[240px] h-[240px] bg-[#BBC3D0] rounded-[8px] flex flex-col items-center justify-center">
-			<WilliIcon
-				className="w-[24px] h-[24px] text-[#1E67E6] animate-bounce"
-				style={{ animation: "bounce 1.5s infinite ease-in-out" }}
-			/>
-			<div className="w-[180px] h-[4px] bg-black/40 rounded-full mt-4 overflow-hidden">
-				<div
-					className="h-full bg-[#1E67E6] rounded-full transition-all duration-800 ease-in-out"
-					style={{ width: `${progress}%` }}
+		<GlareHover
+			autoAnimate={true}
+			loop={true}
+			glareColor="#ffffff"
+			glareOpacity={0.3}
+			transitionDuration={800}
+			width="240px"
+			height="240px"
+			background="rgba(255, 255, 255, 0.05)" // white-900/5
+			borderRadius="8px"
+			borderColor="transparent"
+			className="flex items-center justify-center"
+		>
+			<div className="flex flex-col items-center gap-1">
+				<WilliIcon
+					className="w-[24px] h-[24px] text-white-800 animate-bounce"
+					style={{ animation: "bounce 1.5s infinite ease-in-out" }}
 				/>
+
+				<p className="text-[14px] text-white-800/80">
+					Generating... ({elapsedSeconds}s)
+				</p>
 			</div>
-			<p className="text-[14px] text-[#1E67E6]/80 mt-2">
-				{progress < 95 ? `${Math.floor(progress)}%...` : "Almost done..."}
-			</p>
-		</div>
+		</GlareHover>
 	);
 }
 
@@ -277,8 +273,18 @@ export function ImageGenerationView({
 	if (!isCompletedGeneration(generation)) {
 		// Get expected number of images from node settings
 		// default: 1 image
-		const expectedImageCount =
-			generation.context.operationNode.content.llm?.configurations?.n || 1;
+		const llm = generation.context.operationNode.content.llm;
+		let expectedImageCount = 1;
+
+		if (llm && typeof llm === "object" && "configurations" in llm) {
+			const configs = llm.configurations;
+			if (configs && typeof configs === "object" && "n" in configs) {
+				const n = configs.n;
+				if (typeof n === "number") {
+					expectedImageCount = n;
+				}
+			}
+		}
 
 		return (
 			<div className="flex gap-[12px] overflow-x-auto pb-2">
