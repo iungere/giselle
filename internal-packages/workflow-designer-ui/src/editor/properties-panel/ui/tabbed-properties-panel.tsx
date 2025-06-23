@@ -43,6 +43,7 @@ export interface TabbedPropertiesPanelProps {
 	generationConfig?: GenerationConfig;
 	enableKeyboardShortcuts?: boolean;
 	customAction?: ReactNode;
+	disablePadding?: boolean;
 }
 
 export function TabbedPropertiesPanel({
@@ -56,6 +57,7 @@ export function TabbedPropertiesPanel({
 	generationConfig,
 	enableKeyboardShortcuts = true,
 	customAction,
+	disablePadding = false,
 }: TabbedPropertiesPanelProps) {
 	const { data, setUiNodeState } = useWorkflowDesigner();
 
@@ -104,41 +106,47 @@ export function TabbedPropertiesPanel({
 		</Button>
 	);
 
-	const content = (
-		<PropertiesPanelContent>
-			<Tabs.Root
-				className="flex flex-col gap-[8px] h-full"
-				value={uiState?.tab ?? defaultTab ?? tabs[0]?.value}
-				onValueChange={handleTabChange}
+	const tabsContent = (
+		<Tabs.Root
+			className="flex flex-col gap-[8px] h-full"
+			value={uiState?.tab ?? defaultTab ?? tabs[0]?.value}
+			onValueChange={handleTabChange}
+		>
+			<Tabs.List
+				className={clsx(
+					"flex gap-[16px] text-[14px] font-accent",
+					"**:p-[4px] **:border-b **:cursor-pointer",
+					"**:data-[state=active]:text-white-900 **:data-[state=active]:border-white-900",
+					"**:data-[state=inactive]:text-black-400 **:data-[state=inactive]:border-transparent",
+				)}
 			>
-				<Tabs.List
+				{tabs.map((tab) => (
+					<Tabs.Trigger key={tab.value} value={tab.value}>
+						{tab.label}
+					</Tabs.Trigger>
+				))}
+			</Tabs.List>
+			{tabs.map((tab) => (
+				<Tabs.Content
+					key={tab.value}
+					value={tab.value}
 					className={clsx(
-						"flex gap-[16px] text-[14px] font-accent",
-						"**:p-[4px] **:border-b **:cursor-pointer",
-						"**:data-[state=active]:text-white-900 **:data-[state=active]:border-white-900",
-						"**:data-[state=inactive]:text-black-400 **:data-[state=inactive]:border-transparent",
+						"flex-1 flex flex-col overflow-hidden outline-none",
+						tab.className,
 					)}
 				>
-					{tabs.map((tab) => (
-						<Tabs.Trigger key={tab.value} value={tab.value}>
-							{tab.label}
-						</Tabs.Trigger>
-					))}
-				</Tabs.List>
-				{tabs.map((tab) => (
-					<Tabs.Content
-						key={tab.value}
-						value={tab.value}
-						className={clsx(
-							"flex-1 flex flex-col overflow-hidden outline-none",
-							tab.className,
-						)}
-					>
-						{tab.content}
-					</Tabs.Content>
-				))}
-			</Tabs.Root>
-		</PropertiesPanelContent>
+					{tab.content}
+				</Tabs.Content>
+			))}
+		</Tabs.Root>
+	);
+
+	const content = disablePadding ? (
+		<div className="flex-1 h-full flex flex-col overflow-hidden pr-[4px]">
+			{tabsContent}
+		</div>
+	) : (
+		<PropertiesPanelContent>{tabsContent}</PropertiesPanelContent>
 	);
 
 	return (
@@ -154,7 +162,12 @@ export function TabbedPropertiesPanel({
 			{bottomPanel ? (
 				<PanelGroup direction="vertical" className="flex-1 flex flex-col">
 					<Panel>
-						<div className="pr-[16px] flex-1 h-full flex flex-col overflow-hidden">
+						<div
+							className={clsx(
+								"flex-1 h-full flex flex-col overflow-hidden",
+								disablePadding ? "pr-[4px]" : "pr-[16px]",
+							)}
+						>
 							{content}
 							<div className="h-[4px]" />
 						</div>
@@ -167,7 +180,13 @@ export function TabbedPropertiesPanel({
 						)}
 					/>
 					<Panel>
-						<div className="pr-[16px] flex-1 h-full flex flex-col overflow-hidden">
+						<div
+							className={clsx(
+								"flex-1 h-full flex flex-col overflow-hidden",
+								disablePadding ? "pr-[4px]" : "pr-[16px]",
+							)}
+						>
+							<div className="h-[4px]" />
 							{bottomPanel}
 							<div className="h-[4px]" />
 						</div>
