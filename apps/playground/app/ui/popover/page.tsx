@@ -1,6 +1,7 @@
 "use client";
 
 import { Button, Popover } from "@giselle-internal/ui";
+import React from "react";
 
 export default function () {
 	return (

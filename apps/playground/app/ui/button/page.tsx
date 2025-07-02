@@ -1,3 +1,6 @@
+"use client";
+
+import React from "react";
 import { Button } from "@giselle-internal/ui";
 
 export default function () {
