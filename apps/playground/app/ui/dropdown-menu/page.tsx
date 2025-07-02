@@ -1,7 +1,19 @@
 "use client";
 
+import React from "react";
 import { Button } from "@giselle-internal/ui/button";
 import { DropdownMenu } from "@giselle-internal/ui/dropdown-menu";
+
+type MenuItem = {
+	id: number;
+	name: string;
+};
+
+type MenuGroup = {
+	groupId: string;
+	groupLabel: string;
+	items: MenuItem[];
+};
 
 export default function () {
 	return (
