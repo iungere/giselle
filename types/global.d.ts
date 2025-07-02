@@ -10,3 +10,7 @@ declare module "zod" {
   export const z: any;
   export default z;
 }
+
+// Provide minimal stubs so the root package names resolve during local builds
+// before each package is compiled to its declaration output. The actual types
+// are resolved through the `paths` mapping added in tsconfig.
