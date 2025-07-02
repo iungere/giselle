@@ -21,6 +21,8 @@
 		"lib": ["es2020"],
 		"baseUrl": "./",
 		"paths": {
+			"@giselle-sdk/data-type": ["../packages/data-type/src/index.ts"],
+			"@giselle-sdk/language-model": ["../packages/language-model/src/index.ts"],
 			"@giselle-sdk/*": ["../packages/*/src"],
 			"zod/v4": ["zod"]
 		},

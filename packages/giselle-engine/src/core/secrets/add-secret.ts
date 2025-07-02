@@ -14,7 +14,7 @@ export async function addSecret(args: {
 	value: string;
 	workspaceId: WorkspaceId;
 	tags?: string[];
-}) {
+}): Promise<Secret> {
 	const encryptedValue = await args.context.vault.encrypt(args.value);
 
 	const secret: Secret = {
@@ -26,14 +26,13 @@ export async function addSecret(args: {
 		...(args.tags ? { tags: args.tags } : {}),
 	};
 
-	await Promise.all([
-		args.context.storage.setItem(secretPath(secret.id), secret),
-		addWorkspaceIndexItem({
-			storage: args.context.storage,
-			indexPath: workspaceSecretIndexPath(args.workspaceId),
-			item: secret,
-			itemSchema: SecretIndex,
-		}),
-	]);
+	// Persist the secret item and update the workspace index.
+	await args.context.storage.setItem(secretPath(secret.id), secret);
+	await addWorkspaceIndexItem({
+		storage: args.context.storage,
+		indexPath: workspaceSecretIndexPath(args.workspaceId),
+		item: secret,
+		itemSchema: SecretIndex,
+	});
 	return secret;
 }
