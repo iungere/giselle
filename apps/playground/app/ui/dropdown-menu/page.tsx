@@ -1,8 +1,7 @@
 "use client";
 
 import React from "react";
-import { Button } from "@giselle-internal/ui/button";
-import { DropdownMenu } from "@giselle-internal/ui/dropdown-menu";
+import { Button, DropdownMenu } from "@giselle-internal/ui";
 
 type MenuItem = {
 	id: number;

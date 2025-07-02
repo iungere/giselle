@@ -1,4 +1,4 @@
-import { Select } from "@giselle-internal/ui/select";
+import { Select } from "@giselle-internal/ui";
 
 export default function () {
 	return (

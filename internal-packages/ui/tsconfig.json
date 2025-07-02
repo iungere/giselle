@@ -5,6 +5,7 @@
 	"compilerOptions": {
 		"target": "ES2018",
 		"module": "ESNext",
-		"moduleResolution": "bundler"
+		"moduleResolution": "bundler",
+		"jsx": "react-jsx"
 	}
 }

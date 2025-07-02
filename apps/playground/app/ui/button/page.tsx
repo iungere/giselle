@@ -1,4 +1,4 @@
-import { Button } from "@giselle-internal/ui/button";
+import { Button } from "@giselle-internal/ui";
 
 export default function () {
 	return (

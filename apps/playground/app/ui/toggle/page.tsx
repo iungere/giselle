@@ -1,4 +1,4 @@
-import { Toggle } from "@giselle-internal/ui/toggle";
+import { Toggle } from "@giselle-internal/ui";
 
 export default function () {
 	return (

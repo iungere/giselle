@@ -1,12 +1,12 @@
-import { Button } from "@giselle-internal/ui/button";
 import {
+	Button,
 	Dialog,
 	DialogContent,
 	DialogDescription,
 	DialogFooter,
 	DialogTitle,
 	DialogTrigger,
-} from "@giselle-internal/ui/dialog";
+} from "@giselle-internal/ui";
 
 export default function () {
 	return (

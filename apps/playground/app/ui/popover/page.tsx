@@ -1,7 +1,6 @@
 "use client";
 
-import { Button } from "@giselle-internal/ui/button";
-import { Popover } from "@giselle-internal/ui/popover";
+import { Button, Popover } from "@giselle-internal/ui";
 
 export default function () {
 	return (
