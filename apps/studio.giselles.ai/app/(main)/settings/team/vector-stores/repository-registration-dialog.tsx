@@ -116,7 +116,7 @@ export function RepositoryRegistrationDialog({
 								htmlFor="owner"
 								className="text-white-400 text-[14px] leading-[16.8px] font-sans"
 							>
-								Owner
+								Owner / Organization
 							</label>
 							<div className="relative">
 								<DropdownMenu>
