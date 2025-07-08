@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef } from "react";
 
 export function usePopupWindow(url: string) {
-  console.log("usePopupWindow initialized with URL:", url);
   const popupRef = useRef<Window | null>(null);
 
   const open = useCallback(() => {
@@ -10,18 +9,19 @@ export function usePopupWindow(url: string) {
     const left = window.screenX + (window.outerWidth - width) / 2;
     const top = window.screenY + (window.outerHeight - height) / 2;
 
-    console.log("Attempting to open popup window with URL:", url);
+    // Fix for relative URLs: if URL starts with '/', prepend the origin
+    const fullUrl = url.startsWith("/")
+      ? `${window.location.origin}${url}`
+      : url;
     try {
       popupRef.current = window.open(
-        url,
+        fullUrl,
         "Configure GitHub App",
         `width=${width},height=${height},top=${top},left=${left},popup=1`,
       );
 
       if (!popupRef.current) {
-        console.warn("Failed to open popup window - null reference returned");
-      } else {
-        console.log("Popup window opened successfully");
+        console.warn("Failed to open popup window");
       }
     } catch (error) {
       console.error("Error opening popup window:", error);
@@ -29,11 +29,8 @@ export function usePopupWindow(url: string) {
   }, [url]);
 
   useEffect(() => {
-    console.log("usePopupWindow effect initialized");
     return () => {
-      console.log("Cleanup: checking if popup needs to be closed");
       if (popupRef.current && !popupRef.current.closed) {
-        console.log("Closing popup window");
         popupRef.current.close();
       }
     };
