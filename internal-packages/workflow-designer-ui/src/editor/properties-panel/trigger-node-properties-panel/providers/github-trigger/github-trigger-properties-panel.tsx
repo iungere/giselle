@@ -482,10 +482,12 @@ function Installed({
         </div>
       )}
       {step.state === "select-repository" && (
-        <div className="overflow-y-auto flex-1 pr-2 custom-scrollbar h-full">
-          <p className="text-[14px] py-[1.5px] text-white-400">Trigger</p>
-          <div className="flex items-center gap-2 px-3 py-2 bg-white/5 rounded-md mb-4">
-            <div className="bg-white/10 p-1 rounded-md flex-shrink-0">
+        <div className="overflow-y-auto flex-1 pr-2 custom-scrollbar h-full relative">
+          <p className="text-[14px] py-[1.5px] mb-[8px] text-white-400">
+            Trigger
+          </p>
+          <div className="flex items-center py-0 px-0 rounded-lg w-full h-[36px] mb-4">
+            <div className="mr-3 pl-2">
               {step.eventId === "github.issue.created" && (
                 <svg
                   width="18"
@@ -569,24 +571,28 @@ function Installed({
                 </svg>
               )}
             </div>
-            <div className="text-white-400 text-[14px]">
-              {githubTriggers[step.eventId].event.label}
+            <div className="flex flex-col min-w-0">
+              <span className="text-white-800 font-medium text-[14px] truncate">
+                {githubTriggers[step.eventId].event.label}
+              </span>
             </div>
           </div>
 
-          <p className="text-[14px] py-[1.5px] text-white-400">
-            GitHub Organization
-          </p>
+          <p className="text-[14px] py-[1.5px] text-white-400">Organization</p>
           <SelectRepository
             installations={installations}
             installationUrl={installationUrl}
-            onSelectRepository={(value: {
-              installationId: number;
-              owner: string;
-              repo: string;
-              repoNodeId: string;
-            }) => {
-              // 選択されたイベントがコメント系でcallsignが必要な場合はcallsign入力ステップへ
+            onSelectRepository={(
+              value: {
+                installationId: number;
+                owner: string;
+                repo: string;
+                repoNodeId: string;
+              },
+              setLoading: (loading: boolean) => void,
+            ) => {
+              setLoading(true);
+              // If the selected event is a comment type and requires a callsign, proceed to callsign input step
               if (
                 step.eventId === "github.issue_comment.created" ||
                 step.eventId === "github.pull_request_comment.created" ||
@@ -601,44 +607,48 @@ function Installed({
                   repoNodeId: value.repoNodeId,
                 });
               } else {
-                // callsignが不要なら直接トリガー設定実行
+                // If callsign is not required, directly execute trigger configuration
                 startTransition(async () => {
-                  const event = { id: step.eventId };
-                  const trigger = githubTriggers[step.eventId];
-                  const outputs: Output[] = [];
-                  for (const key of trigger.event.payloads.keyof().options) {
-                    outputs.push({
-                      id: OutputId.generate(),
-                      label: key,
-                      accessor: key,
-                    });
-                  }
+                  try {
+                    const event = { id: step.eventId };
+                    const trigger = githubTriggers[step.eventId];
+                    const outputs: Output[] = [];
+                    for (const key of trigger.event.payloads.keyof().options) {
+                      outputs.push({
+                        id: OutputId.generate(),
+                        label: key,
+                        accessor: key,
+                      });
+                    }
 
-                  const { triggerId } = await client.configureTrigger({
-                    trigger: {
-                      nodeId: node.id,
-                      workspaceId: workspace?.id,
-                      enable: false,
-                      configuration: {
-                        provider: "github",
-                        repositoryNodeId: value.repoNodeId,
-                        installationId: value.installationId,
-                        event,
+                    const { triggerId } = await client.configureTrigger({
+                      trigger: {
+                        nodeId: node.id,
+                        workspaceId: workspace?.id,
+                        enable: false,
+                        configuration: {
+                          provider: "github",
+                          repositoryNodeId: value.repoNodeId,
+                          installationId: value.installationId,
+                          event,
+                        },
                       },
-                    },
-                    useExperimentalStorage: experimental_storage,
-                  });
-                  updateNodeData(node, {
-                    content: {
-                      ...node.content,
-                      state: {
-                        status: "configured",
-                        flowTriggerId: triggerId,
+                      useExperimentalStorage: experimental_storage,
+                    });
+                    updateNodeData(node, {
+                      content: {
+                        ...node.content,
+                        state: {
+                          status: "configured",
+                          flowTriggerId: triggerId,
+                        },
                       },
-                    },
-                    outputs: [...node.outputs, ...outputs],
-                    name: `On ${trigger.event.label}`,
-                  });
+                      outputs: [...node.outputs, ...outputs],
+                      name: `On ${trigger.event.label}`,
+                    });
+                  } finally {
+                    setLoading(false);
+                  }
                 });
               }
             }}
