@@ -92,10 +92,20 @@ interface InputCallsignStep {
   repoNodeId: string;
   installationId: number;
 }
+interface ConfirmRepositoryStep {
+  state: "confirm-repository";
+  eventId: GitHubTriggerEventId;
+  installationId: number;
+  owner: string;
+  repo: string;
+  repoNodeId: string;
+}
+
 export type GitHubTriggerSetupStep =
   | SelectEventStep
   | SelectRepositoryStep
-  | InputCallsignStep;
+  | InputCallsignStep
+  | ConfirmRepositoryStep;
 
 /**
  * Determines if a trigger type requires a callsign
@@ -702,64 +712,190 @@ function Installed({
               setLoading: (loading: boolean) => void,
             ) => {
               setLoading(true);
-              // If the selected event is a comment type and requires a callsign, proceed to callsign input step
-              // Check if callsign is required for this event type
-              if (isTriggerRequiringCallsign(step.eventId)) {
-                setStep({
-                  state: "input-callsign",
-                  eventId: step.eventId,
-                  installationId: value.installationId,
-                  owner: value.owner,
-                  repo: value.repo,
-                  repoNodeId: value.repoNodeId,
-                });
-              } else {
-                // If callsign is not required, directly execute trigger configuration
-                startTransition(async () => {
-                  try {
-                    const event = { id: step.eventId };
-                    const trigger = githubTriggers[step.eventId];
-                    const outputs: Output[] = [];
-                    for (const key of trigger.event.payloads.keyof().options) {
-                      outputs.push({
-                        id: OutputId.generate(),
-                        label: key,
-                        accessor: key,
-                      });
-                    }
-
-                    const { triggerId } = await client.configureTrigger({
-                      trigger: {
-                        nodeId: node.id,
-                        workspaceId: workspace?.id,
-                        enable: false,
-                        configuration: {
-                          provider: "github",
-                          repositoryNodeId: value.repoNodeId,
-                          installationId: value.installationId,
-                          event,
-                        },
-                      },
-                      useExperimentalStorage: experimental_storage,
-                    });
-                    updateNodeData(node, {
-                      content: {
-                        ...node.content,
-                        state: {
-                          status: "configured",
-                          flowTriggerId: triggerId,
-                        },
-                      },
-                      outputs: [...node.outputs, ...outputs],
-                      name: `On ${trigger.event.label}`,
-                    });
-                  } finally {
-                    setLoading(false);
-                  }
-                });
-              }
+              // Always proceed to confirmation step first
+              setStep({
+                state: "confirm-repository",
+                eventId: step.eventId,
+                installationId: value.installationId,
+                owner: value.owner,
+                repo: value.repo,
+                repoNodeId: value.repoNodeId,
+              });
+              setLoading(false);
             }}
           />
+        </div>
+      )}
+      {step.state === "confirm-repository" && (
+        <div className="overflow-y-auto flex-1 pr-2 pl-1 custom-scrollbar h-full relative">
+          <p className="text-[14px] py-[1.5px] mb-[8px] text-[#F7F9FD]">
+            Confirm Repository
+          </p>
+
+          <div className="flex flex-col gap-[16px]">
+            <div>
+              <p className="text-[14px] py-[1.5px] text-[#F7F9FD]">
+                Event Type
+              </p>
+              <div className="px-[16px] py-0 w-full bg-transparent text-[14px] flex items-center">
+                <div className="pr-0 p-2 rounded-lg flex-shrink-0 flex items-center justify-center">
+                  {step.eventId === "github.issue.created" && (
+                    <svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24.79 22.6"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="text-white"
+                    >
+                      <g>
+                        <path
+                          d="M.78,6.93h2.02l2.52,5.39,.14,.3h.06v-5.69h1.48v8.74h-1.88l-2.61-5.44-.19-.42h-.07v5.86H.78V6.93Z"
+                          fill="white"
+                          stroke="white"
+                          strokeMiterlimit="10"
+                          strokeWidth=".5"
+                        />
+                        <path
+                          d="M8.1,6.93h5.48v1.71h-3.94v1.8h3.41v1.58h-3.41v1.93h3.92v1.71h-5.46V6.93Z"
+                          fill="white"
+                          stroke="white"
+                          strokeMiterlimit="10"
+                          strokeWidth=".5"
+                        />
+                        <path
+                          d="M14.66,6.93h1.57l.8,5.65,.22,1.19h.07l1.09-6.84h1.91l1.08,6.84h.07l.19-1.12,.8-5.72h1.56l-1.42,8.74h-2.22l-.87-5.41-.11-.66h-.07l-.09,.66-.89,5.41h-2.23l-1.46-8.74Z"
+                          fill="currentColor"
+                          stroke="currentColor"
+                          strokeMiterlimit="10"
+                          strokeWidth=".5"
+                        />
+                      </g>
+                      <rect width="24.79" height="2.24" fill="currentColor" />
+                      <rect
+                        y="20.36"
+                        width="24.79"
+                        height="2.24"
+                        fill="currentColor"
+                      />
+                    </svg>
+                  )}
+                  {step.eventId === "github.issue.closed" && (
+                    <svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="text-white"
+                    >
+                      <path
+                        d="M7 12.5L10.5 16L17 9"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  )}
+                </div>
+                <div className="flex flex-col min-w-0">
+                  <span className="pl-2 text-white-800 font-medium text-[14px] truncate">
+                    {githubTriggers[step.eventId].event.label}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <p className="text-[14px] py-[1.5px] text-[#F7F9FD]">
+                Repository
+              </p>
+              <div className="px-1">
+                <GitHubRepositoryBlock owner={step.owner} repo={step.repo} />
+              </div>
+            </div>
+
+            <div className="flex gap-[8px] mt-[16px] px-1">
+              <button
+                type="button"
+                className="flex-1 bg-black-700 hover:bg-black-600 text-white font-medium px-4 py-2 rounded-md text-[14px] transition-colors"
+                onClick={() => {
+                  // Go back to repository selection
+                  setStep({
+                    state: "select-repository",
+                    eventId: step.eventId,
+                  });
+                }}
+              >
+                Back
+              </button>
+              <button
+                type="button"
+                className="flex-1 bg-primary-900 hover:bg-primary-800 text-white font-medium px-4 py-2 rounded-md text-[14px] transition-colors"
+                onClick={() => {
+                  // Process based on whether callsign is required
+                  if (isTriggerRequiringCallsign(step.eventId)) {
+                    setStep({
+                      state: "input-callsign",
+                      eventId: step.eventId,
+                      installationId: step.installationId,
+                      owner: step.owner,
+                      repo: step.repo,
+                      repoNodeId: step.repoNodeId,
+                    });
+                  } else {
+                    // If callsign is not required, execute trigger configuration
+                    startTransition(async () => {
+                      try {
+                        const event = { id: step.eventId };
+                        const trigger = githubTriggers[step.eventId];
+                        const outputs: Output[] = [];
+                        for (const key of trigger.event.payloads.keyof()
+                          .options) {
+                          outputs.push({
+                            id: OutputId.generate(),
+                            label: key,
+                            accessor: key,
+                          });
+                        }
+
+                        const { triggerId } = await client.configureTrigger({
+                          trigger: {
+                            nodeId: node.id,
+                            workspaceId: workspace?.id,
+                            enable: false,
+                            configuration: {
+                              provider: "github",
+                              repositoryNodeId: step.repoNodeId,
+                              installationId: step.installationId,
+                              event,
+                            },
+                          },
+                          useExperimentalStorage: experimental_storage,
+                        });
+                        updateNodeData(node, {
+                          content: {
+                            ...node.content,
+                            state: {
+                              status: "configured",
+                              flowTriggerId: triggerId,
+                            },
+                          },
+                          outputs: [...node.outputs, ...outputs],
+                          name: `On ${trigger.event.label}`,
+                        });
+                      } catch (error) {
+                        console.error("Failed to configure trigger:", error);
+                      }
+                    });
+                  }
+                }}
+              >
+                Set Up
+              </button>
+            </div>
+          </div>
         </div>
       )}
       {step.state === "input-callsign" && (
