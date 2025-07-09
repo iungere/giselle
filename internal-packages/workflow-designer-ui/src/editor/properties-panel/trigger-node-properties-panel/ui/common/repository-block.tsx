@@ -8,7 +8,7 @@ export function GitHubRepositoryBlock({
   isPrivate?: boolean;
 }) {
   return (
-    <div className="flex items-center px-[14px] py-[10px] rounded-[4px]">
+    <div className="flex items-center pl-[8px] pr-[4px] py-0 rounded-[4px]">
       <p className="flex items-center gap-x-2">
         <span className="flex items-center text-[14px]">
           <span>{owner}</span>

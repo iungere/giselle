@@ -234,16 +234,16 @@ function Installed({
   );
 
   return (
-    <div className="flex flex-col gap-[16px] h-full">
+    <div className="flex flex-col gap-[16px] h-full px-1">
       {step.state === "select-event" && (
-        <div className="w-full flex flex-col gap-[4px] flex-1 overflow-hidden">
+        <div className="flex flex-col gap-[4px] flex-1 overflow-hidden">
           <p className="text-[14px] py-[1.5px] text-[#F7F9FD]">Event Type</p>
-          <div className="flex flex-col gap-[20px] overflow-y-auto pr-2 pt-[12px] custom-scrollbar flex-1">
+          <div className="flex flex-col gap-[20px] overflow-y-auto pr-2 pl-0 pt-[12px] custom-scrollbar flex-1">
             {Object.entries(githubTriggers).map(([id, githubTrigger]) => (
               <button
                 key={id}
                 type="button"
-                className="flex items-center py-0 px-0 rounded-lg group w-full h-[36px]"
+                className="flex items-center py-0 px-1 rounded-lg group w-full h-[36px]"
                 onClick={() => {
                   setEventId(id as GitHubTriggerEventId);
                   setStep({
@@ -465,7 +465,7 @@ function Installed({
                     <span className="text-white-800 font-medium text-[14px] truncate">
                       {githubTrigger.event.label}
                     </span>
-                    <span className="text-white-400 text-[12px] truncate group-hover:text-white-300 transition-colors">
+                    <span className="text-white-400 text-[12px] truncate group-hover:text-white-300 transition-colors pr-6">
                       {githubTrigger.event.description ||
                         `Trigger when ${githubTrigger.event.label.toLowerCase()} in your repository`}
                     </span>
@@ -493,11 +493,11 @@ function Installed({
         </div>
       )}
       {step.state === "select-repository" && (
-        <div className="overflow-y-auto flex-1 pr-2 custom-scrollbar h-full relative">
+        <div className="overflow-y-auto flex-1 pr-2 pl-1 custom-scrollbar h-full relative">
           <p className="text-[14px] py-[1.5px] mb-[8px] text-[#F7F9FD]">
             Event Type
           </p>
-          <div className="flex items-center py-0 px-0 rounded-lg w-full h-[36px] mb-4">
+          <div className="flex items-center py-0 px-1 rounded-lg w-full h-[36px] mb-4">
             <div className="mr-3 pl-2">
               {step.eventId === "github.issue.created" && (
                 <svg
@@ -764,11 +764,11 @@ function Installed({
       )}
       {step.state === "input-callsign" && (
         <form
-          className="w-full flex flex-col gap-[12px] overflow-y-auto flex-1 pr-2 custom-scrollbar"
+          className="w-full flex flex-col gap-[16px] overflow-y-auto flex-1 pr-2 custom-scrollbar"
           onSubmit={handleSubmit}
         >
           <p className="text-[14px] py-[1.5px] text-[#F7F9FD]">Event Type</p>
-          <div className="px-[16px] py-[9px] w-full bg-transparent text-[14px] flex items-center">
+          <div className="px-[16px] py-0 w-full bg-transparent text-[14px] flex items-center">
             <div className="flex-shrink-0 flex items-center justify-center">
               {step.eventId === "github.issue.created" && (
                 <svg
@@ -960,12 +960,14 @@ function Installed({
           </div>
 
           <p className="text-[14px] py-[1.5px] text-[#F7F9FD]">Repository</p>
-          <GitHubRepositoryBlock owner={step.owner} repo={step.repo} />
+          <div className="px-1">
+            <GitHubRepositoryBlock owner={step.owner} repo={step.repo} />
+          </div>
           {(eventId === "github.issue_comment.created" ||
             eventId === "github.pull_request_comment.created" ||
             eventId === "github.pull_request_review_comment.created") && (
             <fieldset className="flex flex-col gap-[4px]">
-              <div className="flex items-center gap-[4px]">
+              <div className="flex items-center gap-[4px] px-1">
                 <p className="text-[14px] py-[1.5px] text-[#F7F9FD]">
                   Callsign
                 </p>
@@ -983,15 +985,15 @@ function Installed({
                   </button>
                 </Tooltip>
               </div>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 flex items-center pl-[16px] pointer-events-none">
+              <div className="relative px-1">
+                <div className="absolute inset-y-0 left-[16px] flex items-center pointer-events-none">
                   <span className="text-[14px]">/</span>
                 </div>
                 <input
                   type="text"
                   name="callsign"
                   className={clsx(
-                    "group w-full flex justify-between items-center rounded-[8px] py-[8px] pl-[24px] pr-[16px] outline-none focus:outline-none",
+                    "group w-full flex justify-between items-center rounded-[8px] py-[8px] pl-[28px] pr-[4px] outline-none focus:outline-none",
                     "border border-white-400 focus:border-white-900",
                     "text-[14px] bg-transparent",
                   )}
@@ -1005,13 +1007,15 @@ function Installed({
             </fieldset>
           )}
           <div className="pt-[8px] flex">
-            <button
-              type="submit"
-              className="w-full bg-primary-900 hover:bg-primary-800 text-white font-medium px-4 py-2 rounded-md text-[14px] transition-colors disabled:opacity-50"
-              disabled={isPending}
-            >
-              {isPending ? "Setting Up..." : "Set Up"}
-            </button>
+            <div className="px-1">
+              <button
+                type="submit"
+                className="w-full bg-primary-900 hover:bg-primary-800 text-white font-medium px-4 py-2 rounded-md text-[14px] transition-colors disabled:opacity-50"
+                disabled={isPending}
+              >
+                {isPending ? "Setting Up..." : "Set Up"}
+              </button>
+            </div>
           </div>
         </form>
       )}
