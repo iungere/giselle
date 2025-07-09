@@ -4,6 +4,7 @@ import { UserIcon } from "lucide-react";
 import ClipboardButton from "../../../../../ui/clipboard-button";
 import { useGitHubTrigger } from "../../../../lib/use-github-trigger";
 import { GitHubRepositoryBlock } from "../";
+import clsx from "clsx/lite";
 
 export function GitHubTriggerConfiguredView({
   flowTriggerId,
@@ -21,37 +22,42 @@ export function GitHubTriggerConfiguredView({
 
   return (
     <div className="flex flex-col gap-[16px] p-0 overflow-y-auto">
-      <div className="space-y-[4px]">
-        <p className="text-[14px] py-[1.5px] text-white-400">State</p>
-        <div className="px-[16px] py-[9px] w-full bg-transparent text-[14px]">
-          <div className="flex gap-[6px]">
-            {data.trigger.enable ? (
-              <>
-                <span>Enabled</span>
-                <button
-                  type="button"
-                  onClick={disableFlowTrigger}
-                  className="text-blue-900 cursor-pointer outline-none hover:underline"
-                >
-                  → Disable
-                </button>
-              </>
-            ) : (
-              <>
-                <span>Disabled</span>
-                <button
-                  type="button"
-                  onClick={enableFlowTrigger}
-                  className="text-blue-900 cursor-pointer outline-none hover:underline"
-                >
-                  → Enable
-                </button>
-              </>
-            )}
+      <div className="flex flex-col">
+        <div className="flex flex-row items-center justify-between">
+          <p className="text-[14px] py-[1.5px] text-white-400">State</p>
+
+          {/* Divider */}
+          <div className="flex-grow mx-[12px] h-[1px] bg-black-200/30" />
+
+          <div className="relative flex h-[32px] w-[180px] bg-[#2A2A36] rounded-full p-[3px]">
+            <button
+              type="button"
+              onClick={disableFlowTrigger}
+              className={clsx(
+                "flex-1 flex items-center justify-center text-[13px] font-medium transition-all duration-200 rounded-full z-10",
+                !data.trigger.enable
+                  ? "bg-[#53535F] text-white shadow-sm"
+                  : "text-white/60 hover:text-white/80",
+              )}
+            >
+              Disabled
+            </button>
+            <button
+              type="button"
+              onClick={enableFlowTrigger}
+              className={clsx(
+                "flex-1 flex items-center justify-center text-[13px] font-medium transition-all duration-200 rounded-full z-10",
+                data.trigger.enable
+                  ? "bg-[#53535F] text-white shadow-sm"
+                  : "text-white/60 hover:text-white/80",
+              )}
+            >
+              Enabled
+            </button>
           </div>
         </div>
       </div>
-      <div className="space-y-[4px]">
+      <div className="space-y-[4px] mt-4">
         <p className="text-[14px] py-[1.5px] text-white-400">Event Type</p>
         <div className="px-[16px] py-[9px] w-full bg-transparent text-[14px]">
           {githubTriggerIdToLabel(data.trigger.configuration.event.id)}
