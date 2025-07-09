@@ -10,7 +10,7 @@ export function GitHubRepositoryBlock({
   return (
     <div className="flex items-center px-[14px] py-[10px] rounded-[4px]">
       <p className="flex items-center gap-x-2">
-        <span className="flex items-center">
+        <span className="flex items-center text-[14px]">
           <span>{owner}</span>
           <span>/</span>
           <span>{repo}</span>
