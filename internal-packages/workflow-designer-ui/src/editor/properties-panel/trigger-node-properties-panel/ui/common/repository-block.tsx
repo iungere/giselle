@@ -1,20 +1,24 @@
-import { GitHubIcon } from "../../../../../icons";
-
 export function GitHubRepositoryBlock({
-	owner,
-	repo,
+  owner,
+  repo,
+  isPrivate = true,
 }: {
-	owner: string;
-	repo: string;
+  owner: string;
+  repo: string;
+  isPrivate?: boolean;
 }) {
-	return (
-		<div className="flex items-center gap-[8px] bg-black-800 px-[14px] py-[10px] rounded-[4px]">
-			<GitHubIcon className="size-[20px]" />
-			<p className="space-x-[2px]">
-				<span>{owner}</span>
-				<span>/</span>
-				<span>{repo}</span>
-			</p>
-		</div>
-	);
+  return (
+    <div className="flex items-center px-[14px] py-[10px] rounded-[4px]">
+      <p className="flex items-center gap-x-2">
+        <span className="flex items-center">
+          <span>{owner}</span>
+          <span>/</span>
+          <span>{repo}</span>
+        </span>
+        <span className="rounded-full px-1.5 py-px text-black-300 font-medium text-[10px] leading-normal font-geist border-[0.5px] border-black-400">
+          {isPrivate ? "Private" : "Public"}
+        </span>
+      </p>
+    </div>
+  );
 }

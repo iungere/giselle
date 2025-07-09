@@ -1,10 +1,10 @@
 import type { FlowTriggerId } from "@giselle-sdk/data-type";
 import { githubTriggerIdToLabel } from "@giselle-sdk/flow";
+import clsx from "clsx/lite";
 import { UserIcon } from "lucide-react";
 import ClipboardButton from "../../../../../ui/clipboard-button";
 import { useGitHubTrigger } from "../../../../lib/use-github-trigger";
 import { GitHubRepositoryBlock } from "../";
-import clsx from "clsx/lite";
 
 export function GitHubTriggerConfiguredView({
   flowTriggerId,
@@ -29,37 +29,186 @@ export function GitHubTriggerConfiguredView({
           {/* Divider */}
           <div className="flex-grow mx-[12px] h-[1px] bg-black-200/30" />
 
-          <div className="relative flex h-[32px] w-[180px] bg-[#2A2A36] rounded-full p-[3px]">
-            <button
-              type="button"
-              onClick={disableFlowTrigger}
-              className={clsx(
-                "flex-1 flex items-center justify-center text-[13px] font-medium transition-all duration-200 rounded-full z-10",
-                !data.trigger.enable
-                  ? "bg-[#53535F] text-white shadow-sm"
-                  : "text-white/60 hover:text-white/80",
-              )}
-            >
-              Disabled
-            </button>
-            <button
-              type="button"
-              onClick={enableFlowTrigger}
-              className={clsx(
-                "flex-1 flex items-center justify-center text-[13px] font-medium transition-all duration-200 rounded-full z-10",
-                data.trigger.enable
-                  ? "bg-[#53535F] text-white shadow-sm"
-                  : "text-white/60 hover:text-white/80",
-              )}
-            >
-              Enabled
-            </button>
+          <div className="relative">
+            {/* Background container */}
+            <div className="w-[150px] h-[28px] bg-[#2A2A36] rounded-full flex items-center overflow-hidden">
+              {/* Sliding highlight */}
+              <div
+                className={clsx(
+                  "absolute w-[75px] h-[28px] rounded-full transition-transform duration-300 ease-in-out",
+                  data.trigger.enable
+                    ? "translate-x-[75px] bg-primary-900"
+                    : "translate-x-0 bg-[#3F3F4A]",
+                )}
+              />
+
+              {/* Button labels - always visible, change opacity based on state */}
+              <div className="absolute inset-0 flex">
+                <button
+                  type="button"
+                  onClick={disableFlowTrigger}
+                  className="flex-1 flex items-center justify-center px-0.5"
+                >
+                  <span
+                    className={clsx(
+                      "text-[12px] font-medium transition-colors duration-200",
+                      !data.trigger.enable ? "text-white" : "text-white/40",
+                    )}
+                  >
+                    Disabled
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={enableFlowTrigger}
+                  className="flex-1 flex items-center justify-center px-0.5"
+                >
+                  <span
+                    className={clsx(
+                      "text-[12px] font-medium transition-colors duration-200",
+                      data.trigger.enable
+                        ? "text-white font-semibold"
+                        : "text-white/40",
+                    )}
+                  >
+                    Enable
+                  </span>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
       <div className="space-y-[4px] mt-4">
         <p className="text-[14px] py-[1.5px] text-white-400">Event Type</p>
-        <div className="px-[16px] py-[9px] w-full bg-transparent text-[14px]">
+        <div className="px-[16px] py-[9px] w-full bg-transparent text-[14px] flex items-center">
+          <div className="pr-0 p-2 rounded-lg flex-shrink-0 flex items-center justify-center">
+            {data.trigger.configuration.event.id === "github.issue.created" && (
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24.79 22.6"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                className="text-white"
+              >
+                <g>
+                  <path
+                    d="M.78,6.93h2.02l2.52,5.39,.14,.3h.06v-5.69h1.48v8.74h-1.88l-2.61-5.44-.19-.42h-.07v5.86H.78V6.93Z"
+                    fill="white"
+                    stroke="white"
+                    strokeMiterlimit="10"
+                    strokeWidth=".5"
+                  />
+                  <path
+                    d="M8.1,6.93h5.48v1.71h-3.94v1.8h3.41v1.58h-3.41v1.93h3.92v1.71h-5.46V6.93Z"
+                    fill="white"
+                    stroke="white"
+                    strokeMiterlimit="10"
+                    strokeWidth=".5"
+                  />
+                  <path
+                    d="M14.66,6.93h1.57l.8,5.65.22,1.19h.07l1.09-6.84h1.91l1.08,6.84h.07l.19-1.12,.8-5.72h1.56l-1.42,8.74h-2.22l-.87-5.41-.11-.66h-.07l-.09,.66-.89,5.41h-2.23l-1.46-8.74Z"
+                    fill="currentColor"
+                    stroke="currentColor"
+                    strokeMiterlimit="10"
+                    strokeWidth=".5"
+                  />
+                </g>
+                <rect width="24.79" height="2.24" fill="currentColor" />
+                <rect
+                  y="20.36"
+                  width="24.79"
+                  height="2.24"
+                  fill="currentColor"
+                />
+              </svg>
+            )}
+            {data.trigger.configuration.event.id === "github.issue.closed" && (
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                className="text-white"
+              >
+                <path
+                  d="M7 12.5L10.5 16L17 9"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            )}
+            {data.trigger.configuration.event.id ===
+              "github.issue_comment.created" && (
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 31.24 28.32"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                className="text-white"
+              >
+                <path
+                  d="M4.94 28.32L11.35 21.91H31.24V0H0V21.91H4.94V28.32Z"
+                  fill="currentColor"
+                />
+              </svg>
+            )}
+            {data.trigger.configuration.event.id ===
+              "github.pull_request.opened" && (
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 28.81 28.68"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                className="text-white"
+              >
+                <path d="M0 28.68H28.81V0H0V28.68Z" fill="currentColor" />
+              </svg>
+            )}
+            {data.trigger.configuration.event.id ===
+              "github.pull_request.closed" && (
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                className="text-white"
+              >
+                <path
+                  d="M7 12.5L10.5 16L17 9"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            )}
+            {![
+              "github.issue.created",
+              "github.issue.closed",
+              "github.issue_comment.created",
+              "github.pull_request.opened",
+              "github.pull_request.closed",
+            ].includes(data.trigger.configuration.event.id) && (
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                className="text-white"
+              >
+                <path d="M0 24H24V0H0V24Z" fill="currentColor" />
+              </svg>
+            )}
+          </div>
           {githubTriggerIdToLabel(data.trigger.configuration.event.id)}
         </div>
       </div>
@@ -70,6 +219,7 @@ export function GitHubTriggerConfiguredView({
           <GitHubRepositoryBlock
             owner={data.githubRepositoryFullname.owner}
             repo={data.githubRepositoryFullname.repo}
+            isPrivate={data.githubRepositoryFullname.isPrivate ?? true}
           />
         </div>
       </div>
