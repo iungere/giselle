@@ -238,7 +238,7 @@ export function SelectRepository({
                     </div>
                     <button
                       type="button"
-                      className="rounded-md px-3 h-8 bg-white/10 text-white-400 text-[14px] hover:bg-white/5 transition-colors"
+                      className="rounded-md px-3 h-8 text-white-400 text-[14px] hover:bg-white/10 transition-colors"
                       onClick={() => {
                         onSelectRepository({
                           installationId: selectedInstallationId,
