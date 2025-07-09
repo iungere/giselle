@@ -225,16 +225,16 @@ function Installed({
   return (
     <div className="flex flex-col gap-[16px] h-full">
       {step.state === "select-event" && (
-        <div className="w-full flex flex-col gap-[8px] flex-1 overflow-hidden">
-          <p className="text-[14px]">
-            First of all, choose when you want to trigger the flow.
+        <div className="w-full flex flex-col gap-[4px] flex-1 overflow-hidden">
+          <p className="text-[14px] py-[1.5px] text-white-400">
+            GitHub Trigger
           </p>
-          <div className="flex flex-col gap-[4px] overflow-y-auto pr-2 custom-scrollbar flex-1">
+          <div className="flex flex-col gap-[20px] overflow-y-auto pr-2 pt-[12px] custom-scrollbar flex-1">
             {Object.entries(githubTriggers).map(([id, githubTrigger]) => (
               <button
                 key={id}
                 type="button"
-                className="flex items-center py-3 px-0 rounded-lg group w-full"
+                className="flex items-center py-0 px-0 rounded-lg group w-full h-[36px]"
                 onClick={() => {
                   setEventId(id as GitHubTriggerEventId);
                   setStep({
@@ -244,7 +244,7 @@ function Installed({
                 }}
               >
                 <div className="flex items-center min-w-0 flex-1">
-                  <div className="bg-white/10 p-2 rounded-lg mr-3 group-hover:bg-white/20 transition-colors flex-shrink-0">
+                  <div className="bg-white/10 p-2 rounded-lg mr-3 group-hover:bg-white/20 transition-colors flex-shrink-0 flex items-center justify-center">
                     {id === "github.issue.created" && (
                       <svg
                         width="18"
@@ -485,6 +485,12 @@ function Installed({
       )}
       {step.state === "select-repository" && (
         <div className="overflow-y-auto flex-1 pr-2 custom-scrollbar h-full">
+          <p className="text-[14px] py-[1.5px] text-white-400">
+            GitHub Repository
+          </p>
+          <p className="text-[14px] mb-[8px] text-white-500">
+            Now, select the repository where you want to set up this trigger.
+          </p>
           <SelectRepository
             installations={installations}
             installationUrl={installationUrl}
@@ -555,9 +561,16 @@ function Installed({
       )}
       {step.state === "input-callsign" && (
         <form
-          className="w-full flex flex-col gap-[16px] overflow-y-auto flex-1 pr-2 custom-scrollbar h-full"
+          className="w-full flex flex-col gap-[12px] overflow-y-auto flex-1 pr-2 custom-scrollbar"
           onSubmit={handleSubmit}
         >
+          <p className="text-[14px] mb-[4px]">
+            Finally, configure the callsign that will be used to trigger this
+            flow.
+          </p>
+          <p className="text-[14px] py-[1.5px] text-white-400">
+            GitHub Repository
+          </p>
           <GitHubRepositoryBlock owner={step.owner} repo={step.repo} />
           {(eventId === "github.issue_comment.created" ||
             eventId === "github.pull_request_comment.created" ||
@@ -600,13 +613,15 @@ function Installed({
               </p>
             </fieldset>
           )}
-          <button
-            type="submit"
-            className="h-[28px] rounded-[8px] bg-white-800 text-[14px] cursor-pointer text-black-800 font-[700] px-[16px] font-accent disabled:opacity-50"
-            disabled={isPending}
-          >
-            {isPending ? "Setting Up..." : "Set Up"}
-          </button>
+          <div className="pt-[8px] flex justify-end">
+            <button
+              type="submit"
+              className="text-white-400 hover:text-white-300 text-[14px] underline cursor-pointer disabled:opacity-50"
+              disabled={isPending}
+            >
+              {isPending ? "Setting Up..." : "Set Up Vector Store"}
+            </button>
+          </div>
         </form>
       )}
       <style jsx>{`
