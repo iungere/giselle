@@ -214,36 +214,47 @@ export function SelectRepository({
       {selectedInstallationId && repositories && (
         <div className="flex flex-col gap-[8px]">
           <p className="text-[14px] py-[1.5px] text-white-400">Repository</p>
-          <ul className="flex flex-col rounded-[8px] divide-y divide-white/10 border-[0.25px] border-white/10 overflow-hidden">
+          <div className="flex flex-col gap-y-[8px]">
             {isPending ? (
-              <li className="flex items-center justify-center h-[64px] bg-black-300/20 text-white-400 text-[14px]">
+              <div className="flex items-center justify-center h-[64px] bg-black-300/20 text-white-400 text-[14px] rounded-[8px]">
                 Loading...
-              </li>
+              </div>
             ) : (
               repositories.map((repo) => (
-                <li
+                <div
                   key={repo.node_id}
-                  className="px-4 py-3 flex items-center justify-between bg-black-300/20 hover:bg-white/5 text-white-400 text-[14px]"
+                  className="group relative rounded-[12px] overflow-hidden px-[16px] py-[12px] w-full bg-white/[0.02] backdrop-blur-[8px] border-[0.5px] border-white/8 shadow-[inset_0_1px_1px_rgba(255,255,255,0.4),inset_0_-1px_1px_rgba(255,255,255,0.2)] hover:border-white/12 transition-colors duration-200"
                 >
-                  <span>{repo.name}</span>
-                  <button
-                    type="button"
-                    className="rounded-md px-3 h-8 bg-white-900 text-black-900 text-[14px]"
-                    onClick={() => {
-                      onSelectRepository({
-                        installationId: selectedInstallationId,
-                        owner: repo.owner.login,
-                        repo: repo.name,
-                        repoNodeId: repo.node_id,
-                      });
-                    }}
-                  >
-                    Set Up
-                  </button>
-                </li>
+                  <div className="flex items-center justify-between">
+                    <div className="flex flex-col">
+                      <div className="flex items-center gap-2">
+                        <span className="text-white-400 font-medium text-[14px]">
+                          {repo.name}
+                        </span>
+                        <span className="rounded-full px-1.5 py-px text-black-300 font-medium text-[10px] leading-normal font-geist border-[0.5px] border-black-400">
+                          {repo.private ? "Private" : "Public"}
+                        </span>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      className="rounded-md px-3 h-8 bg-white/10 text-white-400 text-[14px] hover:bg-white/5 transition-colors"
+                      onClick={() => {
+                        onSelectRepository({
+                          installationId: selectedInstallationId,
+                          owner: repo.owner.login,
+                          repo: repo.name,
+                          repoNodeId: repo.node_id,
+                        });
+                      }}
+                    >
+                      Set Up
+                    </button>
+                  </div>
+                </div>
               ))
             )}
-          </ul>
+          </div>
           <p className="text-white-500 text-[14px] text-right">
             Missing Git repository?
             <button
