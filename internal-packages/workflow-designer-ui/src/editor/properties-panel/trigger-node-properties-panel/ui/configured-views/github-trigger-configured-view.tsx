@@ -24,7 +24,7 @@ export function GitHubTriggerConfiguredView({
     <div className="flex flex-col gap-[16px] p-0 overflow-y-auto">
       <div className="flex flex-col">
         <div className="flex flex-row items-center justify-between">
-          <p className="text-[14px] py-[1.5px] text-white-400">State</p>
+          <p className="text-[14px] py-[1.5px] text-[#F7F9FD]">State</p>
 
           {/* Divider */}
           <div className="flex-grow mx-[12px] h-[1px] bg-black-200/30" />
@@ -80,7 +80,7 @@ export function GitHubTriggerConfiguredView({
         </div>
       </div>
       <div className="space-y-[4px] mt-4">
-        <p className="text-[14px] py-[1.5px] text-white-400">Event Type</p>
+        <p className="text-[14px] py-[1.5px] text-[#F7F9FD]">Event Type</p>
         <div className="px-[16px] py-[9px] w-full bg-transparent text-[14px] flex items-center">
           <div className="pr-0 p-2 rounded-lg flex-shrink-0 flex items-center justify-center">
             {data.trigger.configuration.event.id === "github.issue.created" && (
@@ -209,12 +209,14 @@ export function GitHubTriggerConfiguredView({
               </svg>
             )}
           </div>
-          {githubTriggerIdToLabel(data.trigger.configuration.event.id)}
+          <span className="pl-2">
+            {githubTriggerIdToLabel(data.trigger.configuration.event.id)}
+          </span>
         </div>
       </div>
 
       <div className="space-y-[4px]">
-        <p className="text-[14px] py-[1.5px] text-white-400">Repository</p>
+        <p className="text-[14px] py-[1.5px] text-[#F7F9FD]">Repository</p>
         <div className="px-[12px] pt-[6px]">
           <GitHubRepositoryBlock
             owner={data.githubRepositoryFullname.owner}
@@ -231,7 +233,7 @@ export function GitHubTriggerConfiguredView({
           "github.pull_request_review_comment.created") && (
         <div>
           <div className="space-y-[4px]">
-            <p className="text-[14px] py-[1.5px] text-white-400">Call sign</p>
+            <p className="text-[14px] py-[1.5px] text-[#F7F9FD]">Call sign</p>
             <div className="px-[16px] py-[9px] w-full bg-transparent text-[14px] flex items-center gap-[8px]">
               <span>
                 /{data.trigger.configuration.event.conditions.callsign}
