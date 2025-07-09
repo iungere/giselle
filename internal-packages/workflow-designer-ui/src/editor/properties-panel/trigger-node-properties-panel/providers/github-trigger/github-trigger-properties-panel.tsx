@@ -97,6 +97,17 @@ export type GitHubTriggerSetupStep =
   | SelectRepositoryStep
   | InputCallsignStep;
 
+/**
+ * Determines if a trigger type requires a callsign
+ */
+function isTriggerRequiringCallsign(eventId: GitHubTriggerEventId): boolean {
+  return [
+    "github.issue_comment.created",
+    "github.pull_request_comment.created",
+    "github.pull_request_review_comment.created",
+  ].includes(eventId);
+}
+
 function Installed({
   installations,
   node,
@@ -692,11 +703,8 @@ function Installed({
             ) => {
               setLoading(true);
               // If the selected event is a comment type and requires a callsign, proceed to callsign input step
-              if (
-                step.eventId === "github.issue_comment.created" ||
-                step.eventId === "github.pull_request_comment.created" ||
-                step.eventId === "github.pull_request_review_comment.created"
-              ) {
+              // Check if callsign is required for this event type
+              if (isTriggerRequiringCallsign(step.eventId)) {
                 setStep({
                   state: "input-callsign",
                   eventId: step.eventId,

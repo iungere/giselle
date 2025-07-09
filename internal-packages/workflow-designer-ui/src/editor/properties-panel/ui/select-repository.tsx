@@ -25,12 +25,16 @@ export function SelectRepository({
   GitHubIntegrationInstalledState,
   "installations" | "installationUrl"
 > & {
-  onSelectRepository: (value: SelectRepository) => void;
+  onSelectRepository: (
+    value: SelectRepository,
+    setLoading: (loading: boolean) => void,
+  ) => void;
 }) {
   const [selectedInstallationId, setSelectedInstallationId] = useState<
     number | null
   >(null);
   const [isOrgDropdownOpen, setIsOrgDropdownOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const repositories = useMemo(() => {
@@ -153,7 +157,7 @@ export function SelectRepository({
           >
             <span
               className={
-                selectedInstallationId ? "text-white-400" : "text-white/30"
+                selectedInstallationId ? "text-[#F7F9FD]" : "text-white/30"
               }
             >
               {!selectedInstallationId
@@ -182,7 +186,7 @@ export function SelectRepository({
                     setSelectedInstallationId(installation.id);
                     setIsOrgDropdownOpen(false);
                   }}
-                  className="flex w-full items-center rounded-md px-3 py-2 text-left font-sans text-[14px] leading-[16px] text-white-400 hover:bg-white/5"
+                  className="flex w-full items-center rounded-md px-3 py-2 text-left font-sans text-[14px] leading-[16px] text-[#F7F9FD] hover:bg-white/5"
                 >
                   <span className="mr-2 inline-flex h-4 w-4 items-center justify-center">
                     {selectedInstallationId === installation.id && (
@@ -213,8 +217,13 @@ export function SelectRepository({
       </fieldset>
       {selectedInstallationId && repositories && (
         <div className="flex flex-col gap-[8px]">
-          <p className="text-[14px] py-[1.5px] text-white-400">Repository</p>
-          <div className="flex flex-col gap-y-[8px]">
+          <p className="text-[14px] py-[1.5px] text-[#F7F9FD]">Repository</p>
+          <div className="flex flex-col gap-y-[8px] relative">
+            {isLoading && (
+              <div className="absolute inset-0 z-10 flex items-center justify-center bg-black-900/50 backdrop-blur-sm rounded-[8px]">
+                <div className="text-white-400 text-[14px]">Setting up...</div>
+              </div>
+            )}
             {isPending ? (
               <div className="flex items-center justify-center h-[64px] bg-black-300/20 text-white-400 text-[14px] rounded-[8px]">
                 Loading...
@@ -238,17 +247,21 @@ export function SelectRepository({
                     </div>
                     <button
                       type="button"
-                      className="rounded-md px-3 h-8 text-white-400 text-[14px] hover:bg-white/10 transition-colors"
+                      className="rounded-md px-3 h-8 text-white-400 text-[14px] hover:bg-white/10 transition-colors disabled:opacity-50"
+                      disabled={isLoading}
                       onClick={() => {
-                        onSelectRepository({
-                          installationId: selectedInstallationId,
-                          owner: repo.owner.login,
-                          repo: repo.name,
-                          repoNodeId: repo.node_id,
-                        });
+                        onSelectRepository(
+                          {
+                            installationId: selectedInstallationId,
+                            owner: repo.owner.login,
+                            repo: repo.name,
+                            repoNodeId: repo.node_id,
+                          },
+                          setIsLoading,
+                        );
                       }}
                     >
-                      Set Up
+                      {isLoading ? "Setting up..." : "Set Up"}
                     </button>
                   </div>
                 </div>
