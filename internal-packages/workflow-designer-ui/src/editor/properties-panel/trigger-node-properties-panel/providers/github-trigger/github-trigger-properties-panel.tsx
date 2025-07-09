@@ -728,10 +728,6 @@ function Installed({
       )}
       {step.state === "confirm-repository" && (
         <div className="overflow-y-auto flex-1 pr-2 pl-1 custom-scrollbar h-full relative">
-          <p className="text-[14px] py-[1.5px] mb-[8px] text-[#F7F9FD]">
-            Confirm Repository
-          </p>
-
           <div className="flex flex-col gap-[16px]">
             <div>
               <p className="text-[14px] py-[1.5px] text-[#F7F9FD]">
