@@ -226,7 +226,7 @@ function Installed({
     <div className="flex flex-col gap-[16px] h-full">
       {step.state === "select-event" && (
         <div className="w-full flex flex-col gap-[4px] flex-1 overflow-hidden">
-          <p className="text-[14px] py-[1.5px] text-white-400">Trigger</p>
+          <p className="text-[14px] py-[1.5px] text-white-400">Event Type</p>
           <div className="flex flex-col gap-[20px] overflow-y-auto pr-2 pt-[12px] custom-scrollbar flex-1">
             {Object.entries(githubTriggers).map(([id, githubTrigger]) => (
               <button
