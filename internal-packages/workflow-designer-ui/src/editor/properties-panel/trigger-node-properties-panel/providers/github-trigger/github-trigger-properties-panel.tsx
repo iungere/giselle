@@ -486,7 +486,7 @@ function Installed({
       {step.state === "select-repository" && (
         <div className="overflow-y-auto flex-1 pr-2 custom-scrollbar h-full">
           <p className="text-[14px] py-[1.5px] text-white-400">
-            GitHub Repository
+            GitHub Organization
           </p>
           <p className="text-[14px] mb-[8px] text-white-500"></p>
           <SelectRepository
