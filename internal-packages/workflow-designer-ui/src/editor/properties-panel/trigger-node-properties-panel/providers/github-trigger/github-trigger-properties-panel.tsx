@@ -484,7 +484,7 @@ function Installed({
       {step.state === "select-repository" && (
         <div className="overflow-y-auto flex-1 pr-2 custom-scrollbar h-full relative">
           <p className="text-[14px] py-[1.5px] mb-[8px] text-white-400">
-            Trigger
+            Event Type
           </p>
           <div className="flex items-center py-0 px-0 rounded-lg w-full h-[36px] mb-4">
             <div className="mr-3 pl-2">
