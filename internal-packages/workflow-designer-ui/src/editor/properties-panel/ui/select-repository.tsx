@@ -152,25 +152,18 @@ export function SelectRepository({
             className="w-full px-3 py-2 bg-black-300/20 rounded-[8px] text-white-400 text-[14px] font-geist cursor-pointer text-left flex items-center justify-between"
           >
             <span className={selectedInstallationId ? "" : "text-white/30"}>
-              {selectedInstallationId
-                ? installations.find((i) => i.id === selectedInstallationId)
-                    ?.account
-                  ? "login" in
-                    installations.find((i) => i.id === selectedInstallationId)!
-                      .account!
-                    ? installations.find(
-                        (i) => i.id === selectedInstallationId,
-                      )!.account!.login
-                    : "slug" in
-                        installations.find(
-                          (i) => i.id === selectedInstallationId,
-                        )!.account!
-                      ? installations.find(
-                          (i) => i.id === selectedInstallationId,
-                        )!.account!.slug
-                      : "Select an organization"
-                  : "Select an organization"
-                : "Select an organization"}
+              {(() => {
+                if (!selectedInstallationId) return "Select an Organization";
+                const installation = installations.find(
+                  (i) => i.id === selectedInstallationId,
+                );
+                if (!installation?.account) return "Select an Organization";
+                return "login" in installation.account
+                  ? installation.account.login
+                  : "slug" in installation.account
+                    ? installation.account.slug
+                    : "Select an Organization";
+              })()}
             </span>
             <ChevronDown className="h-4 w-4 text-white/60" />
           </button>
