@@ -226,7 +226,7 @@ function Installed({
     <div className="flex flex-col gap-[16px] h-full">
       {step.state === "select-event" && (
         <div className="w-full flex flex-col gap-[4px] flex-1 overflow-hidden">
-          <p className="text-[14px] py-[1.5px] text-white-400">Event Type</p>
+          <p className="text-[14px] py-[1.5px] text-[#F7F9FD]">Event Type</p>
           <div className="flex flex-col gap-[20px] overflow-y-auto pr-2 pt-[12px] custom-scrollbar flex-1">
             {Object.entries(githubTriggers).map(([id, githubTrigger]) => (
               <button
@@ -483,7 +483,7 @@ function Installed({
       )}
       {step.state === "select-repository" && (
         <div className="overflow-y-auto flex-1 pr-2 custom-scrollbar h-full relative">
-          <p className="text-[14px] py-[1.5px] mb-[8px] text-white-400">
+          <p className="text-[14px] py-[1.5px] mb-[8px] text-[#F7F9FD]">
             Event Type
           </p>
           <div className="flex items-center py-0 px-0 rounded-lg w-full h-[36px] mb-4">
@@ -578,7 +578,7 @@ function Installed({
             </div>
           </div>
 
-          <p className="text-[14px] py-[1.5px] text-white-400">Organization</p>
+          <p className="text-[14px] py-[1.5px] text-[#F7F9FD]">Organization</p>
           <SelectRepository
             installations={installations}
             installationUrl={installationUrl}
@@ -660,20 +660,105 @@ function Installed({
           className="w-full flex flex-col gap-[12px] overflow-y-auto flex-1 pr-2 custom-scrollbar"
           onSubmit={handleSubmit}
         >
-          <p className="text-[14px] mb-[4px]">
-            Finally, configure the callsign that will be used to trigger this
-            flow.
-          </p>
-          <p className="text-[14px] py-[1.5px] text-white-400">
-            GitHub Repository
-          </p>
+          <p className="text-[14px] py-[1.5px] text-[#F7F9FD]">Event Type</p>
+          <div className="px-[16px] py-[9px] w-full bg-transparent text-[14px] flex items-center">
+            <div className="flex-shrink-0 flex items-center justify-center">
+              {step.eventId === "github.issue.created" && (
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24.79 22.6"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="text-white"
+                >
+                  <g>
+                    <path
+                      d="M.78,6.93h2.02l2.52,5.39,.14,.3h.06v-5.69h1.48v8.74h-1.88l-2.61-5.44-.19-.42h-.07v5.86H.78V6.93Z"
+                      fill="white"
+                      stroke="white"
+                      strokeMiterlimit="10"
+                      strokeWidth=".5"
+                    />
+                    <path
+                      d="M8.1,6.93h5.48v1.71h-3.94v1.8h3.41v1.58h-3.41v1.93h3.92v1.71h-5.46V6.93Z"
+                      fill="white"
+                      stroke="white"
+                      strokeMiterlimit="10"
+                      strokeWidth=".5"
+                    />
+                    <path
+                      d="M14.66,6.93h1.57l.8,5.65,.22,1.19h.07l1.09-6.84h1.91l1.08,6.84h.07l.19-1.12,.8-5.72h1.56l-1.42,8.74h-2.22l-.87-5.41-.11-.66h-.07l-.09,.66-.89,5.41h-2.23l-1.46-8.74Z"
+                      fill="currentColor"
+                      stroke="currentColor"
+                      strokeMiterlimit="10"
+                      strokeWidth=".5"
+                    />
+                  </g>
+                  <rect width="24.79" height="2.24" fill="currentColor" />
+                  <rect
+                    y="20.36"
+                    width="24.79"
+                    height="2.24"
+                    fill="currentColor"
+                  />
+                </svg>
+              )}
+              {step.eventId === "github.issue.closed" && (
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="text-white"
+                >
+                  <path
+                    d="M7 12.5L10.5 16L17 9"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              )}
+              {step.eventId === "github.issue_comment.created" && (
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 31.24 28.32"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="text-white"
+                >
+                  <path
+                    d="M15.62,0C7.01,0,0,5.5,0,12.26c0,4.53,3.2,8.68,8.23,10.8-.06,1.71-.39,2.21-.47,2.3-.91,1.09-.46,2.06-.06,2.46.33.33.73.5,1.25.5.72,0,1.66-.32,2.96-.97.88-.44,2.56-1.37,4.38-2.85,8.29-.28,14.94-5.68,14.94-12.24S24.23,0,15.62,0ZM15.73,21.51h-.54s-.42.36-.42.36c-1.29,1.09-2.58,1.92-3.63,2.5.09-.69.12-1.48.09-2.38l-.02-1.04-.98-.34c-4.39-1.54-7.23-4.82-7.23-8.35C3,7.15,8.66,3,15.62,3s12.62,4.15,12.62,9.26-5.61,9.21-12.51,9.25Z"
+                    fill="currentColor"
+                  />
+                  <path
+                    d="M21.64,8.72h-12.05c-.83,0-1.5.67-1.5,1.5s.67,1.5,1.5,1.5h12.05c.83,0,1.5-.67,1.5-1.5s-.67-1.5-1.5-1.5Z"
+                    fill="currentColor"
+                  />
+                </svg>
+              )}
+            </div>
+            <div className="flex flex-col min-w-0">
+              <span className="pl-2 text-white-800 font-medium text-[14px] truncate">
+                {githubTriggers[step.eventId].event.label}
+              </span>
+            </div>
+          </div>
+
+          <p className="text-[14px] py-[1.5px] text-[#F7F9FD]">Repository</p>
           <GitHubRepositoryBlock owner={step.owner} repo={step.repo} />
           {(eventId === "github.issue_comment.created" ||
             eventId === "github.pull_request_comment.created" ||
             eventId === "github.pull_request_review_comment.created") && (
             <fieldset className="flex flex-col gap-[4px]">
               <div className="flex items-center gap-[4px]">
-                <p className="text-[16px]">Callsign</p>
+                <p className="text-[14px] py-[1.5px] text-[#F7F9FD]">
+                  Callsign
+                </p>
                 <Tooltip
                   text={
                     <p className="w-[260px]">
@@ -697,25 +782,25 @@ function Installed({
                   name="callsign"
                   className={clsx(
                     "group w-full flex justify-between items-center rounded-[8px] py-[8px] pl-[24px] pr-[16px] outline-none focus:outline-none",
-                    "border-[2px] border-white-900",
-                    "text-[14px]",
+                    "border border-white-400 focus:border-white-900",
+                    "text-[14px] bg-transparent",
                   )}
                   placeholder="code-review"
                 />
               </div>
-              <p className="text-[14px] text-black-400">
+              <p className="text-[12px] text-white-400 pl-2">
                 A callsign is required for issue comment triggers. Examples:
                 /code-review, /check-policy
               </p>
             </fieldset>
           )}
-          <div className="pt-[8px] flex justify-end">
+          <div className="pt-[8px] flex">
             <button
               type="submit"
-              className="text-white-400 hover:text-white-300 text-[14px] underline cursor-pointer disabled:opacity-50"
+              className="w-full bg-primary-900 hover:bg-primary-800 text-white font-medium px-4 py-2 rounded-md text-[14px] transition-colors disabled:opacity-50"
               disabled={isPending}
             >
-              {isPending ? "Setting Up..." : "Set Up Vector Store"}
+              {isPending ? "Setting Up..." : "Set Up"}
             </button>
           </div>
         </form>
