@@ -213,6 +213,7 @@ export function SelectRepository({
       </fieldset>
       {selectedInstallationId && repositories && (
         <div className="flex flex-col gap-[8px]">
+          <p className="text-[14px] py-[1.5px] text-white-400">Repository</p>
           <ul className="flex flex-col rounded-[8px] divide-y divide-white/10 border-[0.25px] border-white/10 overflow-hidden">
             {isPending ? (
               <li className="flex items-center justify-center h-[64px] bg-black-300/20 text-white-400 text-[14px]">
