@@ -488,9 +488,7 @@ function Installed({
           <p className="text-[14px] py-[1.5px] text-white-400">
             GitHub Repository
           </p>
-          <p className="text-[14px] mb-[8px] text-white-500">
-            Now, select the repository where you want to set up this trigger.
-          </p>
+          <p className="text-[14px] mb-[8px] text-white-500"></p>
           <SelectRepository
             installations={installations}
             installationUrl={installationUrl}
