@@ -29,7 +29,7 @@ export function SelectRepository({
 }) {
   const [selectedInstallationId, setSelectedInstallationId] = useState<
     number | null
-  >(installations.length > 0 ? installations[0].id : null);
+  >(null);
   const [isOrgDropdownOpen, setIsOrgDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -151,19 +151,24 @@ export function SelectRepository({
             onClick={() => setIsOrgDropdownOpen(!isOrgDropdownOpen)}
             className="w-full px-3 py-2 bg-black-300/20 rounded-[8px] text-white-400 text-[14px] font-geist cursor-pointer text-left flex items-center justify-between"
           >
-            <span className={selectedInstallationId ? "" : "text-white/30"}>
-              {(() => {
-                if (!selectedInstallationId) return "Select an Organization";
-                const installation = installations.find(
-                  (i) => i.id === selectedInstallationId,
-                );
-                if (!installation?.account) return "Select an Organization";
-                return "login" in installation.account
-                  ? installation.account.login
-                  : "slug" in installation.account
-                    ? installation.account.slug
-                    : "Select an Organization";
-              })()}
+            <span
+              className={
+                selectedInstallationId ? "text-white-400" : "text-white/30"
+              }
+            >
+              {!selectedInstallationId
+                ? "Select an Organization"
+                : (() => {
+                    const installation = installations.find(
+                      (i) => i.id === selectedInstallationId,
+                    );
+                    if (!installation?.account) return "Select an Organization";
+                    return "login" in installation.account
+                      ? installation.account.login
+                      : "slug" in installation.account
+                        ? installation.account.slug
+                        : "Select an Organization";
+                  })()}
             </span>
             <ChevronDown className="h-4 w-4 text-white/60" />
           </button>
