@@ -1,101 +1,80 @@
 import type { GitHubTriggerEventId } from "@giselle-sdk/flow";
 import { githubTriggers } from "@giselle-sdk/flow";
-import { EventTypeDisplay } from "./event-type-display";
-import { RepositoryDisplay } from "./repository-display";
+import { GitHubRepositoryBlock } from "../../../ui/common/repository-block";
+import { isTriggerRequiringCallsign } from "../utils/trigger-configuration";
+import { ActionButtons, FieldDisplay, ScrollableContainer } from "./common";
+import { getTriggerIcon } from "./icons";
 
 interface ConfirmRepositoryStepProps {
-  eventId: GitHubTriggerEventId;
-  installationId: number;
-  owner: string;
-  repo: string;
-  repoNodeId: string;
-  onBack: () => void;
-  onSetup: (params: {
-    eventId: GitHubTriggerEventId;
-    installationId: number;
-    owner: string;
-    repo: string;
-    repoNodeId: string;
-    requiresCallsign: boolean;
-  }) => void;
-  /** This is a flag to indicate if the component is being used for testing */
-  isForTest?: boolean;
-}
-
-/**
- * Determines if a trigger type requires a callsign
- */
-function isTriggerRequiringCallsign(eventId: GitHubTriggerEventId): boolean {
-  return [
-    "github.issue_comment.created",
-    "github.pull_request_comment.created",
-    "github.pull_request_review_comment.created",
-  ].includes(eventId);
+	eventId: GitHubTriggerEventId;
+	installationId: number;
+	owner: string;
+	repo: string;
+	repoNodeId: string;
+	onBack: () => void;
+	onSetup: (params: {
+		eventId: GitHubTriggerEventId;
+		installationId: number;
+		owner: string;
+		repo: string;
+		repoNodeId: string;
+		requiresCallsign: boolean;
+	}) => void;
 }
 
 export function ConfirmRepositoryStep({
-  eventId,
-  installationId,
-  owner,
-  repo,
-  repoNodeId,
-  onBack,
-  onSetup,
-  isForTest = false,
+	eventId,
+	installationId,
+	owner,
+	repo,
+	repoNodeId,
+	onBack,
+	onSetup,
 }: ConfirmRepositoryStepProps) {
-  const requiresCallsign = isTriggerRequiringCallsign(eventId);
+	const requiresCallsign = isTriggerRequiringCallsign(eventId);
+	const triggerInfo = githubTriggers[eventId];
 
-  return (
-    <div className="overflow-y-auto flex-1 pr-2 custom-scrollbar h-full relative">
-      <div className="flex flex-col gap-[16px]">
-        <EventTypeDisplay eventId={eventId} />
-        <RepositoryDisplay owner={owner} repo={repo} />
+	return (
+		<ScrollableContainer className="flex-1 pr-2 h-full relative">
+			<div className="flex flex-col gap-[16px]">
+				<FieldDisplay label="Event Type">
+					<div className="w-full bg-transparent text-[14px] flex items-center">
+						<div className="p-2 rounded-lg mr-3 flex-shrink-0 flex items-center justify-center">
+							{getTriggerIcon(eventId)}
+						</div>
+						<div className="flex flex-col min-w-0">
+							<span className="text-white-800 font-medium text-[14px] truncate">
+								{triggerInfo.event.label}
+							</span>
+							<span className="text-white-400 text-[12px] truncate">
+								Trigger when {triggerInfo.event.label.toLowerCase()} in your
+								repository
+							</span>
+						</div>
+					</div>
+				</FieldDisplay>
 
-        <div className="flex gap-[8px] mt-[16px] px-[4px]">
-          <button
-            type="button"
-            className="flex-1 bg-black-700 hover:bg-black-600 text-white font-medium px-4 py-2 rounded-md text-[14px] transition-colors disabled:opacity-50"
-            onClick={onBack}
-          >
-            Back
-          </button>
-          <button
-            type="button"
-            className="flex-1 bg-primary-900 hover:bg-primary-800 text-white font-medium px-4 py-2 rounded-md text-[14px] transition-colors disabled:opacity-50"
-            onClick={() => {
-              onSetup({
-                eventId,
-                installationId,
-                owner,
-                repo,
-                repoNodeId,
-                requiresCallsign,
-              });
-            }}
-            disabled={false}
-          >
-            {/* Show "Continue" when callsign is required, otherwise "Set Up" */}
-            {requiresCallsign ? "Continue" : "Set Up"}
-          </button>
-        </div>
-      </div>
+				<FieldDisplay label="Repository" applyContentPadding={false}>
+					<div className="flex items-center">
+						<GitHubRepositoryBlock owner={owner} repo={repo} />
+					</div>
+				</FieldDisplay>
 
-      <style jsx>{`
-        .custom-scrollbar {
-          scrollbar-width: thin;
-          scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
-        }
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 5px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: transparent;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background-color: rgba(255, 255, 255, 0.15);
-          border-radius: 2px;
-        }
-      `}</style>
-    </div>
-  );
+				<ActionButtons
+					onBack={onBack}
+					onPrimary={() => {
+						onSetup({
+							eventId,
+							installationId,
+							owner,
+							repo,
+							repoNodeId,
+							requiresCallsign,
+						});
+					}}
+					primaryButtonText={requiresCallsign ? "Continue" : "Set Up"}
+				/>
+			</div>
+		</ScrollableContainer>
+	);
 }

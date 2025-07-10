@@ -24,9 +24,7 @@ import { Tooltip } from "../../../../../ui/tooltip";
 import { SelectRepository } from "../../../ui";
 import { GitHubTriggerConfiguredView } from "../../ui";
 import { EventSelectionStep } from "./components/event-selection-step";
-import { EventTypeDisplay } from "./components/event-type-display";
 import { InstallGitHubApplication } from "./components/install-application";
-import { RepositoryDisplay } from "./components/repository-display";
 import { Unauthorized } from "./components/unauthorized";
 
 export function GitHubTriggerPropertiesPanel({ node }: { node: TriggerNode }) {
