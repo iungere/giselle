@@ -1,6 +1,6 @@
 import { type GitHubTriggerEventId, githubTriggers } from "@giselle-sdk/flow";
 import React from "react";
-import { getTriggerIcon } from "./icons";
+import { getTriggerIcon, ArrowRightIcon } from "./icons";
 
 interface EventSelectionStepProps {
   /**
@@ -46,22 +46,7 @@ export function EventSelectionStep({
                 </span>
               </div>
             </div>
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              className="text-white-600 group-hover:text-white-500 transition-colors flex-shrink-0 absolute right-4"
-            >
-              <path
-                d="M9 18L15 12L9 6"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
+            <ArrowRightIcon />
           </button>
         ))}
       </div>

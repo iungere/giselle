@@ -1,11 +1,12 @@
 import type { FlowTriggerId } from "@giselle-sdk/data-type";
-import { githubTriggerIdToLabel } from "@giselle-sdk/flow";
+import { githubTriggerIdToLabel, type GitHubTriggerEventId } from "@giselle-sdk/flow";
 import clsx from "clsx/lite";
-import { AlertCircle, Loader2, UserIcon } from "lucide-react";
+import { AlertCircle, Loader2 } from "lucide-react";
 import { useState } from "react";
 import ClipboardButton from "../../../../../ui/clipboard-button";
 import { useGitHubTrigger } from "../../../../lib/use-github-trigger";
 import { GitHubRepositoryBlock } from "../";
+import { getTriggerIcon } from "../../providers/github-trigger/components/icons";
 
 export function GitHubTriggerConfiguredView({
   flowTriggerId,
@@ -372,47 +373,9 @@ export function GitHubTriggerConfiguredView({
                 sizeClassName="h-[16px] w-[16px]"
               />
             </div>
-          </div>
-          <div className="border border-black-800 rounded-[4px] overflow-hidden ml-[4px] pointer-events-none">
-            <div className="bg-black-850 p-[8px] border-b border-black-800">
-              <h3 className="text-[14px] text-black-300">
-                GitHub Usage Example
-              </h3>
-            </div>
-            <div className="p-4 bg-[#0d1117] flex gap-[8px]">
-              <div>
-                <div className="rounded-full bg-black-800 p-[6px]">
-                  <UserIcon className="size-[18px]" />
-                </div>
-              </div>
-              <div className="flex-1">
-                <div className="flex items-start gap-3 mb-2">
-                  <h2 className="text-[16px]">Add a comment</h2>
-                </div>
-                <div className="border border-[#30363d] rounded-md overflow-hidden">
-                  {/* Tab Navigation */}
-                  <div className="border-b border-[#30363d] bg-[#161b22] flex">
-                    <div className="border-b-2 border-[#f78166] px-4 py-2 text-sm">
-                      Write
-                    </div>
-                    <div className="px-4 py-2 text-sm text-gray-400">
-                      Preview
-                    </div>
-                  </div>
-
-                  <div className="min-h-[150px] p-4 bg-[#0d1117] text-gray-400 border-b border-[#30363d]">
-                    /{data.trigger.configuration.event.conditions.callsign}{" "}
-                    [enter your request...]
-                  </div>
-
-                  <div className="flex items-center justify-end p-[6px] bg-[#161b22]">
-                    <div className="px-3 py-1.5 bg-[#238636] text-white text-sm rounded-md">
-                      Comment
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <p className="text-[12px] text-white-400 px-[4px]">
+              Use <span className="text-blue-400 font-medium">/{data.trigger.configuration.event.conditions.callsign}</span> in GitHub comments to trigger this workflow.
+            </p>
           </div>
         </div>
       )}

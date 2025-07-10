@@ -1,7 +1,8 @@
 import React, { useState, useCallback, FormEvent } from "react";
 import { type GitHubTriggerEventId, githubTriggers } from "@giselle-sdk/flow";
 import { ValidationErrorDisplay } from "./error-display";
-import { getTriggerIcon } from "./icons";
+import { EventTypeDisplay } from "./event-type-display";
+import { RepositoryDisplay } from "./repository-display";
 
 export interface CallsignInputProps {
   /**
@@ -70,43 +71,37 @@ export function CallsignInput({
     return true;
   }, []);
 
-  const handleSubmit = useCallback((e: FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = useCallback(
+    (e: FormEvent) => {
+      e.preventDefault();
 
-    if (validateCallsign(callsign) && !isSubmitting) {
-      onSubmit(callsign);
-    }
-  }, [callsign, validateCallsign, onSubmit, isSubmitting]);
+      if (validateCallsign(callsign) && !isSubmitting) {
+        onSubmit(callsign);
+      }
+    },
+    [callsign, validateCallsign, onSubmit, isSubmitting],
+  );
 
-  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = e.target.value;
-    setCallsign(newValue);
+  const handleChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const newValue = e.target.value;
+      setCallsign(newValue);
 
-    // Clear error when user is typing
-    if (error) setError(null);
-  }, [error]);
-
-  const trigger = githubTriggers[eventId];
+      // Clear error when user is typing
+      if (error) setError(null);
+    },
+    [error],
+  );
 
   return (
-    <form onSubmit={handleSubmit} className="w-full flex flex-col gap-[12px] overflow-y-auto flex-1 pr-2 custom-scrollbar">
-      <p className="text-[14px] py-[1.5px] text-[#F7F9FD]">Event Type</p>
-      <div className="px-[16px] py-[9px] w-full bg-transparent text-[14px] flex items-center">
-        <div className="flex-shrink-0 flex items-center justify-center">
-          {getTriggerIcon(eventId)}
-        </div>
-        <div className="flex flex-col min-w-0">
-          <span className="pl-2 text-white-800 font-medium text-[14px] truncate">
-            {trigger.event.label}
-          </span>
-          <span className="pl-2 text-white-400 text-[12px] truncate">
-            {`Trigger when ${trigger.event.label.toLowerCase()} in your repository`}
-          </span>
-        </div>
-      </div>
+    <form
+      onSubmit={handleSubmit}
+      className="w-full flex flex-col gap-[4px] overflow-y-auto flex-1 pr-2 custom-scrollbar"
+    >
+      <EventTypeDisplay eventId={eventId} className="mb-2" />
 
-      <div className="flex flex-col gap-[8px]">
-        <p className="text-[14px] py-[1.5px] text-[#F7F9FD]">Callsign</p>
+      <div className="flex flex-col gap-[4px]">
+        <p className="text-[14px] text-[#F7F9FD]">Callsign</p>
 
         {error && <ValidationErrorDisplay message={error} />}
 
@@ -117,7 +112,7 @@ export function CallsignInput({
             id="callsign"
             value={callsign}
             onChange={handleChange}
-            className="px-[16px] py-[9px] w-full bg-black-800 border border-white/10 focus:border-primary-500 focus:ring-primary-500 rounded-md text-white-900 placeholder:text-white-400 text-[14px]"
+            className="px-[16px] py-[6px] w-full bg-black-800 border border-white/10 focus:border-primary-500 focus:ring-primary-500 rounded-md text-white-900 placeholder:text-white-400 text-[14px]"
             placeholder="/deploy"
             autoComplete="off"
             autoFocus
@@ -127,11 +122,10 @@ export function CallsignInput({
           />
         </div>
 
-        <div className="mt-[4px] text-white-400 text-[12px]">
+        <div className="mt-[2px] text-white-400 text-[12px]">
           <p>
-            Only comments starting with this callsign will trigger the
-            workflow, preventing unnecessary executions from unrelated
-            comments.
+            Only comments starting with this callsign will trigger the workflow,
+            preventing unnecessary executions from unrelated comments.
           </p>
           <p className="text-[12px] text-white-400 mt-2">
             Examples: /code-review, /check-policy
@@ -139,19 +133,19 @@ export function CallsignInput({
         </div>
       </div>
 
-      <div className="flex justify-between mt-4">
+      <div className="flex justify-between mt-2">
         <button
           type="button"
           onClick={onCancel}
           disabled={isSubmitting}
-          className="px-3 py-2 text-sm text-white-400 hover:text-white-300 transition-colors"
+          className="px-3 py-1 text-sm text-white-400 hover:text-white-300 transition-colors"
         >
           Back
         </button>
         <button
           type="submit"
           disabled={isSubmitting || !callsign || !!error}
-          className="px-4 py-2 bg-primary-600 text-white rounded-md text-sm font-medium hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="px-4 py-1 bg-primary-600 text-white rounded-md text-sm font-medium hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           {isSubmitting ? "Setting up..." : "Set up"}
         </button>

@@ -232,8 +232,22 @@ export function SelectRepository({
               repositories.map((repo) => (
                 <div
                   key={repo.node_id}
-                  className="group relative rounded-[12px] overflow-hidden px-[16px] py-[12px] w-full bg-white/[0.02] backdrop-blur-[8px] border-[0.5px] border-white/8 shadow-[inset_0_1px_1px_rgba(255,255,255,0.4),inset_0_-1px_1px_rgba(255,255,255,0.2)] hover:border-white/12 transition-colors duration-200"
+                  className="group relative rounded-[12px] overflow-hidden px-[16px] py-[12px] w-full bg-white/[0.02] backdrop-blur-[8px] border-[0.5px] border-white/8 shadow-[inset_0_1px_1px_rgba(255,255,255,0.4),inset_0_-1px_1px_rgba(255,255,255,0.2)] hover:border-white/12 transition-colors duration-200 cursor-pointer"
+                  onClick={() => {
+                    onSelectRepository(
+                      {
+                        installationId: selectedInstallationId,
+                        owner: repo.owner.login,
+                        repo: repo.name,
+                        repoNodeId: repo.node_id,
+                      },
+                      setIsLoading,
+                    );
+                  }}
                 >
+                  <div className="invisible group-hover:visible absolute right-4 top-1/2 transform -translate-y-1/2 bg-black-800 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
+                    Select
+                  </div>
                   <div className="flex items-center justify-between">
                     <div className="flex flex-col">
                       <div className="flex items-center gap-2">
@@ -245,24 +259,11 @@ export function SelectRepository({
                         </span>
                       </div>
                     </div>
-                    <button
-                      type="button"
-                      className="rounded-md px-3 h-8 text-white-400 text-[14px] hover:bg-white/10 transition-colors disabled:opacity-50"
-                      disabled={isLoading}
-                      onClick={() => {
-                        onSelectRepository(
-                          {
-                            installationId: selectedInstallationId,
-                            owner: repo.owner.login,
-                            repo: repo.name,
-                            repoNodeId: repo.node_id,
-                          },
-                          setIsLoading,
-                        );
-                      }}
-                    >
-                      {isLoading ? "Setting up..." : "Set Up"}
-                    </button>
+                    {isLoading && (
+                      <div className="text-white-400 text-[14px]">
+                        Setting up...
+                      </div>
+                    )}
                   </div>
                 </div>
               ))
