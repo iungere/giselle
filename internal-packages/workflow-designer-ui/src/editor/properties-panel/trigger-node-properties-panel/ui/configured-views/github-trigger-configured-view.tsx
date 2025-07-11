@@ -40,7 +40,6 @@ export function GitHubTriggerConfiguredView({
 			setActionError(null);
 			await enableFlowTrigger();
 		} catch (error) {
-			console.error("Failed to enable trigger:", error);
 			setActionError(error instanceof Error ? error : new Error(String(error)));
 		} finally {
 			setActionInProgress(false);
@@ -53,7 +52,6 @@ export function GitHubTriggerConfiguredView({
 			setActionError(null);
 			await disableFlowTrigger();
 		} catch (error) {
-			console.error("Failed to disable trigger:", error);
 			setActionError(error instanceof Error ? error : new Error(String(error)));
 		} finally {
 			setActionInProgress(false);

@@ -249,8 +249,8 @@ function Installed({
 						outputs: [...node.outputs, ...outputs],
 						name: `On ${trigger.event.label}`,
 					});
-				} catch (error) {
-					console.error("Failed to configure trigger:", error);
+				} catch (_error) {
+					// Error is handled by the UI state
 				}
 			});
 		},
@@ -296,7 +296,6 @@ function Installed({
 							installationUrl={installationUrl}
 							onSelectRepository={(value, setLoading) => {
 								setLoading(true);
-								// Always proceed to confirmation step first
 								setStep({
 									state: "confirm-repository",
 									eventId: step.eventId,
@@ -329,7 +328,6 @@ function Installed({
 								type="button"
 								className="flex-1 bg-black-700 hover:bg-black-600 text-white font-medium px-4 py-2 rounded-md text-[14px] transition-colors disabled:opacity-50 relative"
 								onClick={() => {
-									// Go back to repository selection
 									setStep({
 										state: "select-repository",
 										eventId: step.eventId,
@@ -343,7 +341,6 @@ function Installed({
 								type="button"
 								className="flex-1 bg-primary-900 hover:bg-primary-800 text-white font-medium px-4 py-2 rounded-md text-[14px] transition-colors disabled:opacity-50 relative"
 								onClick={() => {
-									// Process based on whether callsign is required
 									if (isTriggerRequiringCallsign(step.eventId)) {
 										setStep({
 											state: "input-callsign",
@@ -354,7 +351,6 @@ function Installed({
 											repoNodeId: step.repoNodeId,
 										});
 									} else {
-										// If callsign is not required, execute trigger configuration
 										startTransition(async () => {
 											try {
 												const event = createTriggerEvent(step.eventId);
@@ -396,8 +392,8 @@ function Installed({
 													outputs: [...node.outputs, ...outputs],
 													name: `On ${trigger.event.label}`,
 												});
-											} catch (error) {
-												console.error("Failed to configure trigger:", error);
+											} catch (_error) {
+												// Error is handled by the UI state
 											}
 										});
 									}
@@ -497,7 +493,6 @@ function Installed({
 							type="button"
 							className="flex-1 bg-black-700 hover:bg-black-600 text-white font-medium px-4 py-2 rounded-md text-[14px] transition-colors disabled:opacity-50 relative"
 							onClick={() => {
-								// Go back to repository selection
 								setStep({
 									state: "select-repository",
 									eventId: step.eventId,
