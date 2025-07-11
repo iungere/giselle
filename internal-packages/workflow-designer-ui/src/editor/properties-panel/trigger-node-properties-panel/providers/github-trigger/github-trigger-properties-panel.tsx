@@ -280,14 +280,15 @@ function Installed({
 
       {step.state === "select-repository" && (
         <div className="overflow-y-auto flex-1 pr-2 custom-scrollbar h-full relative">
+          <p className="text-[14px] text-[#F7F9FD] mb-2">Event type</p>
           <EventTypeDisplay
             eventId={step.eventId}
-            className="mb-2"
+            className="mb-4"
             showDescription={false}
           />
 
-          <p className="text-[14px] text-[#F7F9FD] mb-2">Organization</p>
-          <div className="px-[4px] py-[8px]">
+          <p className="text-[14px] text-[#F7F9FD] mb-3">Organization</p>
+          <div className="px-[4px] py-[4px]">
             <SelectRepository
               installations={installations}
               installationUrl={installationUrl}
@@ -312,6 +313,7 @@ function Installed({
       {step.state === "confirm-repository" && (
         <div className="overflow-y-auto flex-1 pr-2 custom-scrollbar h-full relative">
           <div className="flex flex-col gap-[8px]">
+            <p className="text-[14px] text-[#F7F9FD] mb-2">Event type</p>
             <EventTypeDisplay eventId={step.eventId} showDescription={false} />
             <RepositoryDisplay
               owner={step.owner}
@@ -438,6 +440,7 @@ function Installed({
           className="w-full flex flex-col gap-[8px] overflow-y-auto flex-1 pr-2 custom-scrollbar"
           onSubmit={handleSubmit}
         >
+          <p className="text-[14px] text-[#F7F9FD] mb-2">Event type</p>
           <EventTypeDisplay eventId={step.eventId} showDescription={false} />
           <RepositoryDisplay
             owner={step.owner}
