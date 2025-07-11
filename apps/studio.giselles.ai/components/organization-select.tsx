@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
 	Select,
 	SelectContent,
@@ -33,9 +33,9 @@ export function OrganizationSelect({
 	disabled = false,
 	className,
 }: OrganizationSelectProps) {
-	const [selectedOrganizationId, setSelectedOrganizationId] = useState<string | undefined>(
-		defaultOrganizationId
-	);
+	const [selectedOrganizationId, setSelectedOrganizationId] = useState<
+		string | undefined
+	>(defaultOrganizationId);
 
 	// If there's only one organization, select it by default
 	useEffect(() => {
@@ -48,7 +48,10 @@ export function OrganizationSelect({
 
 	// Update the selected organization if the default changes
 	useEffect(() => {
-		if (defaultOrganizationId && defaultOrganizationId !== selectedOrganizationId) {
+		if (
+			defaultOrganizationId &&
+			defaultOrganizationId !== selectedOrganizationId
+		) {
 			setSelectedOrganizationId(defaultOrganizationId);
 		}
 	}, [defaultOrganizationId, selectedOrganizationId]);

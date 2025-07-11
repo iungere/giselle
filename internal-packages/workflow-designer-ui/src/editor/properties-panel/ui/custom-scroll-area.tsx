@@ -1,50 +1,50 @@
-import {
-  type CSSProperties,
-  type PropsWithChildren,
-  type ReactNode,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
 import clsx from "clsx/lite";
+import {
+	type CSSProperties,
+	type PropsWithChildren,
+	type ReactNode,
+	useCallback,
+	useEffect,
+	useRef,
+	useState,
+} from "react";
 
 /**
  * Props for the CustomScrollArea component
  */
 interface CustomScrollAreaProps extends PropsWithChildren {
-  /**
-   * Additional CSS className
-   */
-  className?: string;
-  /**
-   * CSS height value or "auto" for content height
-   */
-  height?: string | number;
-  /**
-   * Hide scrollbar completely (still scrollable)
-   */
-  hideScrollbar?: boolean;
-  /**
-   * Only show scrollbar on hover
-   */
-  showOnHover?: boolean;
-  /**
-   * Custom scrollbar width in pixels
-   */
-  scrollbarWidth?: number;
-  /**
-   * Optional label for screen readers
-   */
-  ariaLabel?: string;
-  /**
-   * Callback when scroll position changes
-   */
-  onScroll?: (event: React.UIEvent<HTMLDivElement>) => void;
-  /**
-   * Additional content to render at the bottom
-   */
-  footer?: ReactNode;
+	/**
+	 * Additional CSS className
+	 */
+	className?: string;
+	/**
+	 * CSS height value or "auto" for content height
+	 */
+	height?: string | number;
+	/**
+	 * Hide scrollbar completely (still scrollable)
+	 */
+	hideScrollbar?: boolean;
+	/**
+	 * Only show scrollbar on hover
+	 */
+	showOnHover?: boolean;
+	/**
+	 * Custom scrollbar width in pixels
+	 */
+	scrollbarWidth?: number;
+	/**
+	 * Optional label for screen readers
+	 */
+	ariaLabel?: string;
+	/**
+	 * Callback when scroll position changes
+	 */
+	onScroll?: (event: React.UIEvent<HTMLElement>) => void;
+	/**
+	 * Additional content to render at the bottom
+	 */
+	footer?: ReactNode;
 }
 
 /**
@@ -58,123 +58,120 @@ interface CustomScrollAreaProps extends PropsWithChildren {
  * - Smooth scrolling
  */
 export function CustomScrollArea({
-  children,
-  className,
-  height = "auto",
-  hideScrollbar = false,
-  showOnHover = true,
-  scrollbarWidth = 4,
-  ariaLabel = "Scrollable content",
-  onScroll,
-  footer,
+	children,
+	className,
+	height = "auto",
+	hideScrollbar = false,
+	showOnHover = true,
+	scrollbarWidth = 4,
+	ariaLabel = "Scrollable content",
+	onScroll,
+	footer,
 }: CustomScrollAreaProps) {
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const [isScrolling, setIsScrolling] = useState(false);
-  const [showScrollbar, setShowScrollbar] = useState(!showOnHover);
+	const scrollRef = useRef<HTMLElement>(null);
+	const [isScrolling, setIsScrolling] = useState(false);
+	const [showScrollbar, setShowScrollbar] = useState(!showOnHover);
 
-  // Style variables
-  const scrollbarColor = "rgba(255, 255, 255, 0.1)";
-  const scrollbarHoverColor = "rgba(255, 255, 255, 0.2)";
+	// Style variables
+	const scrollbarColor = "rgba(255, 255, 255, 0.1)";
+	const scrollbarHoverColor = "rgba(255, 255, 255, 0.2)";
 
-  // Handle scroll events
-  const handleScroll = useCallback(
-    (e: React.UIEvent<HTMLDivElement>) => {
-      onScroll?.(e);
-      setIsScrolling(true);
+	// Handle scroll events
+	const handleScroll = useCallback(
+		(e: React.UIEvent<HTMLElement>) => {
+			onScroll?.(e);
+			setIsScrolling(true);
 
-      // Reset scrolling state after a delay
-      const scrollTimeout = setTimeout(() => {
-        setIsScrolling(false);
-      }, 1000);
+			// Reset scrolling state after a delay
+			const scrollTimeout = setTimeout(() => {
+				setIsScrolling(false);
+			}, 1000);
 
-      return () => clearTimeout(scrollTimeout);
-    },
-    [onScroll]
-  );
+			return () => clearTimeout(scrollTimeout);
+		},
+		[onScroll],
+	);
 
-  // Handle keyboard navigation
-  useEffect(() => {
-    const currentRef = scrollRef.current;
-    if (!currentRef) return;
+	// Handle keyboard navigation
+	useEffect(() => {
+		const currentRef = scrollRef.current;
+		if (!currentRef) return;
 
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (!currentRef) return;
+		const handleKeyDown = (e: KeyboardEvent) => {
+			if (!currentRef) return;
 
-      // Only handle events when the scrollable area is focused
-      if (document.activeElement !== currentRef) return;
+			// Only handle events when the scrollable area is focused
+			if (document.activeElement !== currentRef) return;
 
-      // Scroll step values
-      const scrollStep = 40;
-      const scrollPageStep = 200;
+			// Scroll step values
+			const scrollStep = 40;
+			const scrollPageStep = 200;
 
-      switch (e.key) {
-        case "ArrowDown":
-          e.preventDefault();
-          currentRef.scrollTop += scrollStep;
-          break;
-        case "ArrowUp":
-          e.preventDefault();
-          currentRef.scrollTop -= scrollStep;
-          break;
-        case "PageDown":
-          e.preventDefault();
-          currentRef.scrollTop += scrollPageStep;
-          break;
-        case "PageUp":
-          e.preventDefault();
-          currentRef.scrollTop -= scrollPageStep;
-          break;
-        case "Home":
-          e.preventDefault();
-          currentRef.scrollTop = 0;
-          break;
-        case "End":
-          e.preventDefault();
-          currentRef.scrollTop = currentRef.scrollHeight;
-          break;
-        default:
-          return;
-      }
-    };
+			switch (e.key) {
+				case "ArrowDown":
+					e.preventDefault();
+					currentRef.scrollTop += scrollStep;
+					break;
+				case "ArrowUp":
+					e.preventDefault();
+					currentRef.scrollTop -= scrollStep;
+					break;
+				case "PageDown":
+					e.preventDefault();
+					currentRef.scrollTop += scrollPageStep;
+					break;
+				case "PageUp":
+					e.preventDefault();
+					currentRef.scrollTop -= scrollPageStep;
+					break;
+				case "Home":
+					e.preventDefault();
+					currentRef.scrollTop = 0;
+					break;
+				case "End":
+					e.preventDefault();
+					currentRef.scrollTop = currentRef.scrollHeight;
+					break;
+				default:
+					return;
+			}
+		};
 
-    currentRef.addEventListener("keydown", handleKeyDown);
-    return () => {
-      currentRef.removeEventListener("keydown", handleKeyDown);
-    };
-  }, []);
+		currentRef.addEventListener("keydown", handleKeyDown);
+		return () => {
+			currentRef.removeEventListener("keydown", handleKeyDown);
+		};
+	}, []);
 
-  // Handle mouse interactions for scrollbar visibility
-  const handleMouseEnter = useCallback(() => {
-    if (showOnHover) {
-      setShowScrollbar(true);
-    }
-  }, [showOnHover]);
+	// Handle mouse interactions for scrollbar visibility
+	const handleMouseEnter = useCallback(() => {
+		if (showOnHover) {
+			setShowScrollbar(true);
+		}
+	}, [showOnHover]);
 
-  const handleMouseLeave = useCallback(() => {
-    if (showOnHover && !isScrolling) {
-      setShowScrollbar(false);
-    }
-  }, [showOnHover, isScrolling]);
+	const handleMouseLeave = useCallback(() => {
+		if (showOnHover && !isScrolling) {
+			setShowScrollbar(false);
+		}
+	}, [showOnHover, isScrolling]);
 
-  // Custom scrollbar styles
-  const scrollbarStyles = {
-    "--scrollbar-width": `${scrollbarWidth}px`,
-    "--scrollbar-color": scrollbarColor,
-    "--scrollbar-hover-color": scrollbarHoverColor,
-    "--scrollbar-opacity": showScrollbar ? "1" : "0",
-    "--scrollbar-transition": "opacity 0.2s ease",
-    height: typeof height === "number" ? `${height}px` : height,
-  } as CSSProperties;
+	// Custom scrollbar styles
+	const scrollbarStyles = {
+		"--scrollbar-width": `${scrollbarWidth}px`,
+		"--scrollbar-color": scrollbarColor,
+		"--scrollbar-hover-color": scrollbarHoverColor,
+		"--scrollbar-opacity": showScrollbar ? "1" : "0",
+		"--scrollbar-transition": "opacity 0.2s ease",
+		height: typeof height === "number" ? `${height}px` : height,
+	} as CSSProperties;
 
-  return (
-    <div
-      className={clsx(
-        "custom-scroll-area",
-        className
-      )}
-      style={scrollbarStyles}
-    >
-      <style jsx>{`
+	return (
+		<div
+			className={clsx("custom-scroll-area", className)}
+			style={scrollbarStyles}
+		>
+			<style jsx>{`
         .custom-scroll-container {
           position: relative;
           overflow-y: auto;
@@ -206,26 +203,28 @@ export function CustomScrollArea({
           background-color: var(--scrollbar-hover-color);
         }
 
-        ${hideScrollbar ? `
+        ${
+					hideScrollbar
+						? `
           .custom-scroll-container::-webkit-scrollbar {
             display: none;
           }
-        ` : ''}
+        `
+						: ""
+				}
       `}</style>
 
-      <div
-        ref={scrollRef}
-        className="custom-scroll-container"
-        onScroll={handleScroll}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-        tabIndex={0}
-        role="region"
-        aria-label={ariaLabel}
-      >
-        {children}
-        {footer}
-      </div>
-    </div>
-  );
+			<section
+				ref={scrollRef}
+				className="custom-scroll-container"
+				onScroll={handleScroll}
+				onMouseEnter={handleMouseEnter}
+				onMouseLeave={handleMouseLeave}
+				aria-label={ariaLabel}
+			>
+				{children}
+				{footer}
+			</section>
+		</div>
+	);
 }
