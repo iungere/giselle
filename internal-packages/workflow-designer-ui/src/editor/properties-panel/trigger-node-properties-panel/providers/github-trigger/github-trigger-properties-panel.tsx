@@ -315,10 +315,11 @@ function Installed({
           <div className="flex flex-col gap-[8px]">
             <p className="text-[14px] text-[#F7F9FD] mb-2">Event type</p>
             <EventTypeDisplay eventId={step.eventId} showDescription={false} />
+            <p className="text-[14px] text-[#F7F9FD] mb-2 mt-4">Repository</p>
             <RepositoryDisplay
               owner={step.owner}
               repo={step.repo}
-              className="mt-2 mb-2"
+              className="mb-2"
             />
 
             <div className="flex gap-[8px] mt-[12px] px-[4px]">
@@ -442,10 +443,11 @@ function Installed({
         >
           <p className="text-[14px] text-[#F7F9FD] mb-2">Event type</p>
           <EventTypeDisplay eventId={step.eventId} showDescription={false} />
+          <p className="text-[14px] text-[#F7F9FD] mb-2 mt-4">Repository</p>
           <RepositoryDisplay
             owner={step.owner}
             repo={step.repo}
-            className="mt-2 mb-2"
+            className="mb-2"
           />
 
           <fieldset className="flex flex-col gap-[8px]">
