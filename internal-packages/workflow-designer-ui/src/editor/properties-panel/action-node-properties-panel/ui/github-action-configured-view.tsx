@@ -62,10 +62,10 @@ export function GitHubActionConfiguredView({
 	);
 
 	return (
-		<div className="flex flex-col gap-[17px] p-0">
+		<div className="flex flex-col gap-[16px] p-0 px-1 overflow-y-auto">
 			<div className="space-y-[4px]">
-				<p className="text-[14px] py-[1.5px] text-white-400">Repository</p>
-				<div className="px-[12px] pt-[6px]">
+				<p className="text-[14px] py-[1.5px] text-[#F7F9FD]">Repository</p>
+				<div className="px-[4px] pt-[6px]">
 					{isLoading || data === undefined ? (
 						<p>Loading...</p>
 					) : (
@@ -78,23 +78,23 @@ export function GitHubActionConfiguredView({
 			</div>
 
 			<div className="space-y-[4px]">
-				<p className="text-[14px] py-[1.5px] text-white-400">Event Type</p>
-				<div className="px-[16px] py-[9px] w-full bg-transparent text-[14px]">
+				<p className="text-[14px] py-[1.5px] text-[#F7F9FD]">Event Type</p>
+				<div className="px-[4px] py-0 w-full bg-transparent text-[14px] flex items-center">
 					{githubActionIdToLabel(state.commandId)}
 				</div>
 			</div>
 
 			<div className="space-y-[4px]">
-				<p className="text-[14px] py-[1.5px] text-white-400">
+				<p className="text-[14px] py-[1.5px] text-[#F7F9FD]">
 					Action Parameter
 				</p>
-				<div className="px-[16px] py-[9px] w-full bg-transparent text-[14px]">
+				<div className="px-[4px] py-0 w-full bg-transparent text-[14px]">
 					<ul className="w-full border-collapse divide-y divide-black-400">
 						{connectedInputs.map((input) => (
 							<li key={input.id} className="py-[12px]">
 								<div className=" flex items-center justify-between">
 									<div className="flex items-center gap-[4px]">
-										<p className="text-[16px]">{input.label}</p>
+										<p className="text-[14px]">{input.label}</p>
 										{input.isRequired ? (
 											<span
 												className={clsx(
