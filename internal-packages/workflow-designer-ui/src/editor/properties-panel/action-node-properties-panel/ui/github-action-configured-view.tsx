@@ -17,10 +17,7 @@ import {
 } from "@giselle-sdk/giselle-engine/react";
 import clsx from "clsx/lite";
 import { PlusIcon, TriangleAlert, XIcon } from "lucide-react";
-import {
-	DropdownMenu as RadixDropdownMenu,
-	Switch as RadixSwitch,
-} from "radix-ui";
+import { DropdownMenu as RadixDropdownMenu } from "radix-ui";
 import { useCallback, useMemo } from "react";
 import useSWR from "swr";
 import { GitHubRepositoryBlock } from "../../trigger-node-properties-panel/ui";
@@ -49,8 +46,7 @@ export function GitHubActionConfiguredView({
 	const client = useGiselleEngine();
 	const {
 		deleteConnection,
-		updateNodeData,
-		data: { ui, nodes },
+		data: { ui },
 	} = useWorkflowDesigner();
 	const { isLoading, data } = useSWR(
 		{
@@ -71,22 +67,6 @@ export function GitHubActionConfiguredView({
 			deleteConnection(connectionId);
 		},
 		[deleteConnection],
-	);
-
-	const handleToggleRequired = useCallback(
-		(inputId: string, checked: boolean) => {
-			const currentNode = nodes.find((n) => n.id === nodeId);
-			if (!currentNode) return;
-
-			const updatedInputs = inputs.map((input) =>
-				input.id === inputId ? { ...input, isRequired: checked } : input,
-			);
-
-			updateNodeData(currentNode, {
-				inputs: updatedInputs,
-			});
-		},
-		[nodes, nodeId, inputs, updateNodeData],
 	);
 
 	return (
@@ -113,41 +93,19 @@ export function GitHubActionConfiguredView({
 			</div>
 
 			<div className="space-y-[4px]">
-				<p className="text-[14px] py-[1.5px] text-[#F7F9FD]">
-					Action Parameter
-				</p>
+				<p className="text-[14px] py-[1.5px] text-[#F7F9FD]">Input Parameter</p>
 				<div className="px-[4px] py-0 w-full bg-transparent text-[14px]">
 					<ul className="w-full flex flex-col gap-[12px]">
 						{connectedInputs.map((input) => (
 							<li key={input.id}>
 								<div className=" flex items-center justify-between">
-									<div className="flex items-center gap-[12px]">
-										<RadixSwitch.Root
-											className={clsx(
-												"h-[15px] w-[27px] rounded-full outline-none",
-												"border border-white-400 data-[state=checked]:border-primary-900",
-												"bg-transparent data-[state=checked]:bg-primary-900",
-											)}
-											id={`input-${input.id}`}
-											checked={input.isRequired}
-											onCheckedChange={(checked) => {
-												handleToggleRequired(input.id, checked);
-											}}
-										>
-											<RadixSwitch.Thumb
-												className={clsx(
-													"block size-[11px] translate-x-[2px] rounded-full",
-													"bg-white-400 data-[state=checked]:bg-white-900",
-													"transition-transform duration-100 will-change-transform data-[state=checked]:translate-x-[13px]",
-												)}
-											/>
-										</RadixSwitch.Root>
-										<label
-											className="text-[14px]"
-											htmlFor={`input-${input.id}`}
-										>
-											{input.label}
-										</label>
+									<div className="flex items-center gap-[8px]">
+										<span className="text-[14px]">{input.label}</span>
+										{input.isRequired && (
+											<span className="bg-red-900/20 text-red-900 text-[12px] font-medium px-[6px] py-[1px] rounded-full">
+												required
+											</span>
+										)}
 									</div>
 									{input.connectedOutput ? (
 										<div
