@@ -101,7 +101,7 @@ export function GitHubActionConfiguredView({
 								<div className=" flex items-center justify-between">
 									<div className="flex items-center gap-[8px]">
 										<span className="text-[14px]">{input.label}</span>
-										{input.isRequired && (
+										{input.isRequired && !input.connectedOutput && (
 											<span className="bg-red-900/20 text-red-900 text-[12px] font-medium px-[6px] py-[1px] rounded-full">
 												required
 											</span>
