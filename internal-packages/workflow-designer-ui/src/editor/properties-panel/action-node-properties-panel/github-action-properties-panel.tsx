@@ -27,12 +27,7 @@ import {
 	SelectValue,
 } from "../../../ui/select";
 import { GitHubRepositoryBlock } from "../trigger-node-properties-panel/ui";
-import {
-	ResizableSection,
-	ResizableSectionGroup,
-	ResizableSectionHandle,
-	SelectRepository,
-} from "../ui";
+import { SelectRepository } from "../ui";
 import { GenerationPanel } from "./generation-panel";
 import { GitHubActionConfiguredView } from "./ui/github-action-configured-view";
 
@@ -46,23 +41,18 @@ export function GitHubActionPropertiesPanel({ node }: { node: ActionNode }) {
 
 	if (node.content.command.state.status === "configured") {
 		return (
-			<ResizableSectionGroup>
-				<ResizableSection title="Configuration" defaultSize={50} minSize={20}>
-					<div className="p-4">
-						<GitHubActionConfiguredView
-							state={node.content.command.state}
-							nodeId={node.id}
-							inputs={node.inputs}
-						/>
-					</div>
-				</ResizableSection>
-				<ResizableSectionHandle />
-				<ResizableSection title="Generation" defaultSize={50}>
-					<div className="p-4">
-						<GenerationPanel node={node} />
-					</div>
-				</ResizableSection>
-			</ResizableSectionGroup>
+			<div className="flex flex-col h-full">
+				<div className="p-4">
+					<GitHubActionConfiguredView
+						state={node.content.command.state}
+						nodeId={node.id}
+						inputs={node.inputs}
+					/>
+				</div>
+				<div className="p-4 border-t border-black-400">
+					<GenerationPanel node={node} />
+				</div>
+			</div>
 		);
 	}
 
