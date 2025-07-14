@@ -77,14 +77,25 @@ export function DropdownMenu<
 				<DropdownMenuPrimitive.Content
 					sideOffset={sideOffset}
 					align={align}
-					className={clsx("z-10", widthClassName)}
+					className={clsx("z-10 max-h-[250px]", widthClassName)}
 				>
-					<PopoverContent>
+					<PopoverContent className="max-h-[230px] overflow-y-auto">
 						{items.map((option) => {
 							if (isGroupItem(option)) {
 								return (
 									<DropdownMenuPrimitive.Group key={option.groupId}>
-										<DropdownMenuPrimitive.Label className="text-text-tertiary px-[8px] py-[6px] text-[12px] font-medium">
+										<DropdownMenuPrimitive.Label
+											className="px-[8px] py-[6px]"
+											style={{
+												color: "var(--black-400, #505D7B)",
+												fontFamily: "Hubot Sans",
+												fontSize: "10px",
+												fontStyle: "normal",
+												fontWeight: 700,
+												lineHeight: "140%",
+												letterSpacing: "-0.11px",
+											}}
+										>
 											{option.groupLabel}
 										</DropdownMenuPrimitive.Label>
 										{option.items.map((item) => (
