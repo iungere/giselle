@@ -329,7 +329,7 @@ function Installed({
 
 	return (
 		<div className="flex flex-col gap-[16px] px-[16px]">
-			<p className="text-[18px]">Set Up GitHub Action</p>
+			<p className="text-[14px] py-[1.5px] text-[#F7F9FD]">Organization</p>
 			{step.state === "select-repository" && (
 				<SelectRepository
 					installations={installations}
