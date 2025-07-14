@@ -85,7 +85,9 @@ export function GitHubActionConfiguredView({
 			</div>
 
 			<div className="space-y-[4px]">
-				<p className="text-[14px] py-[1.5px] text-white-400">Parameter</p>
+				<p className="text-[14px] py-[1.5px] text-white-400">
+					Action Parameter
+				</p>
 				<div className="px-[16px] py-[9px] w-full bg-transparent text-[14px]">
 					<ul className="w-full border-collapse divide-y divide-black-400">
 						{connectedInputs.map((input) => (
