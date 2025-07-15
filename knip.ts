@@ -101,15 +101,11 @@ const config: KnipConfig = {
 			],
 		},
 		"apps/studio.giselles.ai": {
+			ignore: ["scripts/**", "tests/e2e/global-setup.ts"],
 			ignoreDependencies: [
 				...(studioAppConfig.serverExternalPackages ?? []),
 				...nextPredefinedExternalPackages,
 			],
-		},
-	},
-	workspaces: {
-		"apps/studio.giselles.ai": {
-			ignore: ["scripts/**", "tests/e2e/global-setup.ts"],
 		},
 		"packages/rag": {
 			ignore: ["src/chunker/__fixtures__/code-sample.ts"],
