@@ -86,12 +86,10 @@ const config: KnipConfig = {
 	biome: false,
 	rules: {
 		exports: "off",
-		classMembers: "off",
 		duplicates: "off",
 		types: "off",
 		binaries: "off",
 		unlisted: "off",
-		devDependencies: "off",
 	},
 	workspaces: {
 		"apps/playground": {
