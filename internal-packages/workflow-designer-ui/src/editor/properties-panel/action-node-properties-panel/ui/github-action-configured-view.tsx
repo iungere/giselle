@@ -6,6 +6,7 @@ import type {
 	Input,
 	Node,
 	NodeId,
+	NodeLike,
 	OutputId,
 } from "@giselle-sdk/data-type";
 import { githubActionIdToLabel } from "@giselle-sdk/flow";
@@ -23,7 +24,7 @@ import useSWR from "swr";
 import { GitHubRepositoryBlock } from "../../trigger-node-properties-panel/ui";
 import { type InputWithConnectedOutput, useConnectedInputs } from "../lib";
 
-function getNodeContentType(node: Node): string {
+function getNodeContentType(node: Node | NodeLike): string {
 	switch (node.type) {
 		case "operation":
 			return node.content.type;
@@ -127,7 +128,7 @@ export function GitHubActionConfiguredView({
 											)}
 										>
 											<span className="truncate">
-												{defaultName(input.connectedOutput.node)} /{" "}
+												{defaultName(input.connectedOutput.node as Node)} /{" "}
 												{input.connectedOutput.label}
 											</span>
 											<button
@@ -192,6 +193,10 @@ function SelectOutputPopover({
 		const githubNodes: OutputWithDetails[] = [];
 		const otherNodes: OutputWithDetails[] = [];
 
+		if (node === undefined) {
+			return [];
+		}
+
 		for (const currentNode of data.nodes) {
 			if (currentNode.id === nodeId) {
 				continue;
@@ -204,7 +209,7 @@ function SelectOutputPopover({
 			}
 
 			for (const output of currentNode.outputs) {
-				const outputWithDetails = { ...output, node: currentNode };
+				const outputWithDetails = { ...output, node: currentNode as Node };
 
 				// Categorize by node type
 				if (currentNode.type === "operation") {
