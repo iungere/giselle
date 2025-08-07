@@ -3,10 +3,17 @@ import {
 	useVectorStore,
 	useWorkflowDesigner,
 } from "@giselle-sdk/giselle/react";
-import { Check, ChevronDown } from "lucide-react";
+import { Check } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { TriangleAlert } from "../../../../icons";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "../../../../ui/select";
 import { useGitHubVectorStoreStatus } from "../../../lib/use-github-vector-store-status";
 
 type GitHubVectorStoreNodePropertiesPanelProps = {
@@ -30,11 +37,9 @@ export function GitHubVectorStoreNodePropertiesPanel({
 			: undefined;
 
 	const { isOrphaned, repositoryId } = useGitHubVectorStoreStatus(node);
-	const [isOpen, setIsOpen] = useState(false);
 	const [selectedContentType, setSelectedContentType] = useState<
 		"blob" | "pull_request" | undefined
 	>(currentContentType);
-	const dropdownRef = useRef<HTMLDivElement>(null);
 
 	// Get all unique repositories
 	const allRepositories = useMemo(() => {
@@ -97,43 +102,6 @@ export function GitHubVectorStoreNodePropertiesPanel({
 		}
 	};
 
-	// Handle click outside to close dropdown
-	useEffect(() => {
-		const handleClickOutside = (event: MouseEvent) => {
-			if (
-				dropdownRef.current &&
-				!dropdownRef.current.contains(event.target as Node)
-			) {
-				setIsOpen(false);
-			}
-		};
-
-		if (isOpen) {
-			document.addEventListener("mousedown", handleClickOutside);
-		}
-
-		return () => {
-			document.removeEventListener("mousedown", handleClickOutside);
-		};
-	}, [isOpen]);
-
-	// Handle escape key to close dropdown
-	useEffect(() => {
-		const handleEscape = (event: KeyboardEvent) => {
-			if (event.key === "Escape") {
-				setIsOpen(false);
-			}
-		};
-
-		if (isOpen) {
-			document.addEventListener("keydown", handleEscape);
-		}
-
-		return () => {
-			document.removeEventListener("keydown", handleEscape);
-		};
-	}, [isOpen]);
-
 	return (
 		<div className="flex flex-col gap-[17px] p-0">
 			<div className="space-y-[4px]">
@@ -154,43 +122,25 @@ export function GitHubVectorStoreNodePropertiesPanel({
 						</span>
 					</div>
 				)}
-				<div className="relative" ref={dropdownRef}>
-					<button
-						type="button"
-						onClick={() => setIsOpen(!isOpen)}
-						className="w-full px-3 py-2 bg-black-300/20 rounded-[8px] text-white-400 text-[14px] font-geist cursor-pointer text-left flex items-center justify-between"
-					>
-						<span className={selectedRepoKey ? "" : "text-white/30"}>
-							{selectedRepoKey || "Select a repository"}
-						</span>
-						<ChevronDown className="h-4 w-4 text-white/60" />
-					</button>
-					{isOpen && (
-						<div className="absolute top-full left-0 right-0 mt-1 z-50 rounded-[8px] border-[0.25px] border-white/10 bg-black-850 p-1 shadow-none">
-							{allRepositories.map((repo) => {
-								const repoKey = `${repo.owner}/${repo.repo}`;
-								return (
-									<button
-										key={repoKey}
-										type="button"
-										onClick={() => {
-											handleRepositoryChange(repoKey);
-											setIsOpen(false);
-										}}
-										className="flex w-full items-center rounded-md px-3 py-2 text-left font-sans text-[14px] leading-[16px] text-white-400 hover:bg-white/5"
-									>
-										<span className="mr-2 inline-flex h-4 w-4 items-center justify-center">
-											{selectedRepoKey === repoKey && (
-												<Check className="h-4 w-4" />
-											)}
-										</span>
-										{repoKey}
-									</button>
-								);
-							})}
-						</div>
-					)}
-				</div>
+				<Select value={selectedRepoKey} onValueChange={handleRepositoryChange}>
+					<SelectTrigger className="w-full px-3 py-2 bg-black-300/20 rounded-[8px] text-white-400 text-[14px] font-geist">
+						<SelectValue placeholder="Select a repository" />
+					</SelectTrigger>
+					<SelectContent className="bg-black-850 border-[0.25px] border-white/10">
+						{allRepositories.map((repo) => {
+							const repoKey = `${repo.owner}/${repo.repo}`;
+							return (
+								<SelectItem
+									key={repoKey}
+									value={repoKey}
+									className="text-[14px] text-white-400 focus:bg-white/5 focus:text-white-900 data-[highlighted]:bg-white/5 data-[highlighted]:text-white-900"
+								>
+									{repoKey}
+								</SelectItem>
+							);
+						})}
+					</SelectContent>
+				</Select>
 
 				{/* Content Type Selection */}
 				{selectedRepoKey && (
