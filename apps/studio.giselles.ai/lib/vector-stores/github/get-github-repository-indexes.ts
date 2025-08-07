@@ -16,36 +16,6 @@ type GitHubRepositoryIndex = {
 export async function getGitHubRepositoryIndexes(
 	teamDbId: number,
 ): Promise<GitHubRepositoryIndex[]> {
-	// Provide mock data for local development
-	if (
-		process.env.NODE_ENV === "development" &&
-		process.env.USE_MOCK_GITHUB_DATA === "true"
-	) {
-		return [
-			{
-				id: "mock-repo-1",
-				name: "giselles-ai/giselle",
-				owner: "giselles-ai",
-				repo: "giselle",
-				availableContentTypes: ["blob", "pull_request"],
-			},
-			{
-				id: "mock-repo-2",
-				name: "vercel/next.js",
-				owner: "vercel",
-				repo: "next.js",
-				availableContentTypes: ["blob"],
-			},
-			{
-				id: "mock-repo-3",
-				name: "facebook/react",
-				owner: "facebook",
-				repo: "react",
-				availableContentTypes: ["pull_request"],
-			},
-		];
-	}
-
 	const repositories = await db
 		.select({
 			id: githubRepositoryIndex.id,
