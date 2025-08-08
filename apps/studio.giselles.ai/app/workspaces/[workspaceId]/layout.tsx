@@ -43,11 +43,6 @@ export default async function Layout({
 	const gitHubRepositoryIndexes = await getGitHubRepositoryIndexes(
 		currentTeam.dbId,
 	);
-	console.log(
-		"WorkspaceLayout - gitHubRepositoryIndexes:",
-		gitHubRepositoryIndexes,
-	);
-	console.log("WorkspaceLayout - currentTeam.dbId:", currentTeam.dbId);
 	const runV3 = await runV3Flag();
 	const webSearchAction = await webSearchActionFlag();
 	const layoutV3 = await layoutV3Flag();

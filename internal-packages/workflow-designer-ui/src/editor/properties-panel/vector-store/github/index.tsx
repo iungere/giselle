@@ -30,10 +30,6 @@ export function GitHubVectorStoreNodePropertiesPanel({
 	// Get repository indexes
 	const githubRepositoryIndexes = vectorStore?.githubRepositoryIndexes ?? [];
 
-	// Debug: Log the repository data
-	console.log("GitHub Repository Indexes:", githubRepositoryIndexes);
-	console.log("Vector Store:", vectorStore);
-
 	// Current content type from node (if configured)
 	const currentContentType =
 		node.content.source.state.status === "configured"
@@ -112,6 +108,14 @@ export function GitHubVectorStoreNodePropertiesPanel({
 				<p className="text-[14px] py-[1.5px] text-white-400">
 					GitHub Repository
 				</p>
+				{/* Debug info */}
+				<div className="text-[10px] text-white-400/40 mb-[4px]">
+					Debug: {githubRepositoryIndexes.length} repositories found
+					{!vectorStore && " | No vector store context"}
+					{vectorStore &&
+						!vectorStore.githubRepositoryIndexes &&
+						" | No repository indexes in context"}
+				</div>
 				{githubRepositoryIndexes.length === 0 && (
 					<div className="text-[12px] text-white-400/60 mb-[8px]">
 						No repositories available. Please check your GitHub integration in

@@ -32,9 +32,5 @@ export function VectorStoreNodePropertiesPanel({
 }
 
 function PropertiesPanel({ node }: { node: VectorStoreNode }) {
-	console.log(
-		"VectorStoreNodePropertiesPanel - PropertiesPanel rendering",
-		node,
-	);
 	return <GitHubVectorStoreNodePropertiesPanel node={node} />;
 }
