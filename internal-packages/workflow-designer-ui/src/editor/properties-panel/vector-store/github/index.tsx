@@ -139,7 +139,7 @@ export function GitHubVectorStoreNodePropertiesPanel({
 								<SelectItem
 									key={repoKey}
 									value={repoKey}
-									className="px-3 py-2 text-left font-sans text-[14px] leading-[16px] text-white-400 hover:bg-white/5"
+									className="px-3 py-2 text-left text-[14px] leading-[16px] text-white-400 hover:bg-white/5"
 								>
 									{repoKey}
 								</SelectItem>
