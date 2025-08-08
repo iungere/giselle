@@ -129,7 +129,7 @@ export function GitHubVectorStoreNodePropertiesPanel({
 					</div>
 				)}
 				<Select value={selectedRepoKey} onValueChange={handleRepositoryChange}>
-					<SelectTrigger className="w-full px-3 py-2 bg-black-300/20 rounded-[8px] text-white-400 text-[14px] font-geist">
+					<SelectTrigger className="w-full px-3 py-2 bg-black-300/20 rounded-[8px] text-white-400 text-[14px] font-geist cursor-pointer text-left border-0">
 						<SelectValue placeholder="Select a repository" />
 					</SelectTrigger>
 					<SelectContent className="bg-black-850 border-[0.25px] border-white/10">
