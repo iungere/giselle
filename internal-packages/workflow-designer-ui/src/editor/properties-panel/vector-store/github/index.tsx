@@ -110,12 +110,8 @@ export function GitHubVectorStoreNodePropertiesPanel({
 				</p>
 				{githubRepositoryIndexes.length === 0 && (
 					<div className="text-[12px] text-white-400/60 mb-[8px]">
-						No repositories available. Please ensure:
-						<ul className="list-disc list-inside mt-1 ml-2">
-							<li>GitHub integration is connected in settings</li>
-							<li>At least one repository is enabled</li>
-							<li>Repository synchronization is complete</li>
-						</ul>
+						No repositories available. Please check your GitHub integration in
+						settings.
 					</div>
 				)}
 				{isOrphaned && node.content.source.state.status === "configured" && (
@@ -229,12 +225,8 @@ export function GitHubVectorStoreNodePropertiesPanel({
 						<Link
 							href={settingPath}
 							className="text-white-400 hover:text-white-300 text-[14px] underline"
-							target="_blank"
-							rel="noopener noreferrer"
 						>
-							{githubRepositoryIndexes.length === 0
-								? "Set Up GitHub Vector Store"
-								: "Manage Vector Stores"}
+							Set Up Vector Store
 						</Link>
 					</div>
 				)}
