@@ -308,13 +308,14 @@ async function queryVectorStore(
 
 				switch (provider) {
 					case "github": {
-						const { owner, repo, contentType } = state;
+						const { owner, repo, contentType, embeddingProfileId } = state;
 
 						const queryContext: GitHubQueryContext = {
 							workspaceId,
 							owner,
 							repo,
-							embeddingProfileId: 1 as EmbeddingProfileId, // TODO: Get from VectorStoreNode when UI is implemented
+							embeddingProfileId: (embeddingProfileId ??
+								1) as EmbeddingProfileId,
 						};
 
 						if (contentType === "pull_request") {
