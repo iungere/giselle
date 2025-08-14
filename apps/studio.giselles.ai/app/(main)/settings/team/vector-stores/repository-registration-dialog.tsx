@@ -1,5 +1,6 @@
 "use client";
 
+import { EMBEDDING_PROFILES } from "@giselle-sdk/rag";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Check, ChevronDown, Code, GitPullRequest, Plus } from "lucide-react";
 import { useState, useTransition } from "react";
@@ -28,6 +29,7 @@ type RepositoryRegistrationDialogProps = {
 			contentType: GitHubRepositoryContentType;
 			enabled: boolean;
 		}[],
+		embeddingProfileIds?: number[],
 	) => Promise<ActionResult>;
 };
 
@@ -44,6 +46,7 @@ export function RepositoryRegistrationDialog({
 		code: { enabled: true },
 		pullRequests: { enabled: true },
 	});
+	const [selectedProfiles, setSelectedProfiles] = useState<number[]>([1]); // Default to OpenAI Small
 
 	const selectedInstallation = installationsWithRepos.find(
 		(i) => String(i.installation.id) === ownerId,
@@ -94,6 +97,7 @@ export function RepositoryRegistrationDialog({
 				repo,
 				Number(ownerId),
 				contentTypes,
+				selectedProfiles,
 			);
 			if (result.success) {
 				setIsOpen(false);
@@ -103,6 +107,7 @@ export function RepositoryRegistrationDialog({
 					code: { enabled: true },
 					pullRequests: { enabled: true },
 				});
+				setSelectedProfiles([1]); // Reset to default
 			} else {
 				setError(result.error);
 			}
@@ -287,6 +292,61 @@ export function RepositoryRegistrationDialog({
 										})
 									}
 								/>
+							</div>
+
+							{/* Embedding Profiles Section */}
+							<div className="mt-4">
+								<div className="text-white-400 text-[14px] leading-[16.8px] font-sans mb-2">
+									Embedding Models
+								</div>
+								<div className="text-white-400/60 text-[12px] mb-3">
+									Select at least one embedding model for indexing
+								</div>
+								<div className="space-y-2">
+									{Object.entries(EMBEDDING_PROFILES).map(([id, profile]) => {
+										const profileId = Number(id);
+										const isSelected = selectedProfiles.includes(profileId);
+										const isLastOne =
+											selectedProfiles.length === 1 && isSelected;
+
+										return (
+											<label
+												key={profileId}
+												className="flex items-start gap-3 p-3 rounded-lg bg-black-300/10 hover:bg-black-300/20 transition-colors cursor-pointer"
+											>
+												<input
+													type="checkbox"
+													checked={isSelected}
+													disabled={isPending || isLastOne}
+													onChange={(e) => {
+														if (e.target.checked) {
+															setSelectedProfiles([
+																...selectedProfiles,
+																profileId,
+															]);
+														} else {
+															setSelectedProfiles(
+																selectedProfiles.filter(
+																	(id) => id !== profileId,
+																),
+															);
+														}
+													}}
+													className="mt-1 w-4 h-4 text-primary-600 bg-gray-100 border-gray-300 rounded focus:ring-primary-500"
+												/>
+												<div className="flex-1">
+													<div className="text-white-400 text-[14px] font-medium">
+														{profile.name}
+													</div>
+													<div className="text-white-400/60 text-[12px] mt-1">
+														Provider: {profile.provider} • Dimensions:{" "}
+														{profile.dimensions}
+													</div>
+												</div>
+											</label>
+										);
+									})}
+								</div>
 							</div>
 						</div>
 
