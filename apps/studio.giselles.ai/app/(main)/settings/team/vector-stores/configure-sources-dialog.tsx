@@ -9,6 +9,7 @@ import type {
 	githubRepositoryContentStatus,
 } from "@/drizzle";
 import type { RepositoryWithStatuses } from "@/lib/vector-stores/github";
+import type { GitHubRepositoryIndexId } from "@/packages/types";
 import {
 	GlassDialogBody,
 	GlassDialogContent,
@@ -28,10 +29,11 @@ type ConfigureSourcesDialogProps = {
 		}[],
 	) => Promise<{ success: boolean; error?: string }>;
 	updateRepositoryEmbeddingProfilesAction?: (
-		repositoryIndexId: string,
+		repositoryIndexId: GitHubRepositoryIndexId,
 		embeddingProfileIds: number[],
 	) => Promise<{ success: boolean; error?: string }>;
 	enabledProfiles?: number[];
+	multiEmbedding?: boolean;
 };
 
 export function ConfigureSourcesDialog({
@@ -41,6 +43,7 @@ export function ConfigureSourcesDialog({
 	updateRepositoryContentTypesAction,
 	updateRepositoryEmbeddingProfilesAction,
 	enabledProfiles = [1],
+	multiEmbedding = false,
 }: ConfigureSourcesDialogProps) {
 	const { repositoryIndex, contentStatuses } = repositoryData;
 	const [isPending, startTransition] = useTransition();
@@ -89,8 +92,8 @@ export function ConfigureSourcesDialog({
 				return;
 			}
 
-			// Update embedding profiles if action is provided
-			if (updateRepositoryEmbeddingProfilesAction) {
+			// Update embedding profiles if feature flag is enabled and action is provided
+			if (multiEmbedding && updateRepositoryEmbeddingProfilesAction) {
 				const profileResult = await updateRepositoryEmbeddingProfilesAction(
 					repositoryIndex.id,
 					selectedProfiles,
@@ -146,8 +149,8 @@ export function ConfigureSourcesDialog({
 							status={pullRequestStatus}
 						/>
 
-						{/* Embedding Profiles Section */}
-						{updateRepositoryEmbeddingProfilesAction && (
+						{/* Embedding Profiles Section - Only show when feature flag is enabled */}
+						{multiEmbedding && updateRepositoryEmbeddingProfilesAction && (
 							<div className="mt-6">
 								<h3 className="text-white-400 text-[14px] font-medium mb-3">
 									Embedding Models
