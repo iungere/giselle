@@ -54,9 +54,10 @@ type RepositoryItemProps = {
 		}[],
 	) => Promise<{ success: boolean; error?: string }>;
 	updateRepositoryEmbeddingProfilesAction?: (
-		repositoryIndexId: string,
+		repositoryIndexId: GitHubRepositoryIndexId,
 		embeddingProfileIds: number[],
 	) => Promise<{ success: boolean; error?: string }>;
+	multiEmbedding?: boolean;
 };
 
 export function RepositoryItem({
@@ -65,6 +66,7 @@ export function RepositoryItem({
 	triggerManualIngestAction,
 	updateRepositoryContentTypesAction,
 	updateRepositoryEmbeddingProfilesAction,
+	multiEmbedding = false,
 }: RepositoryItemProps) {
 	const {
 		repositoryIndex,
@@ -192,8 +194,8 @@ export function RepositoryItem({
 					</div>
 				</div>
 
-				{/* Embedding Profiles Info */}
-				{embeddingProfileIds.length > 0 && (
+				{/* Embedding Profiles Info - Only show when feature flag is enabled */}
+				{multiEmbedding && embeddingProfileIds.length > 0 && (
 					<div className="mt-3 flex items-center gap-2 flex-wrap">
 						<span className="text-[12px] text-white-400/60">Models:</span>
 						{embeddingProfileIds.map((profileId) => {
@@ -274,6 +276,7 @@ export function RepositoryItem({
 					updateRepositoryEmbeddingProfilesAction
 				}
 				enabledProfiles={embeddingProfileIds}
+				multiEmbedding={multiEmbedding}
 			/>
 
 			<DiagnosticModal
