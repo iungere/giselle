@@ -1,6 +1,6 @@
 "use server";
 
-import type { EmbeddingProfileId } from "@giselle-sdk/data-type";
+import { isEmbeddingProfileId } from "@giselle-sdk/data-type";
 import { createId } from "@paralleldrive/cuid2";
 import { and, eq, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
@@ -26,10 +26,6 @@ type IngestabilityCheck = {
 	canIngest: boolean;
 	reason?: string;
 };
-
-function isEmbeddingProfileId(id: number): id is EmbeddingProfileId {
-	return id === 1 || id === 2 || id === 3;
-}
 
 export async function registerRepositoryIndex(
 	owner: string,
