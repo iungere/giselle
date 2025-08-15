@@ -1,7 +1,7 @@
 "use client";
 
 import { StatusBadge } from "@giselle-internal/ui/status-badge";
-import { EMBEDDING_PROFILES } from "@giselle-sdk/rag";
+import { EMBEDDING_PROFILES } from "@giselle-sdk/data-type";
 import * as Dialog from "@radix-ui/react-dialog";
 import {
 	Code,

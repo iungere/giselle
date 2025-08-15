@@ -1,10 +1,10 @@
 import type { VectorStoreNode } from "@giselle-sdk/data-type";
+import { EMBEDDING_PROFILES } from "@giselle-sdk/data-type";
 import {
 	useFeatureFlag,
 	useVectorStore,
 	useWorkflowDesigner,
 } from "@giselle-sdk/giselle/react";
-import { EMBEDDING_PROFILES } from "@giselle-sdk/rag";
 import { Check, ChevronDown, Info } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";

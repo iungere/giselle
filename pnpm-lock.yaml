@@ -653,9 +653,6 @@ importers:
       '@giselle-sdk/language-model':
         specifier: workspace:^
         version: link:../../packages/language-model
-      '@giselle-sdk/rag':
-        specifier: workspace:*
-        version: link:../../packages/rag
       '@giselle-sdk/text-editor':
         specifier: workspace:^
         version: link:../../packages/text-editor
