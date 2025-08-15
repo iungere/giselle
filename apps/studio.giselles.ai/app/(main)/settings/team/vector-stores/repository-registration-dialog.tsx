@@ -1,6 +1,6 @@
 "use client";
 
-import { EMBEDDING_PROFILES } from "@giselle-sdk/rag";
+import { EMBEDDING_PROFILES } from "@giselle-sdk/data-type";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Check, ChevronDown, Code, GitPullRequest, Plus } from "lucide-react";
 import { useState, useTransition } from "react";
