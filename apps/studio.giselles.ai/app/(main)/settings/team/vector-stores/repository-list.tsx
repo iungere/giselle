@@ -19,11 +19,6 @@ type RepositoryListProps = {
 			enabled: boolean;
 		}[],
 	) => Promise<{ success: boolean; error?: string }>;
-	updateRepositoryEmbeddingProfilesAction?: (
-		repositoryIndexId: GitHubRepositoryIndexId,
-		embeddingProfileIds: number[],
-	) => Promise<{ success: boolean; error?: string }>;
-	multiEmbedding?: boolean;
 };
 
 export function RepositoryList({
@@ -31,8 +26,6 @@ export function RepositoryList({
 	deleteRepositoryIndexAction,
 	triggerManualIngestAction,
 	updateRepositoryContentTypesAction,
-	updateRepositoryEmbeddingProfilesAction,
-	multiEmbedding = false,
 }: RepositoryListProps) {
 	return (
 		<div className="flex flex-col gap-y-[16px]">
@@ -60,10 +53,6 @@ export function RepositoryList({
 								updateRepositoryContentTypesAction={
 									updateRepositoryContentTypesAction
 								}
-								updateRepositoryEmbeddingProfilesAction={
-									updateRepositoryEmbeddingProfilesAction
-								}
-								multiEmbedding={multiEmbedding}
 							/>
 						))}
 					</div>
