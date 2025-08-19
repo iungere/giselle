@@ -197,7 +197,9 @@ export function RepositoryItem({
 				{/* Embedding Profiles Info - Only show when feature flag is enabled */}
 				{multiEmbedding && embeddingProfileIds.length > 0 && (
 					<div className="mt-3 flex items-center gap-2 flex-wrap">
-						<span className="text-[12px] text-white-400/60">Models:</span>
+						<span className="text-[12px] text-white-400/60">
+							Embedding Models:
+						</span>
 						{embeddingProfileIds.map((profileId) => {
 							const profile =
 								EMBEDDING_PROFILES[
@@ -209,9 +211,7 @@ export function RepositoryItem({
 									key={profileId}
 									className="px-2 py-1 bg-white/5 rounded-md text-[11px] text-white-400"
 								>
-									{profile.provider === "openai" && "OpenAI"}
-									{profile.provider === "google" && "Google"}{" "}
-									{profile.dimensions}D
+									{profile.name}
 								</span>
 							);
 						})}
