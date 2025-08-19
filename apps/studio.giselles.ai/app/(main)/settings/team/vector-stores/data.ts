@@ -41,19 +41,15 @@ export async function getGitHubRepositoryIndexes(): Promise<
 		.orderBy(desc(githubRepositoryIndex.dbId));
 
 	// Group by repository
-	const repositoryMap = new Map<
-		number,
-		RepositoryWithStatuses & { embeddingProfileIds: number[] }
-	>();
+	const repositoryMap = new Map<number, RepositoryWithStatuses>();
 
 	for (const record of records) {
-		const { repositoryIndex, contentStatus, embeddingProfile } = record;
+		const { repositoryIndex, contentStatus } = record;
 
 		if (!repositoryMap.has(repositoryIndex.dbId)) {
 			repositoryMap.set(repositoryIndex.dbId, {
 				repositoryIndex,
 				contentStatuses: [],
-				embeddingProfileIds: [],
 			});
 		}
 
@@ -64,21 +60,11 @@ export async function getGitHubRepositoryIndexes(): Promise<
 				const exists = repo.contentStatuses.some(
 					(cs) =>
 						cs.repositoryIndexDbId === contentStatus.repositoryIndexDbId &&
+						cs.embeddingProfileId === contentStatus.embeddingProfileId &&
 						cs.contentType === contentStatus.contentType,
 				);
 				if (!exists) {
 					repo.contentStatuses.push(contentStatus);
-				}
-			}
-
-			if (embeddingProfile) {
-				// Add unique embedding profile IDs
-				if (
-					!repo.embeddingProfileIds.includes(
-						embeddingProfile.embeddingProfileId,
-					)
-				) {
-					repo.embeddingProfileIds.push(embeddingProfile.embeddingProfileId);
 				}
 			}
 		}

@@ -8,7 +8,6 @@ import type {
 export type RepositoryWithStatuses = {
 	repositoryIndex: typeof githubRepositoryIndex.$inferSelect;
 	contentStatuses: (typeof githubRepositoryContentStatus.$inferSelect)[];
-	embeddingProfileIds?: number[];
 };
 
 const blobMetadataSchema = z.object({

@@ -566,7 +566,22 @@ export async function updateRepositoryEmbeddingProfiles(
 			};
 		}
 
-		// Delete existing profiles and insert new ones (simpler than upsert)
+		// Get existing content types before deletion
+		const existingContentTypes = await db
+			.select({
+				contentType: githubRepositoryContentStatus.contentType,
+				enabled: githubRepositoryContentStatus.enabled,
+			})
+			.from(githubRepositoryContentStatus)
+			.where(
+				eq(githubRepositoryContentStatus.repositoryIndexDbId, repository.dbId),
+			)
+			.groupBy(
+				githubRepositoryContentStatus.contentType,
+				githubRepositoryContentStatus.enabled,
+			);
+
+		// Delete existing profiles and content statuses
 		await db
 			.delete(githubRepositoryEmbeddingProfiles)
 			.where(
@@ -576,7 +591,13 @@ export async function updateRepositoryEmbeddingProfiles(
 				),
 			);
 
-		// Insert new profiles
+		await db
+			.delete(githubRepositoryContentStatus)
+			.where(
+				eq(githubRepositoryContentStatus.repositoryIndexDbId, repository.dbId),
+			);
+
+		// Insert new profiles and content statuses
 		for (const profileId of embeddingProfileIds) {
 			if (!isEmbeddingProfileId(profileId)) {
 				continue; // Skip invalid profile IDs
@@ -586,6 +607,17 @@ export async function updateRepositoryEmbeddingProfiles(
 				embeddingProfileId: profileId,
 				createdAt: new Date(),
 			});
+
+			// Create content status for each content type
+			for (const contentType of existingContentTypes) {
+				await db.insert(githubRepositoryContentStatus).values({
+					repositoryIndexDbId: repository.dbId,
+					embeddingProfileId: profileId,
+					contentType: contentType.contentType,
+					enabled: contentType.enabled,
+					status: "idle",
+				});
+			}
 		}
 
 		revalidatePath("/settings/team/vector-stores");

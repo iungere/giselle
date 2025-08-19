@@ -26,7 +26,6 @@ import type {
 } from "@/drizzle";
 import { cn } from "@/lib/utils";
 import type { RepositoryWithStatuses } from "@/lib/vector-stores/github";
-import { getContentStatusMetadata } from "@/lib/vector-stores/github/types";
 import type { GitHubRepositoryIndexId } from "@/packages/types";
 import {
 	GlassDialogContent,
@@ -35,8 +34,6 @@ import {
 } from "../components/glass-dialog-content";
 import { ConfigureSourcesDialog } from "./configure-sources-dialog";
 import { DiagnosticModal } from "./diagnostic-modal";
-import { getErrorMessage } from "./error-messages";
-import type { DocumentLoaderErrorCode } from "./types";
 
 type RepositoryItemProps = {
 	repositoryData: RepositoryWithStatuses;
@@ -68,11 +65,12 @@ export function RepositoryItem({
 	updateRepositoryEmbeddingProfilesAction,
 	multiEmbedding = false,
 }: RepositoryItemProps) {
-	const {
-		repositoryIndex,
-		contentStatuses,
-		embeddingProfileIds = [],
-	} = repositoryData;
+	const { repositoryIndex, contentStatuses } = repositoryData;
+
+	// Derive unique embedding profile IDs from content statuses
+	const embeddingProfileIds = [
+		...new Set(contentStatuses.map((cs) => cs.embeddingProfileId)),
+	];
 	const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 	const [showConfigureDialog, setShowConfigureDialog] = useState(false);
 	const [showDiagnosticModal, setShowDiagnosticModal] = useState(false);
@@ -103,13 +101,15 @@ export function RepositoryItem({
 		});
 	};
 
-	// Get content statuses
-	const blobStatus = contentStatuses.find((cs) => cs.contentType === "blob");
-	const pullRequestStatus = contentStatuses.find(
+	// Filter content statuses by type
+	const blobStatuses = contentStatuses.filter(
+		(cs) => cs.contentType === "blob",
+	);
+	const pullRequestStatuses = contentStatuses.filter(
 		(cs) => cs.contentType === "pull_request",
 	);
 
-	if (!blobStatus) {
+	if (blobStatuses.length === 0) {
 		throw new Error(
 			`Repository ${repositoryIndex.dbId} missing blob content status`,
 		);
@@ -226,11 +226,13 @@ export function RepositoryItem({
 					{/* Code Section */}
 					<ContentTypeSection
 						contentType="blob"
-						status={blobStatus}
+						statuses={blobStatuses}
 						isIngesting={isIngesting}
 						onVerify={
-							blobStatus?.status === "failed" &&
-							blobStatus?.errorCode === "DOCUMENT_NOT_FOUND"
+							blobStatuses.some(
+								(s) =>
+									s.status === "failed" && s.errorCode === "DOCUMENT_NOT_FOUND",
+							)
 								? () => setShowDiagnosticModal(true)
 								: undefined
 						}
@@ -242,7 +244,7 @@ export function RepositoryItem({
 					{/* Pull Requests Section */}
 					<ContentTypeSection
 						contentType="pull_request"
-						status={pullRequestStatus}
+						statuses={pullRequestStatuses}
 						isIngesting={isIngesting}
 					/>
 				</div>
@@ -373,50 +375,43 @@ function SyncStatusBadge({
 	);
 }
 
-function formatRetryTime(retryAfter: Date): string {
-	const now = new Date();
-	const diffMs = retryAfter.getTime() - now.getTime();
-
-	if (diffMs <= 0) {
-		return "now";
-	}
-
-	const diffSeconds = Math.floor(diffMs / 1000);
-	const diffMinutes = Math.floor(diffSeconds / 60);
-	const diffHours = Math.floor(diffMinutes / 60);
-
-	if (diffHours > 0) {
-		return `${diffHours} hour${diffHours > 1 ? "s" : ""}`;
-	}
-	if (diffMinutes > 0) {
-		return `${diffMinutes} minute${diffMinutes > 1 ? "s" : ""}`;
-	}
-	return `${diffSeconds} second${diffSeconds > 1 ? "s" : ""}`;
-}
-
-// Content Type Section Component
+// Content Type Section Component for multiple embedding profiles
 type ContentTypeSectionProps = {
 	contentType: GitHubRepositoryContentType;
-	status?: typeof githubRepositoryContentStatus.$inferSelect;
+	statuses: (typeof githubRepositoryContentStatus.$inferSelect)[];
 	isIngesting: boolean;
 	onVerify?: () => void;
 };
 
 function ContentTypeSection({
 	contentType,
-	status,
+	statuses,
 	isIngesting,
 	onVerify,
 }: ContentTypeSectionProps) {
-	// Handle case where status doesn't exist (e.g., pull_request not yet configured)
-	if (!status) {
-		const contentConfig = {
-			blob: { icon: Code, label: "Code" },
-			pull_request: { icon: GitPullRequest, label: "Pull Requests" },
-		};
-		const config = contentConfig[contentType];
-		const Icon = config.icon;
+	const embeddingProfileIds = [
+		...new Set(statuses.map((s) => s.embeddingProfileId)),
+	];
 
+	const getAggregatedStatus = () => {
+		if (statuses.length === 0) return null;
+
+		// Priority: running > failed > idle > completed
+		if (statuses.some((s) => s.status === "running")) return "running";
+		if (statuses.some((s) => s.status === "failed")) return "failed";
+		if (statuses.some((s) => s.status === "idle")) return "idle";
+		return "completed";
+	};
+
+	const aggregatedStatus = getAggregatedStatus();
+	const contentConfig = {
+		blob: { icon: Code, label: "Code" },
+		pull_request: { icon: GitPullRequest, label: "Pull Requests" },
+	};
+	const config = contentConfig[contentType];
+	const Icon = config.icon;
+
+	if (statuses.length === 0) {
 		return (
 			<div className="bg-black-700/50 rounded-lg p-3 opacity-50">
 				<div className="flex items-center justify-between mb-1">
@@ -435,43 +430,29 @@ function ContentTypeSection({
 		);
 	}
 
-	const {
-		enabled,
-		status: syncStatus,
-		lastSyncedAt,
-		metadata,
-		errorCode,
-		retryAfter,
-	} = status;
+	const enabled = statuses.some((s) => s.enabled);
+	const displayStatus = isIngesting && enabled ? "running" : aggregatedStatus;
 
-	// Parse metadata based on content type
-	const parsedMetadata = getContentStatusMetadata(metadata, contentType);
+	// Get last sync time (most recent across all profiles)
+	const syncDates = statuses
+		.filter(
+			(s): s is typeof s & { lastSyncedAt: Date } => s.lastSyncedAt !== null,
+		)
+		.map((s) => new Date(s.lastSyncedAt));
+	const lastSyncedAt =
+		syncDates.length > 0
+			? syncDates.sort((a, b) => b.getTime() - a.getTime())[0]
+			: undefined;
 
-	// Content type config
-	const contentConfig = {
-		blob: {
-			icon: Code,
-			label: "Code",
-			metadataLabel:
-				parsedMetadata && "lastIngestedCommitSha" in parsedMetadata
-					? `Commit: ${parsedMetadata.lastIngestedCommitSha?.substring(0, 7) || "none"}`
-					: null,
+	const statusCounts = statuses.reduce(
+		(acc, s) => {
+			if (s.enabled) {
+				acc[s.status] = (acc[s.status] || 0) + 1;
+			}
+			return acc;
 		},
-		pull_request: {
-			icon: GitPullRequest,
-			label: "Pull Requests",
-			metadataLabel:
-				parsedMetadata && "lastIngestedPrNumber" in parsedMetadata
-					? `PR: #${parsedMetadata.lastIngestedPrNumber || "none"}`
-					: null,
-		},
-	};
-
-	const config = contentConfig[contentType];
-	const Icon = config.icon;
-
-	// Determine display status
-	const displayStatus = isIngesting && enabled ? "running" : syncStatus;
+		{} as Record<string, number>,
+	);
 
 	return (
 		<div className="bg-black-700/50 rounded-lg p-3">
@@ -486,11 +467,11 @@ function ContentTypeSection({
 					) : (
 						<StatusBadge status="ignored">Disabled</StatusBadge>
 					)}
-					{enabled && (
+					{enabled && displayStatus && (
 						<SyncStatusBadge
 							status={displayStatus}
 							onVerify={
-								syncStatus === "failed" && onVerify ? onVerify : undefined
+								aggregatedStatus === "failed" && onVerify ? onVerify : undefined
 							}
 						/>
 					)}
@@ -503,13 +484,22 @@ function ContentTypeSection({
 					) : (
 						<span>Never synced</span>
 					)}
-					{config.metadataLabel && <span>{config.metadataLabel}</span>}
+					{embeddingProfileIds.length > 1 &&
+						Object.keys(statusCounts).length > 0 && (
+							<span className="text-[10px]">
+								{Object.entries(statusCounts).map(([status, count]) => (
+									<span key={status} className="ml-2">
+										{status}: {count}/{embeddingProfileIds.length}
+									</span>
+								))}
+							</span>
+						)}
 				</div>
 			)}
-			{enabled && syncStatus === "failed" && errorCode && (
+			{enabled && aggregatedStatus === "failed" && (
 				<div className="text-xs text-red-400 mt-1">
-					{getErrorMessage(errorCode as DocumentLoaderErrorCode)}
-					{retryAfter && ` • Retry in ${formatRetryTime(retryAfter)}`}
+					{statuses.filter((s) => s.status === "failed").length} profile(s)
+					failed
 				</div>
 			)}
 		</div>
