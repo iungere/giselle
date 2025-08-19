@@ -8,6 +8,10 @@ export interface VectorStoreContextValue {
 		repo: string;
 		availableContentTypes: ("blob" | "pull_request")[];
 		embeddingProfileIds?: number[];
+		contentTypesWithProfiles?: {
+			contentType: "blob" | "pull_request";
+			embeddingProfileIds: number[];
+		}[];
 	}[];
 	settingPath: string;
 }

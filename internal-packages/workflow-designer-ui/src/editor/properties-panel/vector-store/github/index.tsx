@@ -52,6 +52,7 @@ export function GitHubVectorStoreNodePropertiesPanel({
 		return githubRepositoryIndexes.map((repo) => ({
 			...repo,
 			availableTypes: new Set(repo.availableContentTypes),
+			contentTypesWithProfiles: repo.contentTypesWithProfiles,
 		}));
 	}, [githubRepositoryIndexes]);
 
@@ -109,12 +110,19 @@ export function GitHubVectorStoreNodePropertiesPanel({
 
 			// Set default embedding profile
 			// When feature flag is off, always use profile 1
-			// When feature flag is on, use selected or first available profile
-			const profileId = multiEmbedding
-				? selectedEmbeddingProfileId ||
-					selectedRepo.embeddingProfileIds?.[0] ||
-					1
-				: 1;
+			// When feature flag is on, use first available profile for the content type
+			let profileId = 1;
+			if (multiEmbedding && selectedRepo.contentTypesWithProfiles) {
+				const contentTypeProfiles = selectedRepo.contentTypesWithProfiles.find(
+					(ct: { contentType: string }) => ct.contentType === contentType,
+				);
+				if (
+					contentTypeProfiles &&
+					contentTypeProfiles.embeddingProfileIds.length > 0
+				) {
+					profileId = contentTypeProfiles.embeddingProfileIds[0];
+				}
+			}
 			setSelectedEmbeddingProfileId(profileId);
 
 			// Update output label based on content type
@@ -253,9 +261,17 @@ export function GitHubVectorStoreNodePropertiesPanel({
 								);
 								if (!selectedRepo) return null;
 
-								const hasBlobContent = selectedRepo.availableTypes.has("blob");
-								const hasPullRequestContent =
-									selectedRepo.availableTypes.has("pull_request");
+								// Check if content types are available with the new structure
+								const hasBlobContent = multiEmbedding
+									? selectedRepo.contentTypesWithProfiles?.some(
+											(ct: { contentType: string }) => ct.contentType === "blob",
+										)
+									: selectedRepo.availableTypes.has("blob");
+								const hasPullRequestContent = multiEmbedding
+									? selectedRepo.contentTypesWithProfiles?.some(
+											(ct: { contentType: string }) => ct.contentType === "pull_request",
+										)
+									: selectedRepo.availableTypes.has("pull_request");
 
 								return (
 									<>
@@ -334,7 +350,15 @@ export function GitHubVectorStoreNodePropertiesPanel({
 						const selectedRepo = allRepositories.find(
 							(repo) => `${repo.owner}/${repo.repo}` === selectedRepoKey,
 						);
-						if (!selectedRepo || !selectedRepo.embeddingProfileIds?.length) {
+						if (!selectedRepo) return null;
+
+						// Get available embedding profiles for the selected content type
+						const availableProfiles =
+							selectedRepo.contentTypesWithProfiles?.find(
+								(ct: { contentType: string }) => ct.contentType === selectedContentType,
+							)?.embeddingProfileIds || [];
+
+						if (availableProfiles.length === 0) {
 							return null;
 						}
 
@@ -344,10 +368,7 @@ export function GitHubVectorStoreNodePropertiesPanel({
 									Embedding Model
 								</p>
 								<select
-									value={
-										selectedEmbeddingProfileId ||
-										selectedRepo.embeddingProfileIds[0]
-									}
+									value={selectedEmbeddingProfileId || availableProfiles[0]}
 									onChange={(e) => {
 										const profileId = Number(e.target.value);
 										setSelectedEmbeddingProfileId(profileId);
@@ -370,7 +391,7 @@ export function GitHubVectorStoreNodePropertiesPanel({
 									}}
 									className="w-full px-3 py-2 bg-black-300/20 rounded-[8px] text-white-400 text-[14px] font-geist cursor-pointer"
 								>
-									{selectedRepo.embeddingProfileIds.map((profileId) => {
+									{availableProfiles.map((profileId: number) => {
 										const profile =
 											EMBEDDING_PROFILES[
 												profileId as keyof typeof EMBEDDING_PROFILES
