@@ -46,7 +46,7 @@ export function RepositoryRegistrationDialog({
 	const [isPending, startTransition] = useTransition();
 	const [contentConfig, setContentConfig] = useState({
 		code: { enabled: true },
-		pullRequests: { enabled: true },
+		pullRequests: { enabled: false },
 	});
 	const [selectedProfiles, setSelectedProfiles] = useState<number[]>([1]); // Default to OpenAI Small
 
@@ -109,7 +109,7 @@ export function RepositoryRegistrationDialog({
 				setRepositoryId("");
 				setContentConfig({
 					code: { enabled: true },
-					pullRequests: { enabled: true },
+					pullRequests: { enabled: false },
 				});
 				setSelectedProfiles([1]); // Reset to default
 			} else {
