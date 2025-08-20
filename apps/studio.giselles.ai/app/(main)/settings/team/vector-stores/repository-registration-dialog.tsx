@@ -25,7 +25,7 @@ type RepositoryRegistrationDialogProps = {
 		owner: string,
 		repo: string,
 		installationId: number,
-		contentTypes?: {
+		contentTypes: {
 			contentType: GitHubRepositoryContentType;
 			enabled: boolean;
 		}[],
