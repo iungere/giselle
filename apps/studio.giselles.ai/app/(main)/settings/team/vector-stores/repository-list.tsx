@@ -13,15 +13,12 @@ type RepositoryListProps = {
 	triggerManualIngestAction: (
 		indexId: GitHubRepositoryIndexId,
 	) => Promise<{ success: boolean; error?: string }>;
-	updateRepositoryContentTypesAction: (
-		repositoryIndexId: string,
+	updateRepositorySettingsAction: (
+		repositoryIndexId: GitHubRepositoryIndexId,
 		contentTypes: {
 			contentType: GitHubRepositoryContentType;
 			enabled: boolean;
 		}[],
-	) => Promise<{ success: boolean; error?: string }>;
-	updateRepositoryEmbeddingProfilesAction?: (
-		repositoryIndexId: GitHubRepositoryIndexId,
 		embeddingProfileIds: number[],
 	) => Promise<{ success: boolean; error?: string }>;
 	multiEmbedding?: boolean;
@@ -31,8 +28,7 @@ export function RepositoryList({
 	repositories,
 	deleteRepositoryIndexAction,
 	triggerManualIngestAction,
-	updateRepositoryContentTypesAction,
-	updateRepositoryEmbeddingProfilesAction,
+	updateRepositorySettingsAction,
 	multiEmbedding = false,
 }: RepositoryListProps) {
 	return (
@@ -62,11 +58,8 @@ export function RepositoryList({
 									repositoryData={repo}
 									deleteRepositoryIndexAction={deleteRepositoryIndexAction}
 									triggerManualIngestAction={triggerManualIngestAction}
-									updateRepositoryContentTypesAction={
-										updateRepositoryContentTypesAction
-									}
-									updateRepositoryEmbeddingProfilesAction={
-										updateRepositoryEmbeddingProfilesAction
+									updateRepositorySettingsAction={
+										updateRepositorySettingsAction
 									}
 									multiEmbedding={multiEmbedding}
 								/>

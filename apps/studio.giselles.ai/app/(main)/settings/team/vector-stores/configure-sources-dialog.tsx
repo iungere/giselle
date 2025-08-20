@@ -21,15 +21,12 @@ type ConfigureSourcesDialogProps = {
 	open: boolean;
 	setOpen: (open: boolean) => void;
 	repositoryData: RepositoryWithStatuses;
-	updateRepositoryContentTypesAction: (
-		repositoryIndexId: string,
+	updateRepositorySettingsAction: (
+		repositoryIndexId: GitHubRepositoryIndexId,
 		contentTypes: {
 			contentType: GitHubRepositoryContentType;
 			enabled: boolean;
 		}[],
-	) => Promise<{ success: boolean; error?: string }>;
-	updateRepositoryEmbeddingProfilesAction?: (
-		repositoryIndexId: GitHubRepositoryIndexId,
 		embeddingProfileIds: number[],
 	) => Promise<{ success: boolean; error?: string }>;
 	enabledProfiles?: number[];
@@ -40,8 +37,7 @@ export function ConfigureSourcesDialog({
 	open,
 	setOpen,
 	repositoryData,
-	updateRepositoryContentTypesAction,
-	updateRepositoryEmbeddingProfilesAction,
+	updateRepositorySettingsAction,
 	enabledProfiles = [1],
 	multiEmbedding = false,
 }: ConfigureSourcesDialogProps) {
@@ -73,7 +69,6 @@ export function ConfigureSourcesDialog({
 	const handleSave = () => {
 		setError("");
 		startTransition(async () => {
-			// Update content types
 			const contentTypes: {
 				contentType: GitHubRepositoryContentType;
 				enabled: boolean;
@@ -82,29 +77,18 @@ export function ConfigureSourcesDialog({
 				{ contentType: "pull_request", enabled: config.pullRequests.enabled },
 			];
 
-			const contentResult = await updateRepositoryContentTypesAction(
+			// Use the current profiles or default to [1] if multi-embedding is disabled
+			const profilesToUse = multiEmbedding ? selectedProfiles : enabledProfiles;
+
+			const result = await updateRepositorySettingsAction(
 				repositoryIndex.id,
 				contentTypes,
+				profilesToUse,
 			);
 
-			if (!contentResult.success) {
-				setError(contentResult.error || "Failed to update content types");
+			if (!result.success) {
+				setError(result.error || "Failed to update repository settings");
 				return;
-			}
-
-			// Update embedding profiles if feature flag is enabled and action is provided
-			if (multiEmbedding && updateRepositoryEmbeddingProfilesAction) {
-				const profileResult = await updateRepositoryEmbeddingProfilesAction(
-					repositoryIndex.id,
-					selectedProfiles,
-				);
-
-				if (!profileResult.success) {
-					setError(
-						profileResult.error || "Failed to update embedding profiles",
-					);
-					return;
-				}
 			}
 
 			setOpen(false);
@@ -150,7 +134,7 @@ export function ConfigureSourcesDialog({
 						/>
 
 						{/* Embedding Profiles Section - Only show when feature flag is enabled */}
-						{multiEmbedding && updateRepositoryEmbeddingProfilesAction && (
+						{multiEmbedding && (
 							<div className="mt-6">
 								<h3 className="text-white-400 text-[14px] font-medium mb-3">
 									Embedding Models

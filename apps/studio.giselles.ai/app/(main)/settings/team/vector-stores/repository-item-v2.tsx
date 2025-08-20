@@ -46,15 +46,12 @@ type RepositoryItemProps = {
 	triggerManualIngestAction: (
 		indexId: GitHubRepositoryIndexId,
 	) => Promise<{ success: boolean; error?: string }>;
-	updateRepositoryContentTypesAction: (
-		repositoryIndexId: string,
+	updateRepositorySettingsAction: (
+		repositoryIndexId: GitHubRepositoryIndexId,
 		contentTypes: {
 			contentType: GitHubRepositoryContentType;
 			enabled: boolean;
 		}[],
-	) => Promise<{ success: boolean; error?: string }>;
-	updateRepositoryEmbeddingProfilesAction?: (
-		repositoryIndexId: GitHubRepositoryIndexId,
 		embeddingProfileIds: number[],
 	) => Promise<{ success: boolean; error?: string }>;
 	multiEmbedding?: boolean;
@@ -64,8 +61,7 @@ export function RepositoryItem({
 	repositoryData,
 	deleteRepositoryIndexAction,
 	triggerManualIngestAction,
-	updateRepositoryContentTypesAction,
-	updateRepositoryEmbeddingProfilesAction,
+	updateRepositorySettingsAction,
 	multiEmbedding = false,
 }: RepositoryItemProps) {
 	const { repositoryIndex, contentStatuses } = repositoryData;
@@ -265,10 +261,7 @@ export function RepositoryItem({
 				open={showConfigureDialog}
 				setOpen={setShowConfigureDialog}
 				repositoryData={repositoryData}
-				updateRepositoryContentTypesAction={updateRepositoryContentTypesAction}
-				updateRepositoryEmbeddingProfilesAction={
-					updateRepositoryEmbeddingProfilesAction
-				}
+				updateRepositorySettingsAction={updateRepositorySettingsAction}
 				enabledProfiles={embeddingProfileIds}
 				multiEmbedding={multiEmbedding}
 			/>
@@ -514,9 +507,7 @@ function SyncStatusBadge({
 				{config.label}
 			</span>
 			{status === "failed" && onVerify && (
-				<>
-					<span className="text-[#1663F3] text-[10px] ml-0.5">↗</span>
-				</>
+				<span className="text-[#1663F3] text-[10px] ml-0.5">↗</span>
 			)}
 		</>
 	);
