@@ -3,6 +3,7 @@ import type { GitHubRepositoryContentType } from "@/drizzle";
 import type { RepositoryWithStatuses } from "@/lib/vector-stores/github";
 import type { GitHubRepositoryIndexId } from "@/packages/types";
 import { RepositoryItem } from "./repository-item";
+import { RepositoryItem as RepositoryItemV2 } from "./repository-item-v2";
 
 type RepositoryListProps = {
 	repositories: RepositoryWithStatuses[];
@@ -51,21 +52,26 @@ export function RepositoryList({
 
 				{repositories.length > 0 ? (
 					<div className="space-y-4">
-						{repositories.map((repo) => (
-							<RepositoryItem
-								key={repo.repositoryIndex.id}
-								repositoryData={repo}
-								deleteRepositoryIndexAction={deleteRepositoryIndexAction}
-								triggerManualIngestAction={triggerManualIngestAction}
-								updateRepositoryContentTypesAction={
-									updateRepositoryContentTypesAction
-								}
-								updateRepositoryEmbeddingProfilesAction={
-									updateRepositoryEmbeddingProfilesAction
-								}
-								multiEmbedding={multiEmbedding}
-							/>
-						))}
+						{repositories.map((repo) => {
+							const Component = multiEmbedding
+								? RepositoryItemV2
+								: RepositoryItem;
+							return (
+								<Component
+									key={repo.repositoryIndex.id}
+									repositoryData={repo}
+									deleteRepositoryIndexAction={deleteRepositoryIndexAction}
+									triggerManualIngestAction={triggerManualIngestAction}
+									updateRepositoryContentTypesAction={
+										updateRepositoryContentTypesAction
+									}
+									updateRepositoryEmbeddingProfilesAction={
+										updateRepositoryEmbeddingProfilesAction
+									}
+									multiEmbedding={multiEmbedding}
+								/>
+							);
+						})}
 					</div>
 				) : (
 					<EmptyRepositoryCard />

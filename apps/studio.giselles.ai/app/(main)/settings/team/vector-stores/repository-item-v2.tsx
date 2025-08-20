@@ -1,6 +1,7 @@
 "use client";
 
 import { StatusBadge } from "@giselle-internal/ui/status-badge";
+import { EMBEDDING_PROFILES } from "@giselle-sdk/data-type";
 import * as Dialog from "@radix-ui/react-dialog";
 import {
 	Code,
@@ -52,6 +53,11 @@ type RepositoryItemProps = {
 			enabled: boolean;
 		}[],
 	) => Promise<{ success: boolean; error?: string }>;
+	updateRepositoryEmbeddingProfilesAction?: (
+		repositoryIndexId: GitHubRepositoryIndexId,
+		embeddingProfileIds: number[],
+	) => Promise<{ success: boolean; error?: string }>;
+	multiEmbedding?: boolean;
 };
 
 export function RepositoryItem({
@@ -59,8 +65,16 @@ export function RepositoryItem({
 	deleteRepositoryIndexAction,
 	triggerManualIngestAction,
 	updateRepositoryContentTypesAction,
+	updateRepositoryEmbeddingProfilesAction,
+	multiEmbedding = false,
 }: RepositoryItemProps) {
 	const { repositoryIndex, contentStatuses } = repositoryData;
+
+	// Derive unique embedding profile IDs from content statuses
+	const embeddingProfileIds = [
+		...new Set(contentStatuses.map((cs) => cs.embeddingProfileId)),
+	].sort((a, b) => a - b);
+
 	const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 	const [showConfigureDialog, setShowConfigureDialog] = useState(false);
 	const [showDiagnosticModal, setShowDiagnosticModal] = useState(false);
@@ -91,18 +105,6 @@ export function RepositoryItem({
 		});
 	};
 
-	// Get content statuses
-	const blobStatus = contentStatuses.find((cs) => cs.contentType === "blob");
-	const pullRequestStatus = contentStatuses.find(
-		(cs) => cs.contentType === "pull_request",
-	);
-
-	if (!blobStatus) {
-		throw new Error(
-			`Repository ${repositoryIndex.dbId} missing blob content status`,
-		);
-	}
-
 	// Check if manual ingest is allowed for any enabled content type
 	const now = new Date();
 	const canManuallyIngest = contentStatuses.some((cs) => {
@@ -116,6 +118,11 @@ export function RepositoryItem({
 		);
 	});
 
+	// Check if we should show diagnostic modal option
+	const hasDiagnosticError = contentStatuses.some(
+		(cs) => cs.status === "failed" && cs.errorCode === "DOCUMENT_NOT_FOUND",
+	);
+
 	return (
 		<div
 			className={cn(
@@ -123,6 +130,7 @@ export function RepositoryItem({
 			)}
 		>
 			<div className="px-[24px] py-[16px]">
+				{/* Repository Header */}
 				<div className="flex items-center justify-between gap-4 mb-4">
 					<a
 						href={`https://github.com/${repositoryIndex.owner}/${repositoryIndex.repo}`}
@@ -185,30 +193,52 @@ export function RepositoryItem({
 				{/* Divider below repository name */}
 				<div className="border-t border-white/10 my-3"></div>
 
-				{/* Content Type Sections */}
-				<div className="space-y-0">
-					{/* Code Section */}
-					<ContentTypeSection
-						contentType="blob"
-						status={blobStatus}
-						isIngesting={isIngesting}
-						onVerify={
-							blobStatus?.status === "failed" &&
-							blobStatus?.errorCode === "DOCUMENT_NOT_FOUND"
-								? () => setShowDiagnosticModal(true)
-								: undefined
-						}
-					/>
-
-					{/* Divider between Code and Pull Requests */}
-					<div className="border-t border-white/10 my-3"></div>
-
-					{/* Pull Requests Section */}
-					<ContentTypeSection
-						contentType="pull_request"
-						status={pullRequestStatus}
-						isIngesting={isIngesting}
-					/>
+				{/* Matrix Table */}
+				<div className="overflow-x-auto">
+					<table className="w-full">
+						<thead>
+							<tr className="border-b border-white/10">
+								<th className="text-left text-[12px] text-white-400/60 font-normal pb-2 pr-4 min-w-[140px]">
+									Source
+								</th>
+								{embeddingProfileIds.map((profileId) => {
+									const profile =
+										EMBEDDING_PROFILES[
+											profileId as keyof typeof EMBEDDING_PROFILES
+										];
+									return (
+										<th
+											key={profileId}
+											className="text-left text-[12px] text-white-400/60 font-normal pb-2 px-2 min-w-[180px]"
+										>
+											{profile?.name || `Profile ${profileId}`}
+										</th>
+									);
+								})}
+							</tr>
+						</thead>
+						<tbody>
+							{/* Code Row */}
+							<ContentTypeRow
+								contentType="blob"
+								contentStatuses={contentStatuses}
+								embeddingProfileIds={embeddingProfileIds}
+								isIngesting={isIngesting}
+								onVerify={
+									hasDiagnosticError
+										? () => setShowDiagnosticModal(true)
+										: undefined
+								}
+							/>
+							{/* Pull Requests Row */}
+							<ContentTypeRow
+								contentType="pull_request"
+								contentStatuses={contentStatuses}
+								embeddingProfileIds={embeddingProfileIds}
+								isIngesting={isIngesting}
+							/>
+						</tbody>
+					</table>
 				</div>
 			</div>
 
@@ -236,6 +266,11 @@ export function RepositoryItem({
 				setOpen={setShowConfigureDialog}
 				repositoryData={repositoryData}
 				updateRepositoryContentTypesAction={updateRepositoryContentTypesAction}
+				updateRepositoryEmbeddingProfilesAction={
+					updateRepositoryEmbeddingProfilesAction
+				}
+				enabledProfiles={embeddingProfileIds}
+				multiEmbedding={multiEmbedding}
 			/>
 
 			<DiagnosticModal
@@ -276,6 +311,183 @@ function getRelativeTimeString(date: Date): string {
 	return "just now";
 }
 
+function formatRetryTime(retryAfter: Date): string {
+	const now = new Date();
+	const diffMs = retryAfter.getTime() - now.getTime();
+
+	if (diffMs <= 0) {
+		return "now";
+	}
+
+	const diffSeconds = Math.floor(diffMs / 1000);
+	const diffMinutes = Math.floor(diffSeconds / 60);
+	const diffHours = Math.floor(diffMinutes / 60);
+
+	if (diffHours > 0) {
+		return `${diffHours}h`;
+	}
+	if (diffMinutes > 0) {
+		return `${diffMinutes}m`;
+	}
+	return `${diffSeconds}s`;
+}
+
+// Content Type Row Component for matrix view
+type ContentTypeRowProps = {
+	contentType: GitHubRepositoryContentType;
+	contentStatuses: (typeof githubRepositoryContentStatus.$inferSelect)[];
+	embeddingProfileIds: number[];
+	isIngesting: boolean;
+	onVerify?: () => void;
+};
+
+function ContentTypeRow({
+	contentType,
+	contentStatuses,
+	embeddingProfileIds,
+	isIngesting,
+	onVerify,
+}: ContentTypeRowProps) {
+	const contentConfig = {
+		blob: { icon: Code, label: "Code" },
+		pull_request: { icon: GitPullRequest, label: "Pull Requests" },
+	};
+	const config = contentConfig[contentType];
+	const Icon = config.icon;
+
+	// Filter statuses for this content type
+	const typeStatuses = contentStatuses.filter(
+		(cs) => cs.contentType === contentType,
+	);
+
+	// Check if any status is enabled for this content type
+	const isEnabled = typeStatuses.some((s) => s.enabled);
+
+	return (
+		<tr className="border-b border-white/5">
+			{/* Source Column */}
+			<td className="py-3 pr-4">
+				<div className="flex items-center gap-2">
+					<Icon size={14} className="text-white-400/60" />
+					<span className="text-[13px] text-white-400 font-medium">
+						{config.label}
+					</span>
+					{!isEnabled && (
+						<StatusBadge status="ignored" className="ml-2 scale-90">
+							Disabled
+						</StatusBadge>
+					)}
+				</div>
+			</td>
+
+			{/* Status Columns for each embedding profile */}
+			{embeddingProfileIds.map((profileId) => {
+				const status = typeStatuses.find(
+					(s) => s.embeddingProfileId === profileId,
+				);
+
+				return (
+					<td key={profileId} className="py-3 px-2">
+						<StatusCell
+							status={status}
+							contentType={contentType}
+							isIngesting={isIngesting}
+							onVerify={onVerify}
+						/>
+					</td>
+				);
+			})}
+		</tr>
+	);
+}
+
+// Individual Status Cell Component
+type StatusCellProps = {
+	status?: typeof githubRepositoryContentStatus.$inferSelect;
+	contentType: GitHubRepositoryContentType;
+	isIngesting: boolean;
+	onVerify?: () => void;
+};
+
+function StatusCell({
+	status,
+	contentType,
+	isIngesting,
+	onVerify,
+}: StatusCellProps) {
+	if (!status || !status.enabled) {
+		return (
+			<div className="text-[11px] text-white-400/30">
+				{status ? "Disabled" : "Not configured"}
+			</div>
+		);
+	}
+
+	const displayStatus = isIngesting ? "running" : status.status;
+	const metadata = getContentStatusMetadata(status.metadata, contentType);
+
+	// Format metadata info
+	let metadataInfo = "";
+	if (metadata) {
+		if (contentType === "blob" && "lastIngestedCommitSha" in metadata) {
+			metadataInfo = metadata.lastIngestedCommitSha
+				? `${metadata.lastIngestedCommitSha.substring(0, 7)}`
+				: "";
+		} else if (
+			contentType === "pull_request" &&
+			"lastIngestedPrNumber" in metadata
+		) {
+			metadataInfo = metadata.lastIngestedPrNumber
+				? `#${metadata.lastIngestedPrNumber}`
+				: "";
+		}
+	}
+
+	return (
+		<div className="space-y-1">
+			{/* Status Badge */}
+			<div className="flex items-center gap-2">
+				<SyncStatusBadge
+					status={displayStatus}
+					onVerify={
+						status.status === "failed" &&
+						status.errorCode === "DOCUMENT_NOT_FOUND" &&
+						onVerify
+							? onVerify
+							: undefined
+					}
+				/>
+				{metadataInfo && (
+					<span className="text-[10px] text-white-400/40">{metadataInfo}</span>
+				)}
+			</div>
+
+			{/* Sync time */}
+			{status.lastSyncedAt && (
+				<div className="text-[10px] text-white-400/40">
+					{getRelativeTimeString(new Date(status.lastSyncedAt))}
+				</div>
+			)}
+
+			{/* Error message */}
+			{status.status === "failed" && status.errorCode && (
+				<div className="text-[10px] text-red-400">
+					{getErrorMessage(status.errorCode as DocumentLoaderErrorCode)}
+					{status.retryAfter &&
+						` • ${formatRetryTime(new Date(status.retryAfter))}`}
+				</div>
+			)}
+
+			{/* Running progress */}
+			{displayStatus === "running" && (
+				<div className="text-[10px] text-blue-400 animate-pulse">
+					Syncing...
+				</div>
+			)}
+		</div>
+	);
+}
+
 const STATUS_CONFIG = {
 	idle: { dotColor: "bg-[#B8E8F4]", label: "Idle" },
 	running: { dotColor: "bg-[#39FF7F] animate-custom-pulse", label: "Running" },
@@ -298,15 +510,11 @@ function SyncStatusBadge({
 	const badgeContent = (
 		<>
 			<div className={`w-2 h-2 rounded-full ${config.dotColor} shrink-0`} />
-			<span className="text-black-400 text-[12px] leading-[14px] font-medium font-geist flex-1 text-center ml-1.5">
+			<span className="text-black-400 text-[11px] leading-[14px] font-medium font-geist flex-1 text-center ml-1">
 				{config.label}
 			</span>
 			{status === "failed" && onVerify && (
 				<>
-					<span className="text-black-400 text-[12px] mx-1">•</span>
-					<span className="text-[#1663F3] text-[12px] leading-[14px] font-medium font-geist">
-						Check
-					</span>
 					<span className="text-[#1663F3] text-[10px] ml-0.5">↗</span>
 				</>
 			)}
@@ -318,7 +526,7 @@ function SyncStatusBadge({
 			<button
 				type="button"
 				onClick={onVerify}
-				className="flex items-center px-2 py-1 rounded-full border border-white/20 w-auto hover:bg-white/5 transition-colors duration-200"
+				className="flex items-center px-1.5 py-0.5 rounded-full border border-white/20 hover:bg-white/5 transition-colors duration-200"
 			>
 				{badgeContent}
 			</button>
@@ -326,151 +534,8 @@ function SyncStatusBadge({
 	}
 
 	return (
-		<div className="flex items-center px-2 py-1 rounded-full border border-white/20 w-[80px]">
+		<div className="flex items-center px-1.5 py-0.5 rounded-full border border-white/20 w-fit">
 			{badgeContent}
-		</div>
-	);
-}
-
-function formatRetryTime(retryAfter: Date): string {
-	const now = new Date();
-	const diffMs = retryAfter.getTime() - now.getTime();
-
-	if (diffMs <= 0) {
-		return "now";
-	}
-
-	const diffSeconds = Math.floor(diffMs / 1000);
-	const diffMinutes = Math.floor(diffSeconds / 60);
-	const diffHours = Math.floor(diffMinutes / 60);
-
-	if (diffHours > 0) {
-		return `${diffHours} hour${diffHours > 1 ? "s" : ""}`;
-	}
-	if (diffMinutes > 0) {
-		return `${diffMinutes} minute${diffMinutes > 1 ? "s" : ""}`;
-	}
-	return `${diffSeconds} second${diffSeconds > 1 ? "s" : ""}`;
-}
-
-// Content Type Section Component
-type ContentTypeSectionProps = {
-	contentType: GitHubRepositoryContentType;
-	status?: typeof githubRepositoryContentStatus.$inferSelect;
-	isIngesting: boolean;
-	onVerify?: () => void;
-};
-
-function ContentTypeSection({
-	contentType,
-	status,
-	isIngesting,
-	onVerify,
-}: ContentTypeSectionProps) {
-	// Handle case where status doesn't exist (e.g., pull_request not yet configured)
-	if (!status) {
-		const contentConfig = {
-			blob: { icon: Code, label: "Code" },
-			pull_request: { icon: GitPullRequest, label: "Pull Requests" },
-		};
-		const config = contentConfig[contentType];
-		const Icon = config.icon;
-
-		return (
-			<div className="bg-black-700/50 rounded-lg p-3 opacity-50">
-				<div className="flex items-center justify-between mb-1">
-					<div className="flex items-center gap-2 text-sm font-medium text-gray-300">
-						<Icon size={16} />
-						<span>{config.label}</span>
-					</div>
-					<div className="flex items-center gap-2">
-						<StatusBadge status="ignored">Disabled</StatusBadge>
-					</div>
-				</div>
-				<div className="text-xs text-gray-500">
-					<span>Not configured</span>
-				</div>
-			</div>
-		);
-	}
-
-	const {
-		enabled,
-		status: syncStatus,
-		lastSyncedAt,
-		metadata,
-		errorCode,
-		retryAfter,
-	} = status;
-
-	// Parse metadata based on content type
-	const parsedMetadata = getContentStatusMetadata(metadata, contentType);
-
-	// Content type config
-	const contentConfig = {
-		blob: {
-			icon: Code,
-			label: "Code",
-			metadataLabel:
-				parsedMetadata && "lastIngestedCommitSha" in parsedMetadata
-					? `Commit: ${parsedMetadata.lastIngestedCommitSha?.substring(0, 7) || "none"}`
-					: null,
-		},
-		pull_request: {
-			icon: GitPullRequest,
-			label: "Pull Requests",
-			metadataLabel:
-				parsedMetadata && "lastIngestedPrNumber" in parsedMetadata
-					? `PR: #${parsedMetadata.lastIngestedPrNumber || "none"}`
-					: null,
-		},
-	};
-
-	const config = contentConfig[contentType];
-	const Icon = config.icon;
-
-	// Determine display status
-	const displayStatus = isIngesting && enabled ? "running" : syncStatus;
-
-	return (
-		<div className="bg-black-700/50 rounded-lg p-3">
-			<div className="flex items-center justify-between mb-1">
-				<div className="flex items-center gap-2 text-sm font-medium text-gray-300">
-					<Icon size={16} />
-					<span>{config.label}</span>
-				</div>
-				<div className="flex items-center gap-2">
-					{enabled ? (
-						<StatusBadge status="success">Enabled</StatusBadge>
-					) : (
-						<StatusBadge status="ignored">Disabled</StatusBadge>
-					)}
-					{enabled && (
-						<SyncStatusBadge
-							status={displayStatus}
-							onVerify={
-								syncStatus === "failed" && onVerify ? onVerify : undefined
-							}
-						/>
-					)}
-				</div>
-			</div>
-			{enabled && (
-				<div className="text-xs text-gray-500 flex justify-between">
-					{lastSyncedAt ? (
-						<span>Last sync: {getRelativeTimeString(lastSyncedAt)}</span>
-					) : (
-						<span>Never synced</span>
-					)}
-					{config.metadataLabel && <span>{config.metadataLabel}</span>}
-				</div>
-			)}
-			{enabled && syncStatus === "failed" && errorCode && (
-				<div className="text-xs text-red-400 mt-1">
-					{getErrorMessage(errorCode as DocumentLoaderErrorCode)}
-					{retryAfter && ` • Retry in ${formatRetryTime(retryAfter)}`}
-				</div>
-			)}
 		</div>
 	);
 }

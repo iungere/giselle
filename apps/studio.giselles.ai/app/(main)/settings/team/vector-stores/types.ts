@@ -1,4 +1,4 @@
-type DocumentLoaderErrorCode =
+export type DocumentLoaderErrorCode =
 	| "DOCUMENT_NOT_FOUND"
 	| "DOCUMENT_FETCH_ERROR"
 	| "DOCUMENT_RATE_LIMITED"
