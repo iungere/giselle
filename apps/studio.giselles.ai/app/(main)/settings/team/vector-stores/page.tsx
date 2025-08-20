@@ -5,7 +5,7 @@ import {
 	deleteRepositoryIndex,
 	registerRepositoryIndex,
 	triggerManualIngest,
-	updateRepositorySettings,
+	updateRepositoryIndex,
 } from "./actions";
 import { getGitHubRepositoryIndexes, getInstallationsWithRepos } from "./data";
 import { RepositoryList } from "./repository-list";
@@ -78,7 +78,7 @@ export default async function TeamVectorStorePage() {
 				repositories={repositoryIndexes}
 				deleteRepositoryIndexAction={deleteRepositoryIndex}
 				triggerManualIngestAction={triggerManualIngest}
-				updateRepositorySettingsAction={updateRepositorySettings}
+				updateRepositoryIndexAction={updateRepositoryIndex}
 				multiEmbedding={multiEmbedding}
 			/>
 		</div>

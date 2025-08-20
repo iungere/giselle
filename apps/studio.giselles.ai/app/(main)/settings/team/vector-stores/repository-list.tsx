@@ -13,7 +13,7 @@ type RepositoryListProps = {
 	triggerManualIngestAction: (
 		indexId: GitHubRepositoryIndexId,
 	) => Promise<{ success: boolean; error?: string }>;
-	updateRepositorySettingsAction: (
+	updateRepositoryIndexAction: (
 		repositoryIndexId: GitHubRepositoryIndexId,
 		contentTypes: {
 			contentType: GitHubRepositoryContentType;
@@ -28,7 +28,7 @@ export function RepositoryList({
 	repositories,
 	deleteRepositoryIndexAction,
 	triggerManualIngestAction,
-	updateRepositorySettingsAction,
+	updateRepositoryIndexAction,
 	multiEmbedding = false,
 }: RepositoryListProps) {
 	return (
@@ -58,9 +58,7 @@ export function RepositoryList({
 									repositoryData={repo}
 									deleteRepositoryIndexAction={deleteRepositoryIndexAction}
 									triggerManualIngestAction={triggerManualIngestAction}
-									updateRepositorySettingsAction={
-										updateRepositorySettingsAction
-									}
+									updateRepositoryIndexAction={updateRepositoryIndexAction}
 									multiEmbedding={multiEmbedding}
 								/>
 							);

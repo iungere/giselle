@@ -21,7 +21,7 @@ type ConfigureSourcesDialogProps = {
 	open: boolean;
 	setOpen: (open: boolean) => void;
 	repositoryData: RepositoryWithStatuses;
-	updateRepositorySettingsAction: (
+	updateRepositoryIndexAction: (
 		repositoryIndexId: GitHubRepositoryIndexId,
 		contentTypes: {
 			contentType: GitHubRepositoryContentType;
@@ -37,7 +37,7 @@ export function ConfigureSourcesDialog({
 	open,
 	setOpen,
 	repositoryData,
-	updateRepositorySettingsAction,
+	updateRepositoryIndexAction,
 	enabledProfiles = [1],
 	multiEmbedding = false,
 }: ConfigureSourcesDialogProps) {
@@ -80,7 +80,7 @@ export function ConfigureSourcesDialog({
 			// Use the current profiles or default to [1] if multi-embedding is disabled
 			const profilesToUse = multiEmbedding ? selectedProfiles : enabledProfiles;
 
-			const result = await updateRepositorySettingsAction(
+			const result = await updateRepositoryIndexAction(
 				repositoryIndex.id,
 				contentTypes,
 				profilesToUse,

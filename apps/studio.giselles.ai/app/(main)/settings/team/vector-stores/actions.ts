@@ -2,7 +2,7 @@
 
 import { isEmbeddingProfileId } from "@giselle-sdk/data-type";
 import { createId } from "@paralleldrive/cuid2";
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray, notInArray, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { after } from "next/server";
 import {
@@ -173,6 +173,185 @@ export async function registerRepositoryIndex(
 		return {
 			success: false,
 			error: "Failed to register repository. Please try again.",
+		};
+	}
+}
+
+/**
+ * Update repository index including content types and embedding profiles
+ * This unified function handles both settings in a single transaction for consistency
+ */
+export async function updateRepositoryIndex(
+	repositoryIndexId: GitHubRepositoryIndexId,
+	contentTypes: {
+		contentType: GitHubRepositoryContentType;
+		enabled: boolean;
+	}[],
+	embeddingProfileIds?: number[],
+): Promise<ActionResult> {
+	const blobConfig = contentTypes.find((ct) => ct.contentType === "blob");
+	if (blobConfig && !blobConfig.enabled) {
+		return {
+			success: false,
+			error: "Code content type must remain enabled",
+		};
+	}
+
+	const profilesToUpdate = embeddingProfileIds || [1]; // Default to profile 1 if not specified
+	const validProfileIds = profilesToUpdate.filter(isEmbeddingProfileId);
+	if (validProfileIds.length === 0) {
+		return {
+			success: false,
+			error: "At least one valid embedding profile is required",
+		};
+	}
+
+	try {
+		const team = await fetchCurrentTeam();
+
+		const [repository] = await db
+			.select()
+			.from(githubRepositoryIndex)
+			.where(
+				and(
+					eq(githubRepositoryIndex.id, repositoryIndexId),
+					eq(githubRepositoryIndex.teamDbId, team.dbId),
+				),
+			)
+			.limit(1);
+		if (!repository) {
+			return {
+				success: false,
+				error: "Repository not found",
+			};
+		}
+
+		await db.transaction(async (tx) => {
+			// Clean up profiles and statuses that are no longer needed
+			// Get existing profiles to determine what to delete
+			const existingProfiles = await tx
+				.select({
+					embeddingProfileId:
+						githubRepositoryEmbeddingProfiles.embeddingProfileId,
+				})
+				.from(githubRepositoryEmbeddingProfiles)
+				.where(
+					eq(
+						githubRepositoryEmbeddingProfiles.repositoryIndexDbId,
+						repository.dbId,
+					),
+				);
+
+			const profilesToRemove = existingProfiles
+				.map((p) => p.embeddingProfileId)
+				.filter((id) => !validProfileIds.includes(id));
+
+			// Delete removed profiles and their content statuses
+			if (profilesToRemove.length > 0) {
+				await tx
+					.delete(githubRepositoryEmbeddingProfiles)
+					.where(
+						and(
+							eq(
+								githubRepositoryEmbeddingProfiles.repositoryIndexDbId,
+								repository.dbId,
+							),
+							inArray(
+								githubRepositoryEmbeddingProfiles.embeddingProfileId,
+								profilesToRemove,
+							),
+						),
+					);
+				await tx
+					.delete(githubRepositoryContentStatus)
+					.where(
+						and(
+							eq(
+								githubRepositoryContentStatus.repositoryIndexDbId,
+								repository.dbId,
+							),
+							inArray(
+								githubRepositoryContentStatus.embeddingProfileId,
+								profilesToRemove,
+							),
+						),
+					);
+			}
+
+			// Delete content statuses for removed content types (but keep profiles)
+			const desiredContentTypes = contentTypes.map((ct) => ct.contentType);
+			if (desiredContentTypes.length > 0 && validProfileIds.length > 0) {
+				await tx
+					.delete(githubRepositoryContentStatus)
+					.where(
+						and(
+							eq(
+								githubRepositoryContentStatus.repositoryIndexDbId,
+								repository.dbId,
+							),
+							inArray(
+								githubRepositoryContentStatus.embeddingProfileId,
+								validProfileIds,
+							),
+							notInArray(
+								githubRepositoryContentStatus.contentType,
+								desiredContentTypes,
+							),
+						),
+					);
+			}
+
+			// Step 2: Upsert profiles and content statuses
+			// Upsert embedding profiles (batch for efficiency)
+			if (validProfileIds.length > 0) {
+				const embeddingProfilesData = validProfileIds.map((profileId) => ({
+					repositoryIndexDbId: repository.dbId,
+					embeddingProfileId: profileId,
+					createdAt: new Date(),
+				}));
+
+				await tx
+					.insert(githubRepositoryEmbeddingProfiles)
+					.values(embeddingProfilesData)
+					.onConflictDoNothing();
+			}
+
+			// Upsert content statuses (batch for efficiency)
+			if (validProfileIds.length > 0 && contentTypes.length > 0) {
+				const contentStatusData = validProfileIds.flatMap((profileId) =>
+					contentTypes.map((contentType) => ({
+						repositoryIndexDbId: repository.dbId,
+						embeddingProfileId: profileId,
+						contentType: contentType.contentType,
+						enabled: contentType.enabled,
+						status: "idle" as const,
+					})),
+				);
+
+				await tx
+					.insert(githubRepositoryContentStatus)
+					.values(contentStatusData)
+					.onConflictDoUpdate({
+						target: [
+							githubRepositoryContentStatus.repositoryIndexDbId,
+							githubRepositoryContentStatus.embeddingProfileId,
+							githubRepositoryContentStatus.contentType,
+						],
+						set: {
+							enabled: sql`excluded.enabled`,
+							// Preserve existing status, errorCode, retryAfter
+						},
+					});
+			}
+		});
+
+		revalidatePath("/settings/team/vector-stores");
+		return { success: true };
+	} catch (error) {
+		console.error("Error updating repository settings:", error);
+		return {
+			success: false,
+			error: "Failed to update repository settings",
 		};
 	}
 }
@@ -438,125 +617,4 @@ function executeManualIngest(repositoryData: RepositoryWithStatuses): void {
 	after(async () => {
 		await processRepository(repositoryData);
 	});
-}
-
-/**
- * Update repository settings including content types and embedding profiles
- * This unified function handles both settings in a single transaction for consistency
- */
-export async function updateRepositorySettings(
-	repositoryIndexId: GitHubRepositoryIndexId,
-	contentTypes: {
-		contentType: GitHubRepositoryContentType;
-		enabled: boolean;
-	}[],
-	embeddingProfileIds: number[],
-): Promise<ActionResult> {
-	// Pure input validation (outside try-catch)
-	// Validate that code (blob) is always enabled
-	const blobConfig = contentTypes.find((ct) => ct.contentType === "blob");
-	if (blobConfig && !blobConfig.enabled) {
-		return {
-			success: false,
-			error: "Code content type must remain enabled",
-		};
-	}
-
-	// Validate at least one embedding profile is selected
-	if (embeddingProfileIds.length === 0) {
-		return {
-			success: false,
-			error: "At least one embedding profile must be selected",
-		};
-	}
-
-	// Filter valid profile IDs upfront
-	const validProfileIds = embeddingProfileIds.filter(isEmbeddingProfileId);
-	if (validProfileIds.length === 0) {
-		return {
-			success: false,
-			error: "At least one valid embedding profile is required",
-		};
-	}
-
-	try {
-		const team = await fetchCurrentTeam();
-
-		// Verify the repository belongs to the team
-		const [repository] = await db
-			.select()
-			.from(githubRepositoryIndex)
-			.where(
-				and(
-					eq(githubRepositoryIndex.id, repositoryIndexId),
-					eq(githubRepositoryIndex.teamDbId, team.dbId),
-				),
-			)
-			.limit(1);
-
-		if (!repository) {
-			return {
-				success: false,
-				error: "Repository not found",
-			};
-		}
-
-		// Update both tables in a transaction for consistency
-		await db.transaction(async (tx) => {
-			// Delete existing embedding profiles
-			await tx
-				.delete(githubRepositoryEmbeddingProfiles)
-				.where(
-					eq(
-						githubRepositoryEmbeddingProfiles.repositoryIndexDbId,
-						repository.dbId,
-					),
-				);
-
-			// Delete existing content statuses
-			await tx
-				.delete(githubRepositoryContentStatus)
-				.where(
-					eq(
-						githubRepositoryContentStatus.repositoryIndexDbId,
-						repository.dbId,
-					),
-				);
-
-			// Prepare batch data for embedding profiles
-			const embeddingProfilesData = validProfileIds.map((profileId) => ({
-				repositoryIndexDbId: repository.dbId,
-				embeddingProfileId: profileId,
-				createdAt: new Date(),
-			}));
-
-			// Prepare batch data for content statuses (cross product of profiles × content types)
-			const contentStatusData = validProfileIds.flatMap((profileId) =>
-				contentTypes.map((contentType) => ({
-					repositoryIndexDbId: repository.dbId,
-					embeddingProfileId: profileId,
-					contentType: contentType.contentType,
-					enabled: contentType.enabled,
-					status: "idle" as const,
-				})),
-			);
-
-			// Batch insert embedding profiles (single operation)
-			await tx
-				.insert(githubRepositoryEmbeddingProfiles)
-				.values(embeddingProfilesData);
-
-			// Batch insert content statuses (single operation)
-			await tx.insert(githubRepositoryContentStatus).values(contentStatusData);
-		});
-
-		revalidatePath("/settings/team/vector-stores");
-		return { success: true };
-	} catch (error) {
-		console.error("Error updating repository settings:", error);
-		return {
-			success: false,
-			error: "Failed to update repository settings",
-		};
-	}
 }

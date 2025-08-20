@@ -46,7 +46,7 @@ type RepositoryItemProps = {
 	triggerManualIngestAction: (
 		indexId: GitHubRepositoryIndexId,
 	) => Promise<{ success: boolean; error?: string }>;
-	updateRepositorySettingsAction: (
+	updateRepositoryIndexAction: (
 		repositoryIndexId: GitHubRepositoryIndexId,
 		contentTypes: {
 			contentType: GitHubRepositoryContentType;
@@ -61,7 +61,7 @@ export function RepositoryItem({
 	repositoryData,
 	deleteRepositoryIndexAction,
 	triggerManualIngestAction,
-	updateRepositorySettingsAction,
+	updateRepositoryIndexAction,
 	multiEmbedding = false,
 }: RepositoryItemProps) {
 	const { repositoryIndex, contentStatuses } = repositoryData;
@@ -261,7 +261,7 @@ export function RepositoryItem({
 				open={showConfigureDialog}
 				setOpen={setShowConfigureDialog}
 				repositoryData={repositoryData}
-				updateRepositorySettingsAction={updateRepositorySettingsAction}
+				updateRepositoryIndexAction={updateRepositoryIndexAction}
 				enabledProfiles={embeddingProfileIds}
 				multiEmbedding={multiEmbedding}
 			/>
